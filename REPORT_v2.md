@@ -71,7 +71,7 @@ Sadə optik qat modelinin ideal ssenarisi: +7,84% (sadə modelin ideal ssenarisi
 
 ## 3. İcra olunmuş testlər
 
-`pytest`: **63 passed in 172.78s (0:02:52)**
+`pytest`: **81 passed in 144.74s (0:02:24)**
 
 | Modul | Test | Nəticə |
 |---|---|---|
@@ -138,6 +138,24 @@ Sadə optik qat modelinin ideal ssenarisi: +7,84% (sadə modelin ideal ssenarisi
 | test_optics | `test_paraxial_label_limits[20.00deg]` | keçdi |
 | test_optics | `test_paraxial_label_limits[20.01deg]` | keçdi |
 | test_optics | `test_validity_js_matches_python` | keçdi |
+| test_uoptics | `test_lfs150150_areas_and_concentration` | keçdi |
+| test_uoptics | `test_rev_b_analytic_baseline` | keçdi |
+| test_uoptics | `test_detailed_model_separates_material_transmission_from_intercept` | keçdi |
+| test_uoptics | `test_concentration_is_not_applied_twice` | keçdi |
+| test_uoptics | `test_light_leaves_receiver_as_transverse_angle_grows` | keçdi |
+| test_uoptics | `test_linear_fresnel_longitudinal_angle_shortens_focus_and_loses_ends` | keçdi |
+| test_uoptics | `test_array_edges_separate_receivers` | keçdi |
+| test_uoptics | `test_array_edges_shared_receiver` | keçdi |
+| test_uoptics | `test_flat_cover` | keçdi |
+| test_uoptics | `test_flat_lossless_cover_equals_bare_baseline` | keçdi |
+| test_uoptics | `test_negative_lens_spreads_light` | keçdi |
+| test_uoptics | `test_round_spot_fully_on_receiver_is_captured_exactly` | keçdi |
+| test_uoptics | `test_cpc_acceptance` | keçdi |
+| test_uoptics | `test_measured_angle_table_is_used` | keçdi |
+| test_uoptics | `test_incomplete_inputs` | keçdi |
+| test_uoptics | `test_compare_B_reports_both_collecting_areas` | keçdi |
+| test_uoptics | `test_annual_lists_assumptions_and_tracking_cost` | keçdi |
+| test_uoptics | `test_js_matches_python` | keçdi |
 
 Brauzer ↔ Python, ssenarilər (bütün TMY dəstləri, tolerans 0,05%): **PARITY OK**
 

@@ -11,14 +11,15 @@ Hazır seçimlər: Bakı, Naxçıvan, Almería.
 | `B_fixed` | Eyni panel + zavod şüşəsinin üstündə əlavə optik qat (sadə model), eyni istiqamət |
 | `A_2axis` | Eyni adi panel, 2 oxlu izləmə (C ilə eyni strategiya) |
 | `C_2axis` | CPV: linza → kiçik fotoelement, 2 oxlu izləmə |
-| Linza laboratoriyası | Dioptriya, məsafə, düzülüş və material ilə həndəsi linza modeli (sonlu panel, işıq balansı, I–V) |
+| Optik simulyator | Optika kataloqu və ya öz linzanız → parametrlər → qəbuledici və montaj → linzasız baza ilə iki müqayisə |
+| Xüsusi hal: panel üstündə linza | Dioptriya, məsafə, düzülüş və material ilə 144 hüceyrəli panelin həndəsi modeli (sonlu panel, işıq balansı, I–V) |
 
 İzahlar Azərbaycan dilindədir, kod identifikatorları ingilis dilindədir.
 
 ## Onlayn baxmaq
 
 * Sadə izah: https://mhmmdkbrov.github.io/solarsimulation/
-* Linza laboratoriyası: https://mhmmdkbrov.github.io/solarsimulation/lab.html
+* Optik simulyator (keçmiş linza laboratoriyası): https://mhmmdkbrov.github.io/solarsimulation/lab.html
 * Ətraflı simulyator: https://mhmmdkbrov.github.io/solarsimulation/simulator.html
 * Linza enerji kalkulyatoru. Paylaşılan Streamlit kalkulyatorunun hesabı olduğu kimi təkrarlanır, yanında düzgün müqayisə və səhvlərin siyahısı verilir:
   https://mhmmdkbrov.github.io/solarsimulation/calculator.html (`simulator/calculator.js` = `solarsim/calculator.py`, testlər `tests/test_calculator.py`)
@@ -37,14 +38,14 @@ PVGIS (server tərəfi)  →  data/raw/<məkan>/*.json.gz (+ sorğu metadatası)
         ↓  python -m solarsim.build
 docs/data/<dəst>.json   (bütün rəqəmlər: illik, aylıq, hava sinifləri, linza cədvəlləri, C = 5, illərarası)
         ↓  python simulator/build_simulator.py
-docs/index.html, docs/lab.html, docs/simulator.html   (statik sayt; JS modelləri Python ilə paritet testindən keçir)
+docs/index.html, docs/lab.html, docs/simulator.html, docs/calculator.html   (statik sayt; JS modelləri Python ilə paritet testindən keçir)
 ```
 
 | Qovluq / fayl | Məzmun |
 |---|---|
-| `solarsim/` | Python paketi: `sites`, `pvgis`, `weather`, `geometry`, `pv`, `scenarios`, `optics`, `electrical`, `lenslab`, `studies`, `analysis`, `build`, `cli` |
+| `solarsim/` | Python paketi: `sites`, `pvgis`, `weather`, `geometry`, `pv`, `scenarios`, `optics`, `electrical`, `lenslab`, `uoptics`, `calculator`, `studies`, `analysis`, `build`, `cli` |
 | `solar_simulation.ipynb` | Paketi işlədən notebook: reqressiya, məlumat dəstləri, modul, ssenarilər, illərarası, linza, CPV, nəticələr |
-| `simulator/` | Səhifə şablonları və brauzer modelləri (`model.js`, `lensoptics.js`, `datastore.js`), `build_simulator.py` |
+| `simulator/` | Səhifə şablonları və brauzer modelləri (`model.js`, `lensoptics.js`, `uoptics.js`, `calculator.js`, `datastore.js`), `build_simulator.py` |
 | `docs/` | GitHub Pages saytı və `docs/data/` məlumat dəstləri |
 | `data/raw/` | PVGIS-in xam cavabları (gzip) və sorğu metadatası (URL, parametrlər, UTC tarix) |
 | `tests/` | `pytest` testləri, brauzer paritet testləri, v1 reqressiya bazası (`baseline_v1.json`) |
@@ -87,6 +88,34 @@ python -m pytest -q tests                                   # model, vaxt, enerj
 node tests\parity_model.js docs\data\baku_pvgis53_tmy.json  # brauzer ↔ Python: ssenarilər (tolerans 0,05%)
 python tests\parity_lens.py docs\data\baku_pvgis53_tmy.json # brauzer ↔ Python: linza (tolerans 0,1 faiz bəndi)
 ```
+
+## Optik simulyator
+
+Kod `solarsim/uoptics.py` faylındadır, brauzer üçün eyni alqoritmlər `simulator/uoptics.js` faylındadır. Testlər `tests/test_uoptics.py` faylındadır, oradakı paritet testi Python ilə brauzer nəticələrini müqayisə edir. İstifadə axını:
+
+1. **Optika.** Kataloqda bunlar var:
+   * LFS150150 xətti Fresnel. Knight Optical kataloqundan: f = 150 mm (±5%), 150 × 500 mm, PMMA. Ötürmə rəqəmi verilmir, ona görə fərziyyədir.
+   * Ümumi nöqtə fokuslu Fresnel, qabarıq linza, mənfi dioptriyalı linza və düz örtük şablonları.
+   * CPC ayrıca reflektor modelidir.
+   * “Öz linzam” boş formadır, doldurulmuş linzanı bu brauzerdə yadda saxlamaq olar.
+2. **Parametrlər.** Optika tipi, apertura forması və ölçüləri, fokus məsafəsi və ya dioptriya, ötürmə. Material, qalınlıq və ölçülmüş bucaq–ötürmə cədvəli genişləndirilmiş bölmədədir. Hər parametrin statusu var: istehsalçı məlumatı, ölçülüb və ya fərziyyə. İstehsalçının verdiyi dəyər dəyişdirilsə, statusu avtomatik olaraq “fərziyyə” olur.
+3. **Qəbuledici və montaj.** Qəbuledicinin aktiv ölçüsü, linza–qəbuledici məsafəsi, linza sayı və massiv addımı. Massivdə hər linzanın öz qəbuledicisi ola bilər, ya da bütün linzalar bir ortaq qəbuledici üzərində durur. Montaj sabit və ya 2 oxlu izləmə ola bilər.
+4. **Nəticə.** Bütün optikalar eyni formatda nəticə qaytarır: daxil olan güc, optik ötürmə itkisi, qəbulediciyə düşən və kənara çıxan pay, qəbuledicidə orta və pik lokal şüalanma. CPC üçün pik şüalanma hesablanmır.
+   * Həndəsi konsentrasiya C = A_apertura / A_qəbuledici kimi göstərilir. Güc aperturadan bir dəfə hesablanır və C-yə ikinci dəfə vurulmur.
+   * İki müqayisə aparılır. **A:** eyni işıqtoplama sahəsi olan linzasız PV ilə. **B:** eyni fotoelement sahəsi olan linzasız PV ilə; hər iki variantın işıqtoplama sahəsi yanında yazılır.
+   * Ani hesab optik gücü, DC gücü və sistem səmərəliliyini verir. İllik hesab məlumat dəstindən saatlıq düşmə bucağını, birbaşa və səpələnmiş işığı, hüceyrə temperaturunu və izləmə sərfini nəzərə alır. İllik nəticənin yanında onun fərziyyələri sadalanır.
+
+Hesab səviyyəsi **“ilkin həndəsi hesab”**dır: nazik paraksial optika, ləkədə bərabər şüalanma, Günəş diski nəzərə alınır. Hər optika tipinin öz modeli var:
+
+* **Xətti Fresnel.** Yalnız bir ox üzrə fokuslayır. İşıq zolağının eni |1 − h/(f·cos θ_l)|·a + Günəş diskinin yayğınlığıdır. Zolaq eninə h·tan θ_t qədər sürüşür, xətt boyunca sürüşmə isə uclarda itkiyə səbəb olur.
+* **Nöqtə fokuslu və mənfi linza.** İkiölçülü ləkə qurulur. Dairəvi aperturada ləkənin qəbulediciyə düşən hissəsi ədədi inteqrasiya ilə hesablanır.
+* **Massiv.** Sonlu sayda linza və real kənarlarla hesablanır: bir linzanın işığı qonşu qəbulediciyə düşə bilər, kənardakı linzaların işığı isə paneldən çıxa bilər.
+* **Ötürmənin bucaqdan asılılığı.** Ölçülmüş cədvəl yoxdursa, nominal τ0-dan və iki Fresnel səthindən fərz olunur. Cədvəl daxil edilərsə, ötürmə həmin cədvəldən götürülür.
+* **Səpələnmiş işıq.** Qəbulediciyə düşən payı étendue həddi ilə yuxarıdan qiymətləndirilir.
+* **Hüceyrə temperaturu.** SAPM modeli ilə hesablanır. İstilik axını qəbuledici sahəsinin k qatı qədər səthə yayılır; k fərziyyədir. Hüceyrə 85 °C-dən qızdıqda xəbərdarlıq göstərilir.
+* **Profil.** Konkret səth profili ilə şüa izləməsi bu modeldə yoxdur.
+
+**Analitik baza (Rev B).** Hesab normal düşmə üçündür: N · A · DNI · η_opt,eff · η · k_th · k_el. 1 000 W/m², 22%, 0,85, 0,95 və 0,98 ilə LFS150150 üçün 13,06 W/modul və 18 modul üçün 235,03 W alınır. Həndəsi modeldə 0,85 yalnız materialın ötürməsi kimi götürülsə, qəbuledicidən yayınan işıq ayrıca hesablanır.
 
 ## Linza modelinin etibarlılığı
 

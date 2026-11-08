@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 body{margin:0;font:14px system-ui,-apple-system,"Segoe UI",sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
-<title>Linza Laboratoriyası</title>
+<title>Optik Simulyator</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -86,6 +86,28 @@ td.bad { color: var(--bad); font-weight: 600; } td.good { color: var(--good); fo
 tr.click { cursor: pointer; } tr.click:hover { background: var(--surface-2); }
 .loading .views, .loading .numbers, .loading .tables { opacity: 0.3; }
 footer { font-size: 0.82rem; color: var(--ink-2); display: grid; gap: 6px; max-width: 95ch; }
+.steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.steps li { background: var(--surface-2); border-radius: 10px; padding: 8px 10px; font-size: 0.86rem; display: flex; gap: 8px; align-items: center; }
+.steps b { background: var(--accent); color: var(--accent-ink); border-radius: 999px; min-width: 22px; height: 22px; display: inline-grid; place-items: center; font-size: 0.8rem; }
+@media (max-width: 760px) { .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.uo-step { display: grid; gap: 10px; border-top: 1px solid var(--line); padding-top: 12px; min-width: 0; }
+.pgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: 10px 14px; }
+.prow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 6px; align-content: start; font-size: 0.86rem; min-width: 0; }
+.prow > label { grid-column: 1 / -1; color: var(--ink-2); font-weight: 500; }
+.prow.wide { grid-column: 1 / -1; }
+.prow input, .prow select, .prow textarea { font: inherit; font-size: 0.9rem; padding: 5px 8px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); min-width: 0; width: 100%; }
+.prow textarea { font-family: var(--mono); grid-column: 1 / -1; resize: vertical; }
+.prow .st { font-size: 0.78rem; width: auto; padding: 4px 6px; }
+.prow .note { grid-column: 1 / -1; font-size: 0.76rem; color: var(--muted); }
+.prow.bad input { border-color: var(--bad); }
+.st[data-s="istehsalçı məlumatı"] { border-color: var(--good); } .st[data-s="ölçülüb"] { border-color: var(--accent); } .st[data-s="fərziyyə"] { border-color: var(--warn-ink); }
+details > summary { cursor: pointer; font-weight: 600; font-size: 0.9rem; padding: 4px 0; }
+details[open] > summary { margin-bottom: 8px; }
+.uo .view canvas { background: var(--bench); }
+.an { background: var(--surface-2); border-radius: 10px; padding: 10px 14px; font-size: 0.88rem; display: grid; gap: 4px; }
+.ass { margin: 0; padding-left: 18px; font-size: 0.82rem; color: var(--ink-2); display: grid; gap: 2px; }
+.lvl { display: inline-block; font-size: 0.74rem; font-weight: 600; padding: 0 8px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line); margin-left: 6px; }
+.special { border-top: 2px solid var(--line); padding-top: 16px; }
 </style>
 
 </head>
@@ -94,10 +116,78 @@ footer { font-size: 0.82rem; color: var(--ink-2); display: grid; gap: 6px; max-w
   <header style="display:grid; gap:10px">
     <nav class="nav"><a href="index.html">← Sadə izah</a><a href="simulator.html">Ətraflı simulyator</a><a href="calculator.html">Linza kalkulyatoru</a></nav>
     <div class="eyebrow" id="eyebrow">məlumat yüklənir…</div>
-    <h1>Linza laboratoriyası</h1>
-    <p class="lead">Linzanın gücünü dioptriya ilə, panelə qədər məsafəsini və düzülüşünü dəyişin. Şüaların öz hüceyrəyə, qonşu hüceyrəyə, hüceyrələr arası boşluğa və ya paneldən kənara düşməsinə, hüceyrələrin işıqlanmasına və alınan elektrikə baxın. Rəqəmlər sonlu panel həndəsəsi olan nazik linza modelindən gəlir və Python modeli ilə eynidir.</p>
+    <h1>Optik simulyator</h1>
+    <p class="lead">Optikanı seçin, parametrlərini daxil edin, qəbuledicini və montajı seçin, nəticəni linzasız baza ilə iki cür müqayisə edin: eyni işıqtoplama sahəsi və eyni fotoelement sahəsi. Hazır kataloqda xətti Fresnel (LFS150150), nöqtə fokuslu Fresnel, qabarıq və mənfi linza, düz örtük və CPC reflektoru var; kataloqdan kənar linzanı əl ilə daxil edib bu brauzerdə yadda saxlamaq olar. Hər parametrin statusu göstərilir: istehsalçı məlumatı, ölçülüb və ya fərziyyə.</p>
   </header>
   <section class="ds" id="ds"></section>
+
+  <section class="card uo" id="uo" aria-label="Universal optik simulyator">
+    <ol class="steps" aria-label="İstifadə axını">
+      <li><b>1</b>Optikanı seçin</li><li><b>2</b>Parametrləri daxil edin</li><li><b>3</b>Qəbuledicini və montajı seçin</li><li><b>4</b>Linzasız baza ilə müqayisə</li>
+    </ol>
+
+    <div class="uo-step">
+      <h2>1. Optika</h2>
+      <div class="chips" id="uo-cat" role="group" aria-label="Optika kataloqu"></div>
+      <div class="ds-row" id="uo-saved-row"><label class="ds-lbl" for="uo-saved">Yadda saxlanmış linzalarım (bu brauzerdə)</label><select id="uo-saved" class="ds-select"></select><button class="chip" id="uo-del" type="button">seçiləni sil</button></div>
+      <p class="hint" id="uo-src"></p>
+    </div>
+
+    <div class="uo-step">
+      <h2>2. Optikanın parametrləri</h2>
+      <div class="pgrid" id="uo-kind"></div>
+      <div class="pgrid" id="uo-opt"></div>
+      <details id="uo-adv"><summary>Genişləndirilmiş: material və əlavə optik parametrlər</summary>
+        <div class="pgrid" id="uo-optadv"></div>
+        <div class="prow wide" id="uo-tab-row">
+          <label for="uo-tab">Ölçülmüş bucaq–ötürmə cədvəli: hər sətirdə “bucaq °; ötürmə”, məsələn “0; 0,90”. Boş qalarsa, bucaq asılılığı fərziyyədir.</label>
+          <textarea id="uo-tab" rows="4" spellcheck="false"></textarea>
+          <select id="uo-tab-st" class="st" aria-label="Cədvəlin statusu"></select>
+          <span class="hint" id="uo-tab-msg"></span>
+        </div>
+      </details>
+      <div class="ds-row"><input id="uo-name" class="ds-select" placeholder="linzanın adı" aria-label="Linzanın adı"><button class="chip" id="uo-save" type="button">öz linzam kimi yadda saxla</button><span class="hint" id="uo-save-msg"></span></div>
+    </div>
+
+    <div class="uo-step">
+      <h2>3. Qəbuledici, massiv və montaj</h2>
+      <div class="pgrid" id="uo-rx"></div>
+      <div class="ds-row"><span class="ds-lbl">Massiv düzülüşü</span><div class="chips" id="uo-layout">
+        <button class="chip" data-v="each" type="button">hər linzanın öz qəbuledicisi</button>
+        <button class="chip" data-v="shared" type="button">bütün linzalar bir ortaq qəbuledici üzərində</button></div></div>
+      <div class="ds-row"><span class="ds-lbl">Montaj</span><div class="chips" id="uo-mount">
+        <button class="chip" data-v="fixed" type="button">sabit</button>
+        <button class="chip" data-v="2axis" type="button">2 oxlu izləmə</button></div><span class="hint" id="uo-mount-note"></span></div>
+      <details><summary>Hüceyrə, istilik, izləmə və analitik baza parametrləri</summary><div class="pgrid" id="uo-cell"></div></details>
+    </div>
+
+    <div class="uo-step">
+      <h2>4. Nəticə</h2>
+      <div class="validity" id="uo-msg"></div>
+      <section class="view">
+        <h3>Həndəsə: solda fokuslanan ox üzrə kəsik, sağda yuxarıdan massiv</h3>
+        <canvas id="uo-geo" width="960" height="380" role="img" aria-label="Optikanın həndəsəsi"></canvas>
+        <div class="legend"><span><i style="background:var(--c-glass)"></i>optikanın aperturası</span><span><i style="background:var(--c-gap)"></i>qəbuledici (aktiv sahə)</span><span><i style="background:var(--c-own)"></i>işıq ləkəsi / zolağı</span></div>
+        <p class="hint" id="uo-geo-note"></p>
+      </section>
+      <h3>Ani hesab</h3>
+      <div class="pgrid cond" id="uo-cond"></div>
+      <div class="tablewrap"><table id="uo-itab"></table></div>
+      <div class="tablewrap"><table id="uo-cmp"></table></div>
+      <p class="hint" id="uo-cmp-note"></p>
+      <div class="an" id="uo-an"></div>
+      <h3>İllik hesab: seçilmiş məlumat dəsti</h3>
+      <p class="hint" id="uo-ann-note"></p>
+      <div class="tablewrap"><table id="uo-ann"></table></div>
+      <ul class="ass" id="uo-ass"></ul>
+    </div>
+  </section>
+
+  <header class="special" style="display:grid; gap:6px">
+    <h2>Xüsusi hal: 144 hüceyrəli PV panel üstündə linza (hüceyrə səviyyəsində model)</h2>
+    <p class="lead">Aşağıdakı bölmə əvvəlki linza laboratoriyasıdır: Trina panelinin real hüceyrə xəritəsi, hüceyrələr arası boşluqlar, modul şüşəsində sınma, bypass diodları və hüceyrə I–V modeli ilə.</p>
+  </header>
+
 
   <section class="card" aria-label="Linzanın parametrləri">
     <div class="controls">
@@ -511,6 +601,752 @@ if (typeof module !== "undefined") module.exports = LensOptics;
 
 </script>
 <script>
+// Universal optics over a receiver — browser twin of solarsim/uoptics.py (same algorithms; parity-tested).
+// Level: "ilkin həndəsi hesab" (thin paraxial optics, uniform spot, sun disk). See the Python module docstring.
+const UOptics = (() => {
+  const SUN_HALF_DEG = 0.2665, SAPM = [-3.47, -0.0594, 3.0], MAX_LENSES = 400, RASTER = 60, STRIPS = 64, T_CELL_LIMIT_C = 85;
+  const IST = "istehsalçı məlumatı", OLC = "ölçülüb", FRZ = "fərziyyə", STATUSES = [IST, OLC, FRZ];
+  const TYPES = { linear_fresnel: "xətti Fresnel linzası", point_fresnel: "nöqtə fokuslu Fresnel linzası", convex: "qabarıq linza",
+                  negative: "mənfi dioptriyalı (səpələyici) linza", flat: "düz örtük", cpc: "CPC reflektoru (birləşən parabolik konsentrator)" };
+  const LEVEL_BASIC = "ilkin həndəsi hesab", LEVEL_TABLE = "ölçülmüş bucaq–ötürmə cədvəli ilə həndəsi hesab";
+  const PARAXIAL_WARN_DEG = 30;
+  const rad = d => d * Math.PI / 180, deg = r => r * 180 / Math.PI;
+  const P = (value, status = FRZ, note = "") => ({ value, status, note });
+  const clone = o => JSON.parse(JSON.stringify(o));
+
+  const COMMON = () => ({
+    eta_cell: P(0.22, FRZ, "hüceyrənin STC səmərəliliyi"),
+    gamma_per_K: P(-0.0035, FRZ, "gücün temperatur əmsalı"),
+    k_el: P(0.98, FRZ, "elektrik əmsalı (naqil, uyğunsuzluq)"),
+    k_hs: P(1.0, FRZ, "istilik ötürən səth / qəbuledici sahəsi; 1 = adi modul kimi soyuma"),
+    k_th: P(0.95, FRZ, "analitik baza üçün sabit istilik əmsalı"),
+    track_err_deg: P(0.1, FRZ, "2 oxlu izləmədə sabit yönəltmə xətası (fokuslanan ox üzrə)"),
+    drive_W: P(4.0, FRZ, "izləmə mühərriki, gündüz, hər izləyici üçün"),
+    controller_W: P(0.5, FRZ, "idarəetmə, 24 saat"),
+  });
+
+  const CATALOG = {
+    lfs150150: {
+      name: "LFS150150 xətti Fresnel (Knight Optical)", type: "linear_fresnel", shape: "rect", focus_axis: "y", layout: "each", mount: "fixed",
+      source: "https://knightoptical.com/stock/default/lenses/fresnel-lenses/reverse-configuration-fresnel-lenses.html",
+      source_note: "Kataloq: f = 150 mm (±5%), apertura 150 × 500 mm, faset eni 0,3 mm, qalınlıq 2 mm, PMMA, düz tərəf Günəşə. Ötürmə rəqəmi verilmir.",
+      params: {
+        ap_x_mm: P(500, IST, "uzunluq (xətt boyunca, yivlər bu oxa paraleldir)"), ap_y_mm: P(150, IST, "fokuslanan ox üzrə en"),
+        f_mm: P(150, IST, "±5%"), thickness_mm: P(2, IST, ""),
+        n_mat: P(1.49, FRZ, "PMMA üçün tipik sındırma əmsalı (material istehsalçıdan: PMMA)"),
+        tau0: P(0.92, FRZ, "istehsalçı ötürmə vermir; PMMA üçün tipik normal düşmə dəyəri"),
+        angle_table: P(null, FRZ, "ölçülmüş bucaq–ötürmə cədvəli yoxdur"),
+        rec_x_mm: P(500, FRZ, "Rev B qəbuledicisi: 500 × 75 mm"), rec_y_mm: P(75, FRZ, "Rev B qəbuledicisi: 500 × 75 mm"),
+        h_mm: P(75, FRZ, "zolaq eni = qəbuledici eni olan məsafə (fokusdan əvvəl)"),
+        nx: P(1, FRZ, ""), ny: P(18, FRZ, "Rev B: 18 linza"), pitch_x_mm: P(500, FRZ, ""), pitch_y_mm: P(150, FRZ, "linzalar arası boşluq yoxdur"),
+        eta_opt_eff: P(0.85, FRZ, "Rev B sadə hesabının effektiv optik payı"), ...COMMON() },
+    },
+    point_fresnel: {
+      name: "Nöqtə fokuslu Fresnel (ümumi şablon)", type: "point_fresnel", shape: "rect", focus_axis: "y", layout: "each", mount: "2axis",
+      source: null, source_note: "Şablon: bütün dəyərlər fərziyyədir.",
+      params: {
+        ap_x_mm: P(300), ap_y_mm: P(300), f_mm: P(300), thickness_mm: P(3), n_mat: P(1.49, FRZ, "PMMA"),
+        tau0: P(0.85, FRZ, "Fresnel fasetlərinin itkisi daxil, tipik"), angle_table: P(null),
+        rec_x_mm: P(30), rec_y_mm: P(30), h_mm: P(300, FRZ, "fokusda"),
+        nx: P(2), ny: P(2), pitch_x_mm: P(300), pitch_y_mm: P(300), eta_opt_eff: P(0.85), ...COMMON() },
+    },
+    convex: {
+      name: "Qabarıq linza (şablon, +5 D)", type: "convex", shape: "circle", focus_axis: "y", layout: "each", mount: "2axis",
+      source: null, source_note: "Şablon: bütün dəyərlər fərziyyədir.",
+      params: {
+        ap_x_mm: P(100, FRZ, "diametr"), ap_y_mm: P(100, FRZ, "dairəvi apertura: diametr"), f_mm: P(200, FRZ, "+5 D"),
+        thickness_mm: P(8), n_mat: P(1.5, FRZ, "şüşə"), tau0: P(0.92, FRZ, "iki səthdə əks olunma, örtüksüz"), angle_table: P(null),
+        rec_x_mm: P(50), rec_y_mm: P(50), h_mm: P(100, FRZ, "fokusun yarısı"),
+        nx: P(1), ny: P(1), pitch_x_mm: P(100), pitch_y_mm: P(100), eta_opt_eff: P(0.92), ...COMMON() },
+    },
+    negative: {
+      name: "Mənfi linza (şablon, −5 D)", type: "negative", shape: "circle", focus_axis: "y", layout: "each", mount: "fixed",
+      source: null, source_note: "Şablon: bütün dəyərlər fərziyyədir.",
+      params: {
+        ap_x_mm: P(100, FRZ, "diametr"), ap_y_mm: P(100, FRZ, "dairəvi apertura: diametr"), f_mm: P(-200, FRZ, "−5 D, xəyali fokus"),
+        thickness_mm: P(4), n_mat: P(1.5), tau0: P(0.92), angle_table: P(null),
+        rec_x_mm: P(100), rec_y_mm: P(100), h_mm: P(50),
+        nx: P(1), ny: P(1), pitch_x_mm: P(100), pitch_y_mm: P(100), eta_opt_eff: P(0.92), ...COMMON() },
+    },
+    flat: {
+      name: "Düz örtük (şablon)", type: "flat", shape: "rect", focus_axis: "y", layout: "each", mount: "fixed",
+      source: null, source_note: "Şablon: bütün dəyərlər fərziyyədir.",
+      params: {
+        ap_x_mm: P(1000), ap_y_mm: P(1000), f_mm: P(null, FRZ, "fokus yoxdur"), thickness_mm: P(3), n_mat: P(1.5), tau0: P(0.92),
+        angle_table: P(null), rec_x_mm: P(1000), rec_y_mm: P(1000), h_mm: P(5),
+        nx: P(1), ny: P(1), pitch_x_mm: P(1000), pitch_y_mm: P(1000), eta_opt_eff: P(0.92), ...COMMON() },
+    },
+    cpc: {
+      name: "CPC reflektoru (xətti, şablon)", type: "cpc", shape: "rect", focus_axis: "y", layout: "each", mount: "fixed",
+      source: null, source_note: "Şablon: ideal 2D CPC, apertura qəbul bucağından və qəbuledicidən hesablanır.",
+      params: {
+        accept_deg: P(30, FRZ, "qəbul yarım-bucağı"), reflectivity: P(0.90), n_reflections: P(1.0, FRZ, "orta əks olunma sayı"),
+        rec_x_mm: P(500, FRZ, "uzunluq"), rec_y_mm: P(50, FRZ, "fokuslanan ox üzrə en"),
+        nx: P(1), ny: P(10), pitch_x_mm: P(500), pitch_y_mm: P(100), eta_opt_eff: P(0.81), ...COMMON() },
+    },
+  };
+  for (const [k, hs, note] of [["lfs150150", 2.0, "istilik ötürən səth aperturaya bərabər (C = 2)"],
+                               ["point_fresnel", 100.0, "passiv radiator aperturaya bərabər (C = 100)"],
+                               ["convex", 3.0, "istilik ötürən səth təxminən aperturaya bərabər"],
+                               ["cpc", 2.0, "istilik ötürən səth aperturaya bərabər (C = 2)"]]) CATALOG[k].params.k_hs = P(hs, FRZ, note);
+
+  const REQUIRED = {
+    linear_fresnel: ["ap_x_mm", "ap_y_mm", "f_mm", "tau0", "n_mat"], point_fresnel: ["ap_x_mm", "ap_y_mm", "f_mm", "tau0", "n_mat"],
+    convex: ["ap_x_mm", "ap_y_mm", "f_mm", "tau0", "n_mat"], negative: ["ap_x_mm", "ap_y_mm", "f_mm", "tau0", "n_mat"],
+    flat: ["ap_x_mm", "ap_y_mm", "tau0", "n_mat"], cpc: ["accept_deg", "reflectivity", "n_reflections"],
+  };
+  const REQUIRED_RX = ["rec_x_mm", "rec_y_mm", "nx", "ny", "pitch_x_mm", "pitch_y_mm", "eta_cell", "gamma_per_K", "k_el", "k_hs"];
+
+  const preset = key => clone(CATALOG[key]);
+  const v = (cfg, name, def = null) => { const p = cfg.params[name]; return p == null || p.value == null ? def : p.value; };
+  const num = x => typeof x === "number" && isFinite(x);
+  const layout = cfg => (cfg.type === "cpc" ? "each" : cfg.layout || "each");
+
+  function aperture(cfg) {
+    if (cfg.type === "cpc") {
+      const s = Math.sin(rad(v(cfg, "accept_deg"))), rx = v(cfg, "rec_x_mm"), ry = v(cfg, "rec_y_mm");
+      return (cfg.focus_axis || "y") === "x" ? [rx / s, ry] : [rx, ry / s];
+    }
+    return [v(cfg, "ap_x_mm"), v(cfg, "ap_y_mm")];
+  }
+
+  function validate(cfg) {
+    const t = cfg.type;
+    if (!(t in TYPES)) return { ok: false, missing: ["type"], errors: ["optika tipi seçilməyib"] };
+    const need = [...new Set([...REQUIRED[t], ...REQUIRED_RX, ...(t === "cpc" ? [] : ["h_mm"])])];
+    const missing = need.filter(k => !num(v(cfg, k))), err = [];
+    if (!missing.length) {
+      if (t !== "cpc") {
+        if (v(cfg, "ap_x_mm") <= 0 || v(cfg, "ap_y_mm") <= 0) err.push("apertura ölçüləri müsbət olmalıdır");
+        if (!(v(cfg, "tau0") > 0 && v(cfg, "tau0") <= 1)) err.push("ötürmə 0 ilə 1 arasında olmalıdır");
+        if (v(cfg, "h_mm") <= 0) err.push("linza–qəbuledici məsafəsi müsbət olmalıdır");
+      }
+      if (["linear_fresnel", "point_fresnel", "convex"].includes(t) && v(cfg, "f_mm") <= 0) err.push("toplayıcı optikanın fokus məsafəsi müsbət olmalıdır");
+      if (t === "negative" && v(cfg, "f_mm") >= 0) err.push("mənfi linzanın fokus məsafəsi mənfi olmalıdır");
+      if (t === "cpc" && !(v(cfg, "accept_deg") > 0 && v(cfg, "accept_deg") < 90)) err.push("CPC qəbul bucağı 0° ilə 90° arasında olmalıdır");
+      if (v(cfg, "rec_x_mm") <= 0 || v(cfg, "rec_y_mm") <= 0) err.push("qəbuledicinin ölçüləri müsbət olmalıdır");
+      const nx = v(cfg, "nx"), ny = v(cfg, "ny");
+      if (nx < 1 || ny < 1 || nx !== Math.trunc(nx) || ny !== Math.trunc(ny) || nx * ny > MAX_LENSES) err.push(`linza sayı tam ədəd olmalıdır, 1 … ${MAX_LENSES}`);
+      const [ax, ay] = aperture(cfg);
+      if (v(cfg, "pitch_x_mm") < ax - 1e-9 || v(cfg, "pitch_y_mm") < ay - 1e-9) err.push("addım aperturadan kiçik ola bilməz (linzalar üst-üstə düşür)");
+      if (layout(cfg) === "each" && (v(cfg, "pitch_x_mm") < v(cfg, "rec_x_mm") - 1e-9 || v(cfg, "pitch_y_mm") < v(cfg, "rec_y_mm") - 1e-9))
+        err.push("hər linzanın öz qəbuledicisi üçün addım qəbuledicidən kiçik ola bilməz");
+      if (!(v(cfg, "eta_cell") > 0 && v(cfg, "eta_cell") < 1)) err.push("hüceyrə səmərəliliyi 0 ilə 1 arasında olmalıdır");
+    }
+    return { ok: !missing.length && !err.length, missing, errors: err };
+  }
+
+  function areas(cfg) {
+    const [ax, ay] = aperture(cfg), n = v(cfg, "nx") * v(cfg, "ny");
+    const a1 = (cfg.shape === "circle" && cfg.type !== "cpc" ? Math.PI / 4 * ax * ax : ax * ay) / 1e6;
+    const r = (layout(cfg) === "shared" ? 1 : n) * v(cfg, "rec_x_mm") * v(cfg, "rec_y_mm") / 1e6;
+    return { n, aperture_one_m2: a1, aperture_m2: n * a1, receiver_m2: r, C_g: n * a1 / r };
+  }
+
+  // ---------- transmission ----------
+  function fresnelT(th, n) {
+    th = Math.min(Math.max(th, 0), rad(89.999));
+    if (th < 1e-9) return 1 - ((n - 1) / (n + 1)) ** 2;
+    const tr = Math.asin(Math.sin(th) / n);
+    const rs = (Math.sin(th - tr) / Math.sin(th + tr + 1e-300)) ** 2, rp = (Math.tan(th - tr) / Math.tan(th + tr + 1e-300)) ** 2;
+    return 1 - 0.5 * (rs + rp);
+  }
+  function interp(x, xs, ys) {
+    if (x <= xs[0]) return ys[0];
+    if (x >= xs[xs.length - 1]) return ys[ys.length - 1];
+    let i = 1; while (xs[i] < x) i++;
+    return ys[i - 1] + (ys[i] - ys[i - 1]) * (x - xs[i - 1]) / (xs[i] - xs[i - 1]);
+  }
+  function tau(cfg, theta) {
+    const th = Math.abs(theta);
+    if (cfg.type === "cpc") return v(cfg, "reflectivity") ** v(cfg, "n_reflections");
+    const tab = v(cfg, "angle_table");
+    if (tab && tab.length) {
+      const s = [...tab].sort((a, b) => a[0] - b[0]);
+      return interp(deg(th), s.map(r => r[0]), s.map(r => r[1]));
+    }
+    const n = v(cfg, "n_mat");
+    return v(cfg, "tau0") * fresnelT(th, n) ** 2 / fresnelT(0, n) ** 2;
+  }
+  function tauDiffuse(cfg) {
+    let s = 0, w = 0;
+    for (let i = 0; i < 90; i++) { const th = rad(i + 0.5), wi = Math.sin(2 * th) * rad(1); s += tau(cfg, th) * wi; w += wi; }
+    return s / w;
+  }
+  const modelLevel = cfg => (cfg.type !== "cpc" && v(cfg, "angle_table") && v(cfg, "angle_table").length ? LEVEL_TABLE : LEVEL_BASIC);
+
+  // ---------- geometry ----------
+  const ov1 = (a0, a1, b0, b1) => Math.max(0, Math.min(a1, b1) - Math.max(a0, b0));
+  function ovCircleRect(cx, cy, r, x0, x1, y0, y1) {
+    const lo = Math.max(cx - r, x0), hi = Math.min(cx + r, x1), dx = Math.max(0, hi - lo) / STRIPS;
+    let tot = 0;
+    for (let k = 0; k < STRIPS; k++) {
+      const x = lo + (k + 0.5) * dx, half = Math.sqrt(Math.max(0, r * r - (x - cx) ** 2));
+      tot += ov1(cy - half, cy + half, y0, y1) * dx;
+    }
+    return tot;
+  }
+  function spot(cfg, tx, ty) {
+    const t = cfg.type, h = v(cfg, "h_mm"), [ax, ay] = aperture(cfg), b = 2 * h * Math.tan(rad(SUN_HALF_DEG)), f = v(cfg, "f_mm");
+    let mx, my;
+    if (t === "flat") { mx = my = 1; }
+    else if (t === "linear_fresnel") {
+      const fa = cfg.focus_axis || "y", tl = fa === "y" ? tx : ty, m = 1 - h / (f / Math.sqrt(1 + tl * tl));
+      [mx, my] = fa === "y" ? [1, m] : [m, 1];
+    } else { mx = my = 1 - h / f; }
+    return { wx: Math.abs(mx) * ax + b, wy: Math.abs(my) * ay + b, sx: h * tx, sy: h * ty, circle: cfg.shape === "circle", blur: b, mx, my };
+  }
+  function overlap(sp, cx, cy, rx0, rx1, ry0, ry1) {
+    const x = cx + sp.sx, y = cy + sp.sy;
+    if (sp.circle) return ovCircleRect(x, y, sp.wx / 2, rx0, rx1, ry0, ry1);
+    return ov1(x - sp.wx / 2, x + sp.wx / 2, rx0, rx1) * ov1(y - sp.wy / 2, y + sp.wy / 2, ry0, ry1);
+  }
+  const spotArea = sp => { if (!sp.circle) return sp.wx * sp.wy; const r = sp.wx / 2; return ovCircleRect(0, 0, r, -r, r, -r, r); };
+  function lensCentres(cfg) {
+    const nx = v(cfg, "nx"), ny = v(cfg, "ny"), px = v(cfg, "pitch_x_mm"), py = v(cfg, "pitch_y_mm"), out = [];
+    for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) out.push([(i - (nx - 1) / 2) * px, (j - (ny - 1) / 2) * py]);
+    return out;
+  }
+  function capture(cfg, tx, ty) {
+    if (cfg.type === "cpc") {
+      const thA = rad(v(cfg, "accept_deg")), fa = cfg.focus_axis || "y", [tt, tl] = fa === "y" ? [ty, tx] : [tx, ty];
+      const a = (fa === "y" ? v(cfg, "rec_y_mm") : v(cfg, "rec_x_mm")) / 2, a2 = a / Math.sin(thA), H = (a + a2) / Math.tan(thA);
+      const length = fa === "y" ? v(cfg, "rec_x_mm") : v(cfg, "rec_y_mm");
+      return Math.abs(Math.atan(tt)) <= thA + 1e-12 ? Math.min(1, Math.max(0, 1 - H * Math.abs(tl) / length)) : 0;
+    }
+    const sp = spot(cfg, tx, ty), area = spotArea(sp), rx = v(cfg, "rec_x_mm"), ry = v(cfg, "rec_y_mm"), nx = v(cfg, "nx"), ny = v(cfg, "ny");
+    let tot = 0;
+    if (layout(cfg) === "shared") {
+      for (const [cx, cy] of lensCentres(cfg)) tot += overlap(sp, cx, cy, -rx / 2, rx / 2, -ry / 2, ry / 2);
+      return tot / (nx * ny * area);
+    }
+    const px = v(cfg, "pitch_x_mm"), py = v(cfg, "pitch_y_mm");
+    const kxm = Math.min(nx - 1, Math.ceil(((sp.wx + rx) / 2 + Math.abs(sp.sx)) / px));
+    const kym = Math.min(ny - 1, Math.ceil((((sp.circle ? sp.wx : sp.wy) + ry) / 2 + Math.abs(sp.sy)) / py));
+    for (let kx = -kxm; kx <= kxm; kx++) for (let ky = -kym; ky <= kym; ky++) {
+      const pairs = (nx - Math.abs(kx)) * (ny - Math.abs(ky)), ox = kx * px, oy = ky * py;
+      tot += pairs * overlap(sp, 0, 0, ox - rx / 2, ox + rx / 2, oy - ry / 2, oy + ry / 2);
+    }
+    return tot / (nx * ny * area);
+  }
+  function peakBeamFactor(cfg, tx, ty) {
+    if (cfg.type === "cpc") return null;
+    const sp = spot(cfg, tx, ty), [ax, ay] = aperture(cfg), a1 = sp.circle ? Math.PI / 4 * ax * ax : ax * ay, dens = a1 / (sp.circle ? Math.PI / 4 * sp.wx ** 2 : sp.wx * sp.wy);
+    const rx = v(cfg, "rec_x_mm"), ry = v(cfg, "rec_y_mm"), cen = lensCentres(cfg);
+    let c0 = [0, 0];
+    if (layout(cfg) === "each") c0 = cen.reduce((b, c) => {
+      const kb = [Math.abs(b[0]) + Math.abs(b[1]), b[1], b[0]], kc = [Math.abs(c[0]) + Math.abs(c[1]), c[1], c[0]];
+      for (let i = 0; i < 3; i++) { if (kc[i] < kb[i]) return c; if (kc[i] > kb[i]) return b; } return b;
+    });
+    let best = 0;
+    for (let j = 0; j < RASTER; j++) for (let i = 0; i < RASTER; i++) {
+      const X = c0[0] - rx / 2 + (i + 0.5) * rx / RASTER, Y = c0[1] - ry / 2 + (j + 0.5) * ry / RASTER;
+      let acc = 0;
+      for (const [cx, cy] of cen) {
+        const x = cx + sp.sx, y = cy + sp.sy;
+        const inside = sp.circle ? (X - x) ** 2 + (Y - y) ** 2 <= (sp.wx / 2) ** 2 : Math.abs(X - x) <= sp.wx / 2 && Math.abs(Y - y) <= sp.wy / 2;
+        if (inside) acc += dens;
+      }
+      if (acc > best) best = acc;
+    }
+    return best;
+  }
+
+  // ---------- electrical / thermal ----------
+  function tCell(e, ta, ws, kHs = 1) { const q = e / kHs; return ta + q * Math.exp(SAPM[0] + SAPM[1] * ws) + q / 1000 * SAPM[2]; }
+  function iamGlass(theta) {
+    const n = 1.526, K = 4, L = 0.002;
+    const tr = t => { const r = Math.asin(Math.sin(t) / n), rs = (Math.sin(r - t) / Math.sin(r + t)) ** 2, rp = (Math.tan(r - t) / Math.tan(r + t)) ** 2;
+                      return Math.exp(-K * L / Math.cos(r)) * (1 - 0.5 * (rs + rp)); };
+    const th = Math.min(Math.max(Math.abs(theta), 1e-9), rad(89.999));
+    return tr(th) / tr(1e-9);
+  }
+  let IAM_D = null;
+  function iamGlassDiffuse() {
+    if (IAM_D != null) return IAM_D;
+    let s = 0, w = 0; for (let i = 0; i < 90; i++) { const th = rad(i + 0.5), wi = Math.sin(2 * th); s += iamGlass(th) * wi; w += wi; }
+    return (IAM_D = s / w);
+  }
+  function pvDc(eOn, area, cfg, ta, ws, kHs = 1) {
+    const tc = tCell(eOn, ta, ws, kHs);
+    return [Math.max(0, eOn * area * v(cfg, "eta_cell") * (1 + v(cfg, "gamma_per_K") * (tc - 25)) * v(cfg, "k_el")), tc];
+  }
+
+  function optical(cfg, eb, ed, tx, ty, A = areas(cfg), td = cfg.type === "cpc" ? tau(cfg, 0) : tauDiffuse(cfg)) {
+    const th = Math.atan(Math.hypot(tx, ty)), tb = tau(cfg, th), cap = capture(cfg, tx, ty);
+    const pb = eb * A.aperture_m2, pd = ed * A.aperture_m2, dOn = ed * td * Math.min(A.aperture_m2, A.receiver_m2);
+    const on = pb * tb * cap + dOn, trans = pb * tb + pd * td;
+    return { P_in_W: pb + pd, P_beam_in_W: pb, optical_loss_W: pb * (1 - tb) + pd * (1 - td), on_receiver_W: on, off_receiver_W: trans - on,
+             tau_beam: tb, tau_diffuse: td, capture_beam: cap, E_rec_mean_Wm2: on / A.receiver_m2 };
+  }
+
+  function lensGeometry(f, ax, ay, cylindrical = false) {   // = optics.lens_geometry
+    const [axis, a] = cylindrical ? ["y", ay] : ay >= ax ? ["y", ay] : ["x", ax];
+    const out = { axis, aperture_mm: a, aperture_x_mm: ax, aperture_y_mm: ay, cylindrical, f_mm: null, f_number: null, edge_angle_deg: 0, corner_angle_deg: null, diagonal_mm: null };
+    if (!isFinite(f)) return out;
+    const F = Math.abs(f);
+    out.f_mm = f; out.f_number = F / a; out.edge_angle_deg = deg(Math.atan(a / 2 / F));
+    if (!cylindrical) { const d = Math.hypot(ax, ay); out.diagonal_mm = d; out.corner_angle_deg = deg(Math.atan(d / 2 / F)); }
+    return out;
+  }
+  const label = t => (t <= 10 ? "yaxşı" : t <= 20 ? "orta" : "aşağı");
+  function validity(cfg, thetaInc = 0) {
+    const t = cfg.type, inc = deg(Math.abs(thetaInc)), out = { incidence_deg: inc, incidence_label: label(inc) };
+    if (t === "flat" || t === "cpc") return { ...out, edge: null, paraxial: null, above_warn_limit: false, reliability: null, coarse: false };
+    const [ax, ay] = aperture(cfg), fa = cfg.focus_axis || "y";
+    let g;
+    if (t === "linear_fresnel") { g = lensGeometry(v(cfg, "f_mm"), fa === "x" ? ay : ax, fa === "x" ? ax : ay, true); g.axis = fa; }
+    else { g = lensGeometry(v(cfg, "f_mm"), ax, ay); if (cfg.shape === "circle") Object.assign(g, { axis: "d", corner_angle_deg: null, diagonal_mm: null }); }
+    const lab = label(g.edge_angle_deg), rank = { "yaxşı": 0, "orta": 1, "aşağı": 2 };
+    const worst = rank[lab] >= rank[out.incidence_label] ? lab : out.incidence_label;
+    const reliability = { "yaxşı": "yüksək", "orta": "orta", "aşağı": "aşağı" }[worst];
+    return { ...out, edge: g, paraxial: lab, above_warn_limit: g.edge_angle_deg > PARAXIAL_WARN_DEG, reliability, coarse: reliability === "aşağı" };
+  }
+
+  function instant(cfg, { dni = 1000, diff = 0, theta_x_deg = 0, theta_y_deg = 0, ta = 25, ws = 1 } = {}) {
+    const val = validate(cfg);
+    if (!val.ok) return { ok: false, ...val };
+    const tx = Math.tan(rad(theta_x_deg)), ty = Math.tan(rad(theta_y_deg)), cos = 1 / Math.sqrt(1 + tx * tx + ty * ty), eb = dni * cos;
+    const A = areas(cfg), o = optical(cfg, eb, diff, tx, ty, A), pk = peakBeamFactor(cfg, tx, ty), td = o.tau_diffuse;
+    const peak = pk == null ? null : eb * o.tau_beam * pk + diff * td * Math.min(A.aperture_m2, A.receiver_m2) / A.receiver_m2;
+    const [dc, tc] = pvDc(o.E_rec_mean_Wm2, A.receiver_m2, cfg, ta, ws, v(cfg, "k_hs"));
+    const th = Math.atan(Math.hypot(tx, ty)), ePlain = eb * iamGlass(th) + diff * iamGlassDiffuse();
+    const [dcA, tA] = pvDc(ePlain, A.aperture_m2, cfg, ta, ws), [dcB, tB] = pvDc(ePlain, A.receiver_m2, cfg, ta, ws);
+    const Pin = o.P_in_W, sh = k => (Pin > 0 ? o[k] / Pin : null);
+    return { ok: true, level: modelLevel(cfg), areas: A, ...o, theta_inc_deg: deg(th), E_beam_plane_Wm2: eb,
+      shares: { optical_loss_W: sh("optical_loss_W"), on_receiver_W: sh("on_receiver_W"), off_receiver_W: sh("off_receiver_W") },
+      E_rec_peak_Wm2: peak, t_cell_C: tc, t_cell_warning: tc > T_CELL_LIMIT_C, dc_W: dc, system_eff: Pin > 0 ? dc / Pin : null,
+      validity: validity(cfg, th),
+      compare_A: { label: "eyni işıqtoplama sahəsi", area_optic_m2: A.aperture_m2, area_plain_m2: A.aperture_m2, plain_dc_W: dcA, optic_dc_W: dc,
+                   delta_W: dc - dcA, ratio: dcA > 0 ? dc / dcA : null, plain_t_cell_C: tA, optic_W_per_m2: dc / A.aperture_m2, plain_W_per_m2: dcA / A.aperture_m2 },
+      compare_B: { label: "eyni fotoelement sahəsi", cell_area_m2: A.receiver_m2, collect_optic_m2: A.aperture_m2, collect_plain_m2: A.receiver_m2,
+                   plain_dc_W: dcB, optic_dc_W: dc, ratio: dcB > 0 ? dc / dcB : null, plain_t_cell_C: tB } };
+  }
+
+  function analytic(cfg, dni = 1000) {
+    const A = areas(cfg), one = A.aperture_one_m2 * dni * v(cfg, "eta_opt_eff") * v(cfg, "eta_cell") * v(cfg, "k_th") * v(cfg, "k_el");
+    return { per_unit_W: one, total_W: one * A.n, n: A.n, aperture_one_m2: A.aperture_one_m2, aperture_m2: A.aperture_m2, C_g: A.C_g };
+  }
+
+  const az = x => String(+x.toPrecision(6)).replace(".", ",").replace("-", "−");
+  function assumptions(cfg, mount) {
+    const out = [];
+    if (cfg.type === "cpc") out.push(`qəbul bucağı və əks olunma: ${cfg.params.accept_deg.status} / ${cfg.params.reflectivity.status}`);
+    else if (!(v(cfg, "angle_table") || []).length) out.push("ötürmənin bucaqdan asılılığı fərziyyədir (nominal τ0 + iki Fresnel səthi), ölçülmüş deyil");
+    out.push(cfg.type !== "cpc" ? "qəbul bucağı ölçülməyib: həndəsi ləkə modelindən gəlir" : "CPC ideal fərz olunur (kəsilmə yoxdur)");
+    out.push(`hüceyrə temperaturu: SAPM açıq dayaq modeli, istilik ötürən səth əmsalı k = ${az(v(cfg, "k_hs"))} (${cfg.params.k_hs.status})`);
+    out.push("qəbulediciyə düşən səpələnmiş işıq étendue həddi ilə yuxarıdan qiymətləndirilir");
+    if (mount === "2axis") out.push(`izləmə: yönəltmə xətası ${az(v(cfg, "track_err_deg"))}°, sərf ${az(v(cfg, "drive_W"))} W + ${az(v(cfg, "controller_W"))} W (${cfg.params.drive_W.status})`);
+    return out;
+  }
+
+  function annual(cfg, h, mount = cfg.mount || "fixed") {
+    const val = validate(cfg);
+    if (!val.ok) return { ok: false, ...val };
+    const A = areas(cfg), td = cfg.type === "cpc" ? tau(cfg, 0) : tauDiffuse(cfg), kHs = v(cfg, "k_hs"), step = h.step_h;
+    const err = Math.tan(rad(v(cfg, "track_err_deg"))), fa = cfg.focus_axis || "y";
+    const sum = { g: 0, a: 0, gA: 0, gB: 0, Pin: 0, loss: 0, on: 0, off: 0 };
+    let tmax = -273, hot = 0;
+    for (let i = 0; i < h.beam.length; i++) {
+      const sun = h.sun[i] > 0;
+      let eb, ed, tx, ty, ep, aux;
+      if (mount === "2axis") {
+        eb = h.t_dnicos[i]; ed = Math.max(0, h.t_glob[i] - h.t_dnicos[i]); tx = fa === "x" ? err : 0; ty = fa === "y" ? err : 0;
+        ep = h.t_beam[i] + h.t_diff[i]; aux = v(cfg, "drive_W") * (sun ? 1 : 0) + v(cfg, "controller_W");
+      } else { eb = h.beam[i]; ed = h.sky[i] + h.ground[i]; tx = h.tx[i]; ty = h.ty[i]; ep = h.f_beam[i] + h.f_diff[i]; aux = 0; }
+      if (!sun) { eb = 0; ed = 0; }
+      sum.a += aux;
+      const [dA] = pvDc(ep, A.aperture_m2, cfg, h.ta[i], h.ws[i]), [dB] = pvDc(ep, A.receiver_m2, cfg, h.ta[i], h.ws[i]);
+      sum.gA += dA; sum.gB += dB;
+      if (eb === 0 && ed === 0) { const [d, tc] = pvDc(0, A.receiver_m2, cfg, h.ta[i], h.ws[i], kHs); sum.g += d; if (sun && tc > tmax) tmax = tc; continue; }
+      const o = optical(cfg, eb, ed, tx, ty, A, td);
+      const [d, tc] = pvDc(o.E_rec_mean_Wm2, A.receiver_m2, cfg, h.ta[i], h.ws[i], kHs);
+      sum.g += d; sum.Pin += o.P_in_W; sum.loss += o.optical_loss_W; sum.on += o.on_receiver_W; sum.off += o.off_receiver_W;
+      if (sun) { if (tc > tmax) tmax = tc; if (tc > T_CELL_LIMIT_C) hot++; }
+    }
+    const k = x => x * step / 1000, pct = (a, b) => (b > 0 ? 100 * (a / b - 1) : null), rat = (a, b) => (b > 0 ? a / b : null);
+    const res = { gross_kWh: k(sum.g), aux_kWh: k(sum.a), net_kWh: k(sum.g) - k(sum.a) };
+    const resA = { gross_kWh: k(sum.gA), aux_kWh: k(sum.a), net_kWh: k(sum.gA) - k(sum.a) };
+    const resB = { gross_kWh: k(sum.gB), aux_kWh: k(sum.a), net_kWh: k(sum.gB) - k(sum.a) };
+    return { ok: true, mount, level: modelLevel(cfg), areas: A, optic: res,
+      optics_kWh: { P_in_W: k(sum.Pin), optical_loss_W: k(sum.loss), on_receiver_W: k(sum.on), off_receiver_W: k(sum.off) },
+      max_t_cell_C: tmax, hours_above_limit: hot, t_limit_C: T_CELL_LIMIT_C,
+      compare_A: { plain: resA, area_m2: A.aperture_m2, delta_gross_pct: pct(res.gross_kWh, resA.gross_kWh), delta_pct: pct(res.net_kWh, resA.net_kWh) },
+      compare_B: { plain: resB, cell_area_m2: A.receiver_m2, collect_optic_m2: A.aperture_m2, collect_plain_m2: A.receiver_m2,
+                   ratio_gross: rat(res.gross_kWh, resB.gross_kWh), ratio: rat(res.net_kWh, resB.net_kWh) },
+      assumptions: assumptions(cfg, mount) };
+  }
+
+  return { SUN_HALF_DEG, MAX_LENSES, T_CELL_LIMIT_C, STATUSES, IST, OLC, FRZ, TYPES, LEVEL_BASIC, LEVEL_TABLE, CATALOG, preset, v, validate, layout,
+           aperture, areas, tau, tauDiffuse, modelLevel, spot, capture, peakBeamFactor, lensCentres, optical, instant, analytic, validity, annual, assumptions };
+})();
+if (typeof module !== "undefined") module.exports = UOptics;
+
+</script>
+<script>
+(() => {
+  // Universal optics page: choose optic → parameters → receiver and mounting → compare with the bare PV baseline.
+  const U = UOptics, $ = id => document.getElementById(id), nf = (x, d = 0) => DataStore.fmt(x, d);
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const COARSE = '<span class="coarse">kobud yaxınlaşdırma</span>';
+  const STORE_CUR = "solarsim-uopt", STORE_LIB = "solarsim-uopt-lib";
+  const fmtW = w => (w == null ? "—" : Math.abs(w) >= 1000 ? `${nf(w / 1000, 2)} kW` : `${nf(w, Math.abs(w) < 10 ? 2 : 1)} W`);
+  const fmtE = e => (e == null ? "—" : `${nf(e, e < 100 ? 1 : 0)} W/m² <span class="hint">(${nf(e / 1000, e < 10000 ? 2 : 0)} × 1 000 W/m²)</span>`);
+  const fmtA = a => `${nf(a, a < 0.1 ? 4 : 3)} m²`;
+  const pctS = x => (x == null ? "—" : `${x >= 0 ? "+" : "−"}${nf(Math.abs(x), 1)}%`);
+  const sty = x => (x == null ? "" : x >= 0 ? "good" : "bad");
+  const parseNum = s => { if (s == null) return null; const t = String(s).trim().replace(/\s/g, "").replace(",", ".").replace("−", "-"); if (t === "") return null; const x = Number(t); return isFinite(x) ? x : NaN; };
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  // ---------- state ----------
+  let key = "lfs150150", cfg = U.preset(key), D = null;
+  let cond = { dni: 1000, diff: 0, theta_x_deg: 0, theta_y_deg: 0, ta: 25, ws: 1 };
+  const load = (k, d) => { try { return JSON.parse(localStorage.getItem(k) || "null") ?? d; } catch (e) { return d; } };
+  const save = (k, x) => { try { localStorage.setItem(k, JSON.stringify(x)); } catch (e) {} };
+  let lib = load(STORE_LIB, {});
+  const cur = load(STORE_CUR, null);
+  if (cur && cur.cfg && cur.cfg.params) { key = cur.key; cfg = cur.cfg; cond = { ...cond, ...(cur.cond || {}) }; }
+  const persist = () => save(STORE_CUR, { key, cfg, cond });
+
+  function blank() {   // custom optic: nothing filled in except cell / tracking defaults
+    const c = U.preset("convex");
+    for (const k of Object.keys(c.params)) if (!["eta_cell", "gamma_per_K", "k_el", "k_hs", "k_th", "track_err_deg", "drive_W", "controller_W"].includes(k))
+      c.params[k] = { value: null, status: U.FRZ, note: "" };
+    for (const k of ["accept_deg", "reflectivity", "n_reflections"]) c.params[k] = { value: null, status: U.FRZ, note: "" };
+    c.params.angle_table = { value: null, status: U.OLC, note: "" };
+    c.params.eta_opt_eff = { value: null, status: U.FRZ, note: "" };
+    return Object.assign(c, { name: "Öz linzam", source: null, source_note: "Kataloqdan kənar linza: parametrləri özünüz daxil edin. Boş sahələr hesabı dayandırır." });
+  }
+  function ensureParams(c) {   // make sure every field the form may show exists
+    for (const k of ["ap_x_mm", "ap_y_mm", "f_mm", "thickness_mm", "n_mat", "tau0", "angle_table", "rec_x_mm", "rec_y_mm", "h_mm", "nx", "ny", "pitch_x_mm", "pitch_y_mm",
+                     "accept_deg", "reflectivity", "n_reflections", "eta_opt_eff", "eta_cell", "gamma_per_K", "k_el", "k_hs", "k_th", "track_err_deg", "drive_W", "controller_W"])
+      if (!c.params[k]) c.params[k] = { value: null, status: U.FRZ, note: "" };
+    return c;
+  }
+  ensureParams(cfg);
+
+  // ---------- form specs ----------
+  const t = () => cfg.type, circle = () => cfg.shape === "circle" && t() !== "cpc" && t() !== "linear_fresnel";
+  const axisName = a => (a === "x" ? "x (panelin eni, üfüqi)" : "y (maililik istiqaməti)");
+  const OPT = [
+    { k: "ap_x_mm", u: "mm", show: () => t() !== "cpc",
+      l: () => (circle() ? "Apertura diametri" : t() === "linear_fresnel" ? (cfg.focus_axis === "x" ? "Apertura eni x (fokuslanan ox)" : "Apertura uzunluğu x (xətt boyunca)") : "Apertura, x ölçüsü") },
+    { k: "ap_y_mm", u: "mm", show: () => t() !== "cpc" && !circle(),
+      l: () => (t() === "linear_fresnel" ? (cfg.focus_axis === "y" ? "Apertura eni y (fokuslanan ox)" : "Apertura uzunluğu y (xətt boyunca)") : "Apertura, y ölçüsü") },
+    { k: "f_mm", u: "mm", show: () => !["flat", "cpc"].includes(t()), l: () => (t() === "negative" ? "Fokus məsafəsi f (mənfi, xəyali fokus)" : "Fokus məsafəsi f") },
+    { k: "D", u: "D", show: () => !["flat", "cpc"].includes(t()), l: () => "Dioptriya D = 1000 / f", derived: true },
+    { k: "tau0", u: "0–1", show: () => t() !== "cpc", l: () => "Nominal ötürmə τ0 (normal düşmə)" },
+    { k: "accept_deg", u: "°", show: () => t() === "cpc", l: () => "Qəbul yarım-bucağı θa" },
+    { k: "reflectivity", u: "0–1", show: () => t() === "cpc", l: () => "Güzgü əks etdirməsi ρ" },
+  ];
+  const OPT_ADV = [
+    { k: "n_mat", u: "", show: () => t() !== "cpc", l: () => "Materialın sındırma əmsalı n (bucaq asılılığı üçün)" },
+    { k: "thickness_mm", u: "mm", show: () => t() !== "cpc", l: () => "Qalınlıq (məlumat üçün; ilkin hesabda istifadə olunmur)" },
+    { k: "n_reflections", u: "", show: () => t() === "cpc", l: () => "Orta əks olunma sayı" },
+  ];
+  const RX = [
+    { k: "rec_x_mm", u: "mm", l: () => "Qəbuledicinin aktiv ölçüsü x" }, { k: "rec_y_mm", u: "mm", l: () => "Qəbuledicinin aktiv ölçüsü y" },
+    { k: "h_mm", u: "mm", show: () => t() !== "cpc", l: () => "Linza–qəbuledici məsafəsi h" },
+    { k: "nx", u: "ədəd", l: () => "Linza sayı x üzrə" }, { k: "ny", u: "ədəd", l: () => "Linza sayı y üzrə" },
+    { k: "pitch_x_mm", u: "mm", l: () => "Massiv addımı x" }, { k: "pitch_y_mm", u: "mm", l: () => "Massiv addımı y" },
+  ];
+  const CELL = [
+    { k: "eta_cell", u: "0–1", l: () => "Hüceyrə səmərəliliyi (STC)" }, { k: "gamma_per_K", u: "1/K", l: () => "Temperatur əmsalı γ" },
+    { k: "k_el", u: "0–1", l: () => "Elektrik əmsalı" }, { k: "k_hs", u: "×", l: () => "İstilik ötürən səth / qəbuledici sahəsi" },
+    { k: "track_err_deg", u: "°", l: () => "İzləmə xətası (2 oxlu)" }, { k: "drive_W", u: "W", l: () => "İzləmə mühərriki (gündüz)" },
+    { k: "controller_W", u: "W", l: () => "İdarəetmə (24 saat)" },
+    { k: "eta_opt_eff", u: "0–1", l: () => "Analitik baza: effektiv optik pay" }, { k: "k_th", u: "0–1", l: () => "Analitik baza: istilik əmsalı" },
+  ];
+  const COND = [
+    { k: "dni", u: "W/m²", l: "Birbaşa şüalanma DNI" }, { k: "diff", u: "W/m²", l: "Səpələnmiş işıq aperture müstəvisində" },
+    { k: "theta_x_deg", u: "°", l: "Düşmə bucağı x üzrə (proyeksiya)" }, { k: "theta_y_deg", u: "°", l: "Düşmə bucağı y üzrə (proyeksiya)" },
+    { k: "ta", u: "°C", l: "Hava temperaturu" }, { k: "ws", u: "m/s", l: "Külək" },
+  ];
+
+  const stSel = (k, s) => `<select class="st" data-st="${k}" data-s="${esc(s)}" aria-label="Status">${U.STATUSES.map(x => `<option${x === s ? " selected" : ""}>${x}</option>`).join("")}</select>`;
+  const showNum = x => (x == null ? "" : String(x).replace(".", ","));
+  function row(f) {
+    if (f.show && !f.show()) return "";
+    if (f.derived) {
+      const fm = U.v(cfg, "f_mm");
+      return `<div class="prow"><label for="uo-p-D">${f.l()} <span class="hint">${f.u}</span></label><input id="uo-p-D" inputmode="decimal" value="${fm ? showNum(+(1000 / fm).toPrecision(6)) : ""}"><span></span><span class="note">f ilə bağlıdır: birini dəyişin</span></div>`;
+    }
+    const p = cfg.params[f.k];
+    return `<div class="prow" data-row="${f.k}"><label for="uo-p-${f.k}">${f.l()} <span class="hint">${f.u}</span></label><input id="uo-p-${f.k}" data-k="${f.k}" inputmode="decimal" value="${showNum(p.value)}">${stSel(f.k, p.status)}<span class="note">${esc(p.note || "")}</span></div>`;
+  }
+  const sel = (id, label, opts, val) => `<div class="prow"><label for="${id}">${label}</label><select id="${id}">${opts.map(([v, l]) => `<option value="${v}"${v === val ? " selected" : ""}>${l}</option>`).join("")}</select></div>`;
+
+  function renderCatalog() {
+    const items = Object.entries(U.CATALOG).map(([k, c]) => [k, c.name]).concat([["custom", "Öz linzam (boş forma)"]]);
+    $("uo-cat").innerHTML = items.map(([k, n]) => `<button class="chip" type="button" data-k="${k}" aria-pressed="${k === key}">${esc(n)}</button>`).join("");
+    const names = Object.keys(lib);
+    $("uo-saved-row").hidden = !names.length;
+    $("uo-saved").innerHTML = `<option value="">— seçin —</option>` + names.map(n => `<option${key === "lib:" + n ? " selected" : ""}>${esc(n)}</option>`).join("");
+    const src = cfg.source ? ` Mənbə: <a href="${esc(cfg.source)}" target="_blank" rel="noopener">istehsalçının kataloqu</a>.` : "";
+    $("uo-src").innerHTML = `<b>${esc(cfg.name || "")}</b>: ${esc(U.TYPES[cfg.type] || "tip seçilməyib")}. ${esc(cfg.source_note || "")}${src}`;
+  }
+  function renderForm() {
+    const kinds = [sel("uo-type", "Optika tipi", Object.entries(U.TYPES), cfg.type)];
+    if (!["linear_fresnel", "cpc"].includes(cfg.type)) kinds.push(sel("uo-shape", "Apertura forması", [["rect", "düzbucaqlı"], ["circle", "dairəvi"]], cfg.shape));
+    if (["linear_fresnel", "cpc"].includes(cfg.type)) kinds.push(sel("uo-axis", "Fokuslanan ox", [["y", axisName("y")], ["x", axisName("x")]], cfg.focus_axis || "y"));
+    $("uo-kind").innerHTML = kinds.join("");
+    $("uo-opt").innerHTML = OPT.map(row).join("");
+    $("uo-optadv").innerHTML = OPT_ADV.map(row).join("");
+    $("uo-tab-row").hidden = cfg.type === "cpc";
+    const tab = U.v(cfg, "angle_table");
+    $("uo-tab").value = tab ? tab.map(r => `${showNum(r[0])}; ${showNum(r[1])}`).join("\n") : "";
+    $("uo-tab-st").outerHTML = stSel("angle_table", cfg.params.angle_table.status).replace('class="st"', 'class="st" id="uo-tab-st"');
+    $("uo-rx").innerHTML = RX.map(row).join("");
+    $("uo-cell").innerHTML = CELL.map(row).join("");
+    $("uo-cond").innerHTML = COND.map(f => `<div class="prow"><label for="uo-c-${f.k}">${f.l} <span class="hint">${f.u}</span></label><input id="uo-c-${f.k}" data-c="${f.k}" inputmode="decimal" value="${showNum(cond[f.k])}"></div>`).join("");
+    document.querySelectorAll("#uo-layout .chip").forEach(b => { b.setAttribute("aria-pressed", String(b.dataset.v === U.layout(cfg))); b.disabled = cfg.type === "cpc" && b.dataset.v === "shared"; });
+    document.querySelectorAll("#uo-mount .chip").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === (cfg.mount || "fixed"))));
+  }
+
+  // ---------- events ----------
+  function choose(k) {
+    if (k === "custom") { key = "custom"; cfg = blank(); }
+    else if (k.startsWith("lib:")) { key = k; cfg = ensureParams(JSON.parse(JSON.stringify(lib[k.slice(4)]))); }
+    else { key = k; cfg = ensureParams(U.preset(k)); }
+    renderCatalog(); renderForm(); compute();
+  }
+  $("uo-cat").addEventListener("click", e => { const b = e.target.closest("[data-k]"); if (b) choose(b.dataset.k); });
+  $("uo-saved").addEventListener("change", e => { if (e.target.value) choose("lib:" + e.target.value); });
+  $("uo-del").addEventListener("click", () => { const n = $("uo-saved").value; if (!n) return; delete lib[n]; save(STORE_LIB, lib); renderCatalog(); });
+  $("uo-save").addEventListener("click", () => {
+    const n = $("uo-name").value.trim();
+    if (!n) { $("uo-save-msg").textContent = "Əvvəlcə ad yazın."; return; }
+    lib[n] = { ...JSON.parse(JSON.stringify(cfg)), name: n, source: null, source_note: "İstifadəçinin yadda saxladığı linza (bu brauzerdə)." };
+    save(STORE_LIB, lib); key = "lib:" + n; cfg = ensureParams(JSON.parse(JSON.stringify(lib[n])));
+    $("uo-save-msg").textContent = `“${n}” bu brauzerdə yadda saxlandı.`; renderCatalog(); persist();
+  });
+  const root = $("uo");
+  root.addEventListener("change", e => {
+    const el = e.target;
+    if (el.id === "uo-type") {
+      cfg.type = el.value;
+      if (el.value === "linear_fresnel" || el.value === "cpc") cfg.shape = "rect";
+      if (el.value === "flat") cfg.params.f_mm.value = null;
+      renderForm(); renderCatalog(); compute(); return;
+    }
+    if (el.id === "uo-shape") { cfg.shape = el.value; if (el.value === "circle") cfg.params.ap_y_mm.value = U.v(cfg, "ap_x_mm"); renderForm(); compute(); return; }
+    if (el.id === "uo-axis") { cfg.focus_axis = el.value; renderForm(); compute(); return; }
+    if (el.dataset.st) { cfg.params[el.dataset.st].status = el.value; el.dataset.s = el.value; compute(); }
+  });
+  root.addEventListener("input", e => {
+    const el = e.target;
+    if (el.id === "uo-tab") { readTable(); compute(); return; }
+    if (el.id === "uo-p-D") {
+      const d = parseNum(el.value), fIn = $("uo-p-f_mm");
+      if (d != null && !isNaN(d) && d !== 0) { setParam("f_mm", +(1000 / d).toPrecision(8)); if (fIn) fIn.value = showNum(U.v(cfg, "f_mm")); }
+      compute(); return;
+    }
+    if (el.dataset.k) {
+      const x = parseNum(el.value);
+      el.closest(".prow").classList.toggle("bad", Number.isNaN(x));
+      setParam(el.dataset.k, Number.isNaN(x) ? null : x);
+      if (el.dataset.k === "f_mm") { const dIn = $("uo-p-D"); if (dIn) dIn.value = x ? showNum(+(1000 / x).toPrecision(6)) : ""; }
+      if (el.dataset.k === "ap_x_mm" && circle()) cfg.params.ap_y_mm.value = x;
+      compute(); return;
+    }
+    if (el.dataset.c) { const x = parseNum(el.value); if (x != null && !isNaN(x)) { cond[el.dataset.c] = x; compute(true); } }
+  });
+  function setParam(k, x) {
+    const p = cfg.params[k];
+    if (p.value !== x && p.status === U.IST) {   // a changed manufacturer value is no longer the manufacturer's
+      p.status = U.FRZ; p.note = (p.note ? p.note + "; " : "") + "dəyişdirilib, artıq istehsalçı məlumatı deyil";
+      const s = document.querySelector(`[data-st="${k}"]`); if (s) { s.value = U.FRZ; s.dataset.s = U.FRZ; }
+      const n = document.querySelector(`[data-row="${k}"] .note`); if (n) n.textContent = p.note;
+    }
+    p.value = x;
+  }
+  function readTable() {
+    const lines = $("uo-tab").value.split(/\n/).map(s => s.trim()).filter(Boolean), rows = [];
+    let bad = 0;
+    for (const ln of lines) {
+      const m = ln.split(/[;\t]|\s{1,}/).filter(Boolean);
+      const a = parseNum(m[0]), b = parseNum(m[1]);
+      if (m.length < 2 || a == null || b == null || isNaN(a) || isNaN(b) || b < 0 || b > 1 || a < 0 || a > 90) bad++; else rows.push([a, b]);
+    }
+    cfg.params.angle_table.value = rows.length ? rows : null;
+    $("uo-tab-msg").textContent = !lines.length ? "" : bad ? `${bad} sətir oxunmadı (bucaq 0–90°, ötürmə 0–1).` : `${rows.length} nöqtə oxundu.`;
+  }
+  $("uo-layout").addEventListener("click", e => { const b = e.target.closest("[data-v]"); if (!b || b.disabled) return; cfg.layout = b.dataset.v; renderForm(); compute(); });
+  $("uo-mount").addEventListener("click", e => { const b = e.target.closest("[data-v]"); if (!b) return; cfg.mount = b.dataset.v; renderForm(); compute(); });
+
+  // ---------- results ----------
+  function validityHTML(r) {
+    const vv = r.validity, lvl = `<span class="lvl">${esc(r.level)}</span>`;
+    const levelTxt = r.level === U.LEVEL_BASIC ? " Konkret səth profili və ölçülmüş bucaq–ötürmə məlumatı daxil edilməyib." : " Ötürmə bucağa görə ölçülmüş cədvəldən götürülür; səth profili istifadə olunmur.";
+    const inc = `Düşmə bucağı ${nf(vv.incidence_deg, 1)}°: paraksial yaxınlaşma üçün ${vv.incidence_label}.`;
+    if (cfg.type === "flat") return { cls: "hi", html: `<b>Hesab səviyyəsi</b>${lvl}.${levelTxt} Düz örtüyün fokusu yoxdur, paraksial yaxınlaşmaya ehtiyac yoxdur. ${inc}` };
+    if (cfg.type === "cpc") return { cls: "mid", html: `<b>Hesab səviyyəsi</b>${lvl}. CPC ayrıca reflektor modelidir: ideal 2D CPC, qəbul yarım-bucağı ${nf(U.v(cfg, "accept_deg"), 1)}°, qəbul bucağından kənar birbaşa işıq qəbulediciyə çatmır. Kəsilmiş (qısaldılmış) profil və axın paylanması modelləşdirilmir.` };
+    const g = vv.edge, ax = g.axis === "d" ? "diametr üzrə" : `${axisName(g.axis)} üzrə`;
+    const corner = g.corner_angle_deg == null ? "" : ` Künc şüasının optik oxla bucağı (diaqonal ${nf(g.diagonal_mm, 0)} mm, ayrıca hesab): ${nf(g.corner_angle_deg, 1)}°.`;
+    const warn = vv.above_warn_limit ? ` Kənar şüa bucağı ${nf(30, 0)}°-dən böyükdür: bu, simulyatorun paraksial model üçün xəbərdarlıq həddidir, istehsal hökmü deyil.` : "";
+    return { cls: vv.reliability === "yüksək" ? "hi" : vv.reliability === "orta" ? "mid" : "lo",
+      html: `<b>Paraksial model etibarlılığı: ${vv.reliability}.</b>${vv.coarse ? COARSE : ""} Hesab səviyyəsi${lvl}.${levelTxt} ` +
+            `Hesab oxu: ${ax}, a = ${nf(g.aperture_mm, 1)} mm. f-ədədi N = |f| / a = f/${nf(g.f_number, g.f_number < 10 ? 2 : 1)}. Kənar şüanın optik oxla bucağı atan((a/2) / |f|) = ${nf(g.edge_angle_deg, 1)}°.${corner} ${inc}${warn} İstehsal imkanı yalnız bu bucaq həddi ilə qiymətləndirilmir.` };
+  }
+
+  function instantTable(r) {
+    const s = r.shares, tag = r.validity.coarse ? COARSE : "";
+    const rowS = (l, w, sh, note = "") => `<tr><td class="txt">${l}</td><td>${fmtW(w)}</td><td>${sh == null ? "" : nf(sh * 100, 1) + "%"}</td><td class="txt">${note}</td></tr>`;
+    const tb = U.v(cfg, "angle_table") ? "ölçülmüş cədvəldən" : cfg.type === "cpc" ? "ρ^n" : "τ0 × Fresnel bucaq asılılığı (fərziyyə)";
+    return `<thead><tr><th class="txt">Ani hesab, bütün massiv</th><th>güc</th><th>pay</th><th class="txt">qeyd</th></tr></thead><tbody>
+      ${rowS("Daxil olan işıq gücü (aperturaya)", r.P_in_W, 1, `birbaşa ${fmtW(r.P_beam_in_W)}, apertura ${fmtA(r.areas.aperture_m2)}`)}
+      ${rowS("Optik ötürmə itkisi", r.optical_loss_W, s.optical_loss_W, `birbaşa işıq üçün ötürmə ${nf(r.tau_beam * 100, 1)}% (${tb})`)}
+      ${rowS("Qəbulediciyə düşən", r.on_receiver_W, s.on_receiver_W, `ötürülən birbaşa işığın ${nf(r.capture_beam * 100, 1)}%-i qəbulediciyə düşür`)}
+      ${rowS("Qəbuledicidən kənara çıxan", r.off_receiver_W, s.off_receiver_W, "ötürülüb, amma qəbulediciyə düşməyib")}
+      <tr><td class="txt">Qəbuledicidə orta şüalanma</td><td colspan="2">${fmtE(r.E_rec_mean_Wm2)}</td><td class="txt">qəbulediciyə düşən güc / aktiv sahə ${fmtA(r.areas.receiver_m2)}</td></tr>
+      <tr><td class="txt">Pik lokal şüalanma</td><td colspan="2">${r.E_rec_peak_Wm2 == null ? "—" : fmtE(r.E_rec_peak_Wm2)}</td><td class="txt">${r.E_rec_peak_Wm2 == null ? "bu model üçün axın paylanması hesablanmır" : "bərabər ləkə modeli, mərkəzi qəbuledici"}</td></tr>
+      <tr><td class="txt">Həndəsi konsentrasiya C = A<sub>apertura</sub> / A<sub>qəbuledici</sub></td><td colspan="2">${nf(r.areas.C_g, 2)}</td><td class="txt">${fmtA(r.areas.aperture_m2)} / ${fmtA(r.areas.receiver_m2)}; güc aperturadan bir dəfə hesablanır, C-yə yenidən vurulmur</td></tr>
+      <tr><td class="txt">Hüceyrə temperaturu</td><td colspan="2">${nf(r.t_cell_C, 1)} °C</td><td class="txt">${r.t_cell_warning ? `<b style="color:var(--bad)">${nf(U.T_CELL_LIMIT_C, 0)} °C-dən yuxarı: soyutma lazımdır</b>` : "SAPM modeli, istilik ötürən səth əmsalı " + nf(U.v(cfg, "k_hs"), 1)}</td></tr>
+      <tr><td class="txt"><b>DC güc</b></td><td colspan="2"><b>${fmtW(r.dc_W)}</b>${tag}</td><td class="txt">qəbulediciyə düşən × η × (1 + γ·(T − 25)) × elektrik əmsalı</td></tr>
+      <tr><td class="txt">Sistem səmərəliliyi</td><td colspan="2">${r.system_eff == null ? "—" : nf(r.system_eff * 100, 2) + "%"}</td><td class="txt">DC güc / daxil olan işıq gücü</td></tr></tbody>`;
+  }
+
+  function compareTable(r) {
+    const A = r.compare_A, B = r.compare_B, a = r.areas, tag = r.validity.coarse ? COARSE : "";
+    const ratioA = A.ratio == null ? "—" : pctS((A.ratio - 1) * 100), ratioB = B.ratio == null ? "—" : `${nf(B.ratio, 2)} ×`;
+    return `<thead><tr><th class="txt">Müqayisə (ani)</th><th>Optika ilə</th><th>A — linzasız, eyni işıqtoplama sahəsi</th><th>B — linzasız, eyni fotoelement sahəsi</th></tr></thead><tbody>
+      <tr><td class="txt">İşıqtoplama sahəsi</td><td>${fmtA(a.aperture_m2)}</td><td>${fmtA(A.area_plain_m2)}</td><td>${fmtA(B.collect_plain_m2)}</td></tr>
+      <tr><td class="txt">Fotoelement (aktiv) sahəsi</td><td>${fmtA(a.receiver_m2)}</td><td>${fmtA(A.area_plain_m2)}</td><td>${fmtA(B.cell_area_m2)}</td></tr>
+      <tr><td class="txt">DC güc</td><td>${fmtW(r.dc_W)}${tag}</td><td>${fmtW(A.plain_dc_W)}</td><td>${fmtW(B.plain_dc_W)}</td></tr>
+      <tr><td class="txt">İşıqtoplama sahəsinə görə güc</td><td>${nf(A.optic_W_per_m2, 1)} W/m²</td><td>${nf(A.plain_W_per_m2, 1)} W/m²</td><td>${nf(B.plain_dc_W / B.collect_plain_m2, 1)} W/m²</td></tr>
+      <tr><td class="txt">Hüceyrə temperaturu</td><td>${nf(r.t_cell_C, 1)} °C</td><td>${nf(A.plain_t_cell_C, 1)} °C</td><td>${nf(B.plain_t_cell_C, 1)} °C</td></tr>
+      <tr><td class="txt"><b>Optika ilə nəticə</b></td><td>—</td><td class="${sty(A.ratio == null ? null : A.ratio - 1)}">${ratioA}</td><td>${ratioB}</td></tr></tbody>`;
+  }
+
+  function annualTable(y) {
+    const tag = coarseNow ? COARSE : "", A = y.compare_A, B = y.compare_B, a = y.areas;
+    const r3 = (l, o, pa, pb) => `<tr><td class="txt">${l}</td><td>${o}</td><td>${pa}</td><td>${pb}</td></tr>`;
+    const kw = x => `${nf(x, Math.abs(x) < 10 ? 2 : 1)} kWh`;
+    return `<thead><tr><th class="txt">İl ərzində</th><th>Optika ilə</th><th>A — linzasız, eyni işıqtoplama sahəsi</th><th>B — linzasız, eyni fotoelement sahəsi</th></tr></thead><tbody>
+      ${r3("İşıqtoplama sahəsi", fmtA(a.aperture_m2), fmtA(A.area_m2), fmtA(B.collect_plain_m2))}
+      ${r3("Fotoelement (aktiv) sahəsi", fmtA(a.receiver_m2), fmtA(A.area_m2), fmtA(B.cell_area_m2))}
+      ${r3("Brüt DC enerji", kw(y.optic.gross_kWh) + tag, kw(A.plain.gross_kWh), kw(B.plain.gross_kWh))}
+      ${r3("İzləmə + idarəetmə sərfi", kw(y.optic.aux_kWh), kw(A.plain.aux_kWh), kw(B.plain.aux_kWh))}
+      ${r3("<b>Xalis DC enerji</b>", `<b>${kw(y.optic.net_kWh)}</b>${tag}`, kw(A.plain.net_kWh), kw(B.plain.net_kWh))}
+      <tr><td class="txt"><b>Optika ilə nəticə</b></td><td>—</td><td class="${sty(A.delta_pct)}">xalis ${pctS(A.delta_pct)} (brüt ${pctS(A.delta_gross_pct)})</td><td>xalis ${B.ratio == null ? "—" : nf(B.ratio, 2) + " ×"} (brüt ${B.ratio_gross == null ? "—" : nf(B.ratio_gross, 2) + " ×"})</td></tr>
+      <tr><td class="txt">Optik balans, il</td><td colspan="3" class="txt">daxil olan ${kw(y.optics_kWh.P_in_W)}, ötürmə itkisi ${kw(y.optics_kWh.optical_loss_W)}, qəbulediciyə ${kw(y.optics_kWh.on_receiver_W)}, kənara ${kw(y.optics_kWh.off_receiver_W)}</td></tr>
+      <tr><td class="txt">Ən yüksək hüceyrə temperaturu</td><td colspan="3" class="txt">${nf(y.max_t_cell_C, 0)} °C${y.hours_above_limit ? `; <b style="color:var(--bad)">${y.hours_above_limit} saat ${nf(y.t_limit_C, 0)} °C-dən yuxarı — soyutma lazımdır</b>` : ""}</td></tr></tbody>`;
+  }
+
+  let annTimer = null, coarseNow = false;
+  function compute(onlyInstant = false) {
+    persist();
+    const val = U.validate(cfg), msg = $("uo-msg");
+    const names = k => ({ ap_x_mm: "apertura x / diametr", ap_y_mm: "apertura y", f_mm: "fokus məsafəsi", tau0: "ötürmə τ0", n_mat: "sındırma əmsalı n (genişləndirilmiş bölmə)",
+      accept_deg: "qəbul bucağı", reflectivity: "əks etdirmə", n_reflections: "əks olunma sayı", rec_x_mm: "qəbuledici x", rec_y_mm: "qəbuledici y", h_mm: "məsafə h",
+      nx: "linza sayı x", ny: "linza sayı y", pitch_x_mm: "addım x", pitch_y_mm: "addım y", eta_cell: "hüceyrə səmərəliliyi", gamma_per_K: "temperatur əmsalı",
+      k_el: "elektrik əmsalı", k_hs: "istilik ötürən səth əmsalı", type: "optika tipi" }[k] || k);
+    if (!val.ok) {
+      msg.className = "validity lo";
+      msg.innerHTML = `<b>Hesab aparılmadı: giriş natamamdır.</b> ${val.missing.length ? "Çatışmayan: " + val.missing.map(names).join(", ") + "." : ""} ${val.errors.join(". ")}`;
+      for (const id of ["uo-itab", "uo-cmp", "uo-ann", "uo-ass"]) $(id).innerHTML = "";
+      $("uo-an").innerHTML = ""; $("uo-cmp-note").textContent = ""; $("uo-ann-note").textContent = "";
+      drawGeo(null); return;
+    }
+    const r = U.instant(cfg, cond);
+    coarseNow = r.validity.coarse;
+    const vh = validityHTML(r); msg.className = "validity " + vh.cls; msg.innerHTML = vh.html;
+    $("uo-itab").innerHTML = instantTable(r);
+    $("uo-cmp").innerHTML = compareTable(r);
+    const A = r.compare_A, B = r.compare_B;
+    $("uo-cmp-note").innerHTML = `A: eyni ${fmtA(A.area_optic_m2)} işıqtoplama sahəsi, eyni məkan və montaj. Optika ilə ${fmtW(r.dc_W)}, linzasız ${fmtW(A.plain_dc_W)}: fərq ${fmtW(A.delta_W)}. ` +
+      `B: eyni ${fmtA(B.cell_area_m2)} fotoelement. Optika ${fmtA(B.collect_optic_m2)}, linzasız fotoelement isə yalnız öz ${fmtA(B.collect_plain_m2)} sahəsindən işıq toplayır: optika eyni fotoelementdən ${B.ratio == null ? "—" : nf(B.ratio, 2) + " dəfə"} güc verir.`;
+    const an = U.analytic(cfg), det = U.instant(cfg, { dni: 1000, diff: 0, theta_x_deg: 0, theta_y_deg: 0, ta: 25, ws: 1 });
+    $("uo-an").innerHTML = U.v(cfg, "eta_opt_eff") == null || U.v(cfg, "k_th") == null ? "<span class='hint'>Analitik baza üçün effektiv optik pay və istilik əmsalı daxil edilməyib.</span>" :
+      `<b>Analitik baza (sadə hesab).</b> Normal düşmə, DNI 1 000 W/m²: ${an.n} × ${fmtA(an.aperture_one_m2)} × 1 000 W/m² × ${nf(U.v(cfg, "eta_opt_eff"), 2)} (effektiv optik pay) × ${nf(U.v(cfg, "eta_cell"), 2)} × ${nf(U.v(cfg, "k_th"), 2)} × ${nf(U.v(cfg, "k_el"), 2)} = <b>${nf(an.per_unit_W, 2)} W/modul</b>, <b>${nf(an.total_W, 2)} W</b> cəmi (${an.n} modul).
+       <span>Həndəsi model eyni şəraitdə (25 °C hava, 1 m/s külək): ${fmtW(det.dc_W)}. Bu modeldə ötürmə ${nf(det.tau_beam * 100, 1)}% yalnız materialın ötürməsidir; qəbuledicidən yayınan ${nf(det.shares.off_receiver_W * 100, 2)}% işıq ayrıca hesablanır, istilik isə sabit əmsal əvəzinə temperatur modelindən gəlir.</span>`;
+    drawGeo(r);
+    if (!onlyInstant) scheduleAnnual();
+  }
+
+  function scheduleAnnual() {
+    clearTimeout(annTimer);
+    if (!D) { $("uo-ann-note").textContent = "Məlumat dəsti yüklənir…"; $("uo-ann").innerHTML = ""; return; }
+    $("uo-ann-note").textContent = "hesablanır…";
+    annTimer = setTimeout(() => {
+      const m = cfg.mount || "fixed", y = U.annual(cfg, D.hourly, m);
+      if (!y.ok) return;
+      $("uo-ann").innerHTML = annualTable(y);
+      $("uo-ann-note").innerHTML = `${esc(DataStore.label(D))}. Montaj: ${m === "2axis" ? "2 oxlu izləmə (izləyicinin sərfi çıxılır)" : `sabit, maililik ${nf(D.inputs.tilt, 0)}°, azimut ${nf(D.inputs.azimuth, 0)}° (məlumat dəstinin parametrləri)`}. Saatlıq düşmə bucağı, birbaşa və səpələnmiş işıq, hava temperaturu və külək nəzərə alınır. Hesab səviyyəsi: ${esc(y.level)}.`;
+      $("uo-ass").innerHTML = `<li><b>Bu illik nəticədə fərziyyələr:</b></li>` + y.assumptions.map(a => `<li>${esc(a)}</li>`).join("");
+    }, 150);
+  }
+
+  // ---------- geometry drawing ----------
+  function drawGeo(r) {
+    const cv = $("uo-geo"), g = cv.getContext("2d"), W = cv.width, H = cv.height;
+    g.clearRect(0, 0, W, H); g.fillStyle = css("--bench"); g.fillRect(0, 0, W, H);
+    if (!r) { g.fillStyle = css("--bench-ink"); g.font = "16px sans-serif"; g.fillText("Hesab üçün parametrləri tamamlayın.", 20, 40); $("uo-geo-note").textContent = ""; return; }
+    const ink = css("--bench-ink"), cGlass = css("--c-glass"), cRec = css("--c-gap"), cSpot = css("--c-own"), cOff = css("--c-off");
+    const fa = ["linear_fresnel", "cpc"].includes(cfg.type) ? (cfg.focus_axis || "y") : "y";
+    const [ax, ay] = U.aperture(cfg), a = fa === "y" ? ay : ax, rec = fa === "y" ? U.v(cfg, "rec_y_mm") : U.v(cfg, "rec_x_mm");
+    const pitch = fa === "y" ? U.v(cfg, "pitch_y_mm") : U.v(cfg, "pitch_x_mm");
+    const tx = Math.tan(cond.theta_x_deg * Math.PI / 180), ty = Math.tan(cond.theta_y_deg * Math.PI / 180);
+    // left: section along the focusing axis
+    const L = { x0: 20, y0: 40, w: W * 0.46, h: H - 90 };
+    g.font = "13px sans-serif"; g.fillStyle = ink; g.fillText(`kəsik: ${axisName(fa)} oxu`, L.x0, 22);
+    if (cfg.type === "cpc") {
+      const th = U.v(cfg, "accept_deg") * Math.PI / 180, hh = (rec / 2 + a / 2) / Math.tan(th), sc = Math.min(L.w / (a * 1.3), L.h / hh), cx = L.x0 + L.w / 2;
+      const yT = L.y0, yB = L.y0 + hh * sc;
+      g.strokeStyle = cGlass; g.lineWidth = 3; g.beginPath(); g.moveTo(cx - a / 2 * sc, yT); g.quadraticCurveTo(cx - rec * sc, (yT + yB) / 2, cx - rec / 2 * sc, yB);
+      g.moveTo(cx + a / 2 * sc, yT); g.quadraticCurveTo(cx + rec * sc, (yT + yB) / 2, cx + rec / 2 * sc, yB); g.stroke();
+      g.fillStyle = cRec; g.fillRect(cx - rec / 2 * sc, yB, rec * sc, 6);
+      g.fillStyle = ink; g.fillText(`θa = ${nf(U.v(cfg, "accept_deg"), 1)}°, hündürlük ≈ ${nf(hh, 0)} mm`, L.x0, yB + 26);
+    } else {
+      const h = U.v(cfg, "h_mm"), sp = U.spot(cfg, tx, ty), m = fa === "y" ? sp.my : sp.mx, s = fa === "y" ? sp.sy : sp.sx, w = fa === "y" ? (sp.circle ? sp.wx : sp.wy) : sp.wx;
+      const span = Math.max(a, pitch * 1.5, Math.abs(s) * 2 + w, rec) * 1.1, sc = Math.min(L.w / span, L.h / h), cx = L.x0 + L.w / 2;
+      const yT = L.y0 + 6, yB = yT + h * sc, X = mm => cx + mm * sc;
+      for (const k of [-1, 0, 1]) { if (U.layout(cfg) === "shared" && k !== 0) continue; g.fillStyle = cRec; g.fillRect(X(k * pitch - rec / 2), yB, rec * sc, 6); }
+      if (U.layout(cfg) === "shared") { g.fillStyle = cRec; g.fillRect(X(-rec / 2), yB, rec * sc, 6); }
+      g.strokeStyle = cSpot; g.globalAlpha = 0.75; g.lineWidth = 1.2;
+      const tt = fa === "y" ? ty : tx, up = Math.min(30, h * 0.25);
+      for (let i = 0; i <= 8; i++) { const x0 = -a / 2 + a * i / 8; g.beginPath(); g.moveTo(X(x0 - tt * up), yT - up * sc); g.lineTo(X(x0), yT); g.lineTo(X(x0 * m + s), yB); g.stroke(); }
+      g.globalAlpha = 1;
+      g.fillStyle = cSpot; g.fillRect(X(s - w / 2), yB - 4, w * sc, 4);
+      g.strokeStyle = cGlass; g.lineWidth = 4; g.beginPath(); g.moveTo(X(-a / 2), yT); g.lineTo(X(a / 2), yT); g.stroke();
+      const f = U.v(cfg, "f_mm");
+      if (f && f > 0 && f <= h * 1.6) { g.fillStyle = ink; g.beginPath(); g.arc(X(s * f / h), yT + f * sc, 3, 0, 7); g.fill(); g.fillText("F", X(s * f / h) + 6, yT + f * sc + 4); }
+      g.fillStyle = ink;
+      g.fillText(`a = ${nf(a, 0)} mm, h = ${nf(h, 1)} mm${f ? `, f = ${nf(f, 1)} mm` : ""}`, L.x0, yB + 26);
+      g.fillText(`ləkə/zolaq eni ${nf(w, 1)} mm, sürüşmə ${nf(s, 1)} mm, qəbuledici ${nf(rec, 1)} mm`, L.x0, yB + 44);
+    }
+    // right: top view of the array
+    const R = { x0: W * 0.52, y0: 30, w: W * 0.46, h: H - 50 }, cen = U.lensCentres(cfg);
+    const allX = cen.map(c => c[0]), allY = cen.map(c => c[1]);
+    const rx = U.v(cfg, "rec_x_mm"), ry = U.v(cfg, "rec_y_mm");
+    const ex = Math.max(Math.max(...allX) - Math.min(...allX) + ax, U.layout(cfg) === "shared" ? rx : 0) * 1.15, ey = Math.max(Math.max(...allY) - Math.min(...allY) + ay, U.layout(cfg) === "shared" ? ry : 0) * 1.15;
+    const sc2 = Math.min(R.w / ex, R.h / ey), ox = R.x0 + R.w / 2, oy = R.y0 + R.h / 2, PX = x => ox + x * sc2, PY = y => oy - y * sc2;
+    g.fillStyle = ink; g.fillText(`yuxarıdan: ${cen.length} optika, x → sağa, y → yuxarı`, R.x0, 22);
+    g.fillStyle = cRec;
+    if (U.layout(cfg) === "shared") g.fillRect(PX(-rx / 2), PY(ry / 2), rx * sc2, ry * sc2);
+    else for (const [cx, cy] of cen) g.fillRect(PX(cx - rx / 2), PY(cy + ry / 2), Math.max(1, rx * sc2), Math.max(1, ry * sc2));
+    g.strokeStyle = cGlass; g.lineWidth = 1;
+    const circ = cfg.shape === "circle" && cfg.type !== "cpc" && cfg.type !== "linear_fresnel";
+    for (const [cx, cy] of cen) { g.beginPath(); if (circ) g.arc(PX(cx), PY(cy), ax / 2 * sc2, 0, 7); else g.rect(PX(cx - ax / 2), PY(cy + ay / 2), ax * sc2, ay * sc2); g.stroke(); }
+    if (cfg.type !== "cpc") {
+      const sp = U.spot(cfg, tx, ty);
+      g.fillStyle = cSpot; g.globalAlpha = 0.55;
+      for (const [cx, cy] of cen) { g.beginPath(); const x = cx + sp.sx, y = cy + sp.sy;
+        if (sp.circle) g.arc(PX(x), PY(y), Math.max(1, sp.wx / 2 * sc2), 0, 7); else g.rect(PX(x - sp.wx / 2), PY(y + sp.wy / 2), Math.max(1, sp.wx * sc2), Math.max(1, sp.wy * sc2)); g.fill(); }
+      g.globalAlpha = 1;
+    }
+    const off = r.shares.off_receiver_W;
+    $("uo-geo-note").textContent = `Ləkələr bu ani şərtlər üçündür (x ${nf(cond.theta_x_deg, 1)}°, y ${nf(cond.theta_y_deg, 1)}°). Qəbuledicidən kənara çıxan pay ${nf(off * 100, 1)}%.` +
+      (cfg.type === "linear_fresnel" ? " Xətti Fresnel yalnız fokuslanan ox üzrə yığır; xətt boyunca işıq h·tan θ qədər sürüşür və uclarda itir." : "");
+    void cOff;
+  }
+
+  document.addEventListener("solarsim:data", e => { D = e.detail; scheduleAnnual(); });
+  document.addEventListener("solarsim:loading", () => { D = null; scheduleAnnual(); });
+  renderCatalog(); renderForm(); compute();
+})();
+</script>
+<script>
 (() => {
   const L = LensOptics, $ = id => document.getElementById(id), nf = (v, d = 0) => DataStore.fmt(v, d);
   const pct = (v, d = 1) => `${v >= 0 ? "+" : "−"}${nf(Math.abs(v), d)}%`;
@@ -757,12 +1593,14 @@ if (typeof module !== "undefined") module.exports = LensOptics;
 
   DataStore.mount($("ds"), {
     onLoading: name => {
+      document.dispatchEvent(new CustomEvent("solarsim:loading"));
       D = null; NSKY = null; dKey = ""; annKey = ""; $("root").classList.add("loading"); $("eyebrow").textContent = `${name} yüklənir…`;
       for (const id of ["n-a", "n-l", "y-a", "y-l"]) $(id).textContent = "—";
       for (const id of ["tests", "best", "iv", "tr", "c5", "bal", "bal-leg", "sun-read", "top-note", "side-note", "validity"]) $(id).innerHTML = "";
       for (const id of ["side", "top"]) $(id).getContext("2d").clearRect(0, 0, 2000, 2000);
     },
-    onLoad: data => { D = data; NSKY = null; dKey = ""; annKey = ""; $("eyebrow").textContent = DataStore.provenance(D); $("root").classList.remove("loading"); renderTables(); update(); },
+    onLoad: data => { D = data; NSKY = null; dKey = ""; annKey = ""; $("eyebrow").textContent = DataStore.provenance(D); $("root").classList.remove("loading"); renderTables(); update();
+                      document.dispatchEvent(new CustomEvent("solarsim:data", { detail: data })); },
     onError: msg => { $("eyebrow").textContent = `Məlumat yoxdur: ${msg}`; },
   });
 })();
