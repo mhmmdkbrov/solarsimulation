@@ -1,0 +1,457 @@
+<title>Linza Laboratoriyası</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;800&family=Noto+Sans+Mono:wght@500&display=swap">
+<style>
+/* Layout: optical bench — controls on top, ray diagram (side view) beside the cell map (top view), then numbers, tests and the answer. */
+:root {
+  --bg: #f2f6f9; --surface: #ffffff; --surface-2: #eef3f7; --ink: #142231; --ink-2: #485868; --muted: #778594; --line: #d9e1e8;
+  --accent: #1d5fb8; --accent-ink: #ffffff; --panel-a: #2a78d6; --panel-b: #6250d6;
+  --good: #128a5e; --bad: #c2412b; --good-bg: #e2f5ec; --bad-bg: #fbe7e2; --warn-bg: #fff4dc; --warn-ink: #6b4a00;
+  --bench: #0f1b2b; --bench-ink: #dbe6f2;
+  --font: "Noto Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "Noto Sans Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e151c; --surface: #16202a; --surface-2: #1c2834; --ink: #e5edf4; --ink-2: #aebccb; --muted: #7f8d9b; --line: #2a3846;
+    --accent: #5b9be8; --accent-ink: #08172a; --panel-a: #3987e5; --panel-b: #9085e9;
+    --good: #4cc795; --bad: #ef7a63; --good-bg: #123327; --bad-bg: #3a1c16; --warn-bg: #3a2d0c; --warn-ink: #f1d48f;
+    --bench: #0a121c; --bench-ink: #dbe6f2; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e151c; --surface: #16202a; --surface-2: #1c2834; --ink: #e5edf4; --ink-2: #aebccb; --muted: #7f8d9b; --line: #2a3846;
+  --accent: #5b9be8; --accent-ink: #08172a; --panel-a: #3987e5; --panel-b: #9085e9;
+  --good: #4cc795; --bad: #ef7a63; --good-bg: #123327; --bad-bg: #3a1c16; --warn-bg: #3a2d0c; --warn-ink: #f1d48f;
+  --bench: #0a121c; --bench-ink: #dbe6f2; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-block: 24px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 20px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800; line-height: 1.1; letter-spacing: -0.015em; }
+h2 { font-size: 1.25rem; font-weight: 800; }
+h3 { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-2); }
+p { margin: 0; }
+a { color: var(--accent); }
+.lead { color: var(--ink-2); max-width: 70ch; font-size: 1.05rem; }
+.nav { display: flex; gap: 14px; flex-wrap: wrap; font-size: 0.9rem; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 14px; min-width: 0; }
+.controls { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 18px 28px; }
+@media (max-width: 860px) { .controls { grid-template-columns: minmax(0, 1fr); } }
+.ctl { display: grid; gap: 8px; align-content: start; }
+.power-read { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.power-read .d { font-family: var(--mono); font-size: 2.2rem; font-weight: 500; font-variant-numeric: tabular-nums; line-height: 1; }
+.power-read .type { font-size: 0.95rem; }
+.power-read svg { width: 46px; height: 56px; flex: none; }
+input[type=range] { width: 100%; accent-color: var(--accent); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font: inherit; font-size: 0.88rem; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 5px 12px; cursor: pointer; }
+.chip:hover { border-color: var(--accent); }
+.chip[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.chip:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.chip.user { font-family: var(--mono); font-weight: 500; }
+.hint { font-size: 0.8rem; color: var(--muted); }
+.row { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.val { font-family: var(--mono); font-size: 0.95rem; white-space: nowrap; }
+.views { display: grid; grid-template-columns: minmax(0, 2.1fr) minmax(0, 1fr); gap: 16px; }
+@media (max-width: 860px) { .views { grid-template-columns: minmax(0, 1fr); } }
+.view { background: var(--bench); color: var(--bench-ink); border-radius: 14px; padding: 12px; display: grid; gap: 8px; min-width: 0; }
+.view h3 { color: #9fb3c8; }
+.view canvas { width: 100%; height: auto; display: block; max-width: 100%; }
+.view .hint { color: #8ea2b6; }
+.numbers { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 900px) { .numbers { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.num { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 2px; }
+.num .k { font-size: 0.8rem; color: var(--ink-2); }
+.num .v { font-family: var(--mono); font-size: 1.6rem; font-weight: 500; font-variant-numeric: tabular-nums; }
+.num .s { font-size: 0.8rem; color: var(--muted); }
+.verdict { border-radius: 12px; padding: 14px 18px; display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: baseline; }
+.verdict.bad { background: var(--bad-bg); } .verdict.good { background: var(--good-bg); }
+.verdict .pct { font-family: var(--mono); font-size: 2rem; font-weight: 500; }
+.verdict.bad .pct { color: var(--bad); } .verdict.good .pct { color: var(--good); }
+.verdict .txt { flex: 1 1 360px; }
+.explain { display: grid; gap: 6px; padding-left: 18px; margin: 0; color: var(--ink-2); }
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+th, td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) { text-align: left; }
+th { font-size: 0.78rem; color: var(--ink-2); font-weight: 600; }
+td.bad { color: var(--bad); font-weight: 600; } td.good { color: var(--good); font-weight: 600; }
+tbody tr { cursor: pointer; } tbody tr:hover { background: var(--surface-2); }
+.answer { background: var(--warn-bg); color: var(--warn-ink); border-radius: 14px; padding: 16px 18px; display: grid; gap: 8px; }
+.answer ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+footer { font-size: 0.82rem; color: var(--ink-2); display: grid; gap: 6px; max-width: 95ch; }
+</style>
+
+<div class="wrap">
+  <header style="display:grid; gap:10px">
+    <nav class="nav"><a href="index.html">← Sadə izah</a><a href="simulator.html">Ətraflı simulyator</a></nav>
+    <h1>Linza laboratoriyası</h1>
+    <p class="lead">Linzanın gücünü dioptriya ilə dəyişin. Panelin üstündə nə qədər hündürlükdə və necə qoyulduğunu seçin. Şüaların hara düşdüyünə, hansı hüceyrələrin işıqlandığına və nə qədər elektrik alındığına baxın.</p>
+  </header>
+
+  <section class="card" aria-label="Linzanın parametrləri">
+    <div class="controls">
+      <div class="ctl">
+        <h3>Linzanın gücü</h3>
+        <div class="power-read"><svg id="lens-icon" viewBox="0 0 46 56" aria-hidden="true"></svg><span class="d" id="p-read"></span><span class="type" id="p-type"></span></div>
+        <input type="range" id="power" min="-15" max="15" step="0.5" aria-label="Linzanın gücü, dioptriya">
+        <div class="chips" id="p-chips">
+          <button class="chip user" data-p="-10" type="button">−10 D</button>
+          <button class="chip user" data-p="-3" type="button">−3 D</button>
+          <button class="chip user" data-p="0" type="button">0 (düz təbəqə)</button>
+          <button class="chip user" data-p="3" type="button">+3 D</button>
+          <button class="chip user" data-p="10" type="button">+10 D</button>
+          <button class="chip user" data-p="13.5" type="button">+13,5 D</button>
+        </div>
+        <p class="hint">Müsbət (+) dioptriya toplayıcı, yəni qabarıq linzadır. Mənfi (−) dioptriya səpələyici, yəni çökük linzadır. Fokus məsafəsi f = 1 / D metr.</p>
+      </div>
+      <div class="ctl">
+        <div class="row"><h3>Linza ilə hüceyrələr arası məsafə</h3><span class="val" id="h-read"></span></div>
+        <input type="range" id="hlog" min="0" max="1000" step="1" aria-label="Linza ilə hüceyrələr arası məsafə">
+        <div class="chips">
+          <button class="chip" id="h-glass" type="button">Şüşənin üstündə (3 mm)</button>
+          <button class="chip" id="h-10" type="button">10 sm</button>
+          <button class="chip" id="h-f" type="button">Fokusda (h = f)</button>
+        </div>
+        <h3 style="margin-top:6px">Linzanın düzülüşü</h3>
+        <div class="chips" id="mode">
+          <button class="chip" data-m="big" type="button">Bütün panelə bir böyük linza</button>
+          <button class="chip" data-m="array" type="button">Hər hüceyrəyə kiçik linza</button>
+        </div>
+        <h3 style="margin-top:6px">Linzanın materialı</h3>
+        <div class="chips" id="tau">
+          <button class="chip" data-t="0.92" type="button">Adi plastik, şüşə (92%)</button>
+          <button class="chip" data-t="0.96" type="button">Əks olunmaya qarşı örtüklü (96%)</button>
+          <button class="chip" data-t="1" type="button">Mükəmməl, itkisiz (nəzəri)</button>
+        </div>
+      </div>
+      <div class="ctl">
+        <h3>Hava</h3>
+        <div class="chips" id="wx"></div>
+      </div>
+      <div class="ctl">
+        <div class="row"><h3>Saat (21 iyun, Bakı vaxtı)</h3><span class="val" id="t-read"></span></div>
+        <input type="range" id="hour" min="6" max="20" step="0.25" value="13" aria-label="Saat">
+        <p class="hint">Saat dəyişdikcə Günəşin bucağı, onunla birlikdə də fokus nöqtəsinin yeri dəyişir.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="verdict" id="verdict" aria-live="polite"><span class="pct" id="v-pct"></span><span class="txt" id="v-txt"></span></div>
+
+  <div class="views">
+    <section class="view" aria-label="Yandan görünüş">
+      <h3>Yandan görünüş: şüalar linzadan keçib hüceyrələrə düşür</h3>
+      <canvas id="side" width="760" height="400" role="img" aria-label="Şüaların yandan görünüşü"></canvas>
+      <p class="hint">Sarı: hüceyrəyə düşən birbaşa işıq. Boz: hüceyrələr arası boşluğa və ya paneldən kənara düşən işıq. Bu görünüşdə panel boyunca kəsik göstərilir.</p>
+    </section>
+    <section class="view" aria-label="Yuxarıdan görünüş">
+      <h3>Yuxarıdan: 144 hüceyrə</h3>
+      <canvas id="top" width="300" height="420" role="img" aria-label="Hüceyrələrin işıqlanma xəritəsi"></canvas>
+      <p class="hint" id="top-note"></p>
+    </section>
+  </div>
+
+  <div class="numbers">
+    <div class="num"><span class="k">İndi, adi panel</span><span class="v" id="n-a"></span><span class="s">W, 1 panel</span></div>
+    <div class="num"><span class="k">İndi, linzalı panel</span><span class="v" id="n-l"></span><span class="s">W, 1 panel</span></div>
+    <div class="num"><span class="k">Bakıda il ərzində, adi panel</span><span class="v" id="y-a"></span><span class="s">kWh/m²</span></div>
+    <div class="num"><span class="k">Bakıda il ərzində, linzalı panel</span><span class="v" id="y-l"></span><span class="s" id="y-s">kWh/m²</span></div>
+  </div>
+  <ul class="explain" id="explain"></ul>
+
+  <section class="card">
+    <h2>Sizin testləriniz: +3, −3, +10, −10 dioptriya</h2>
+    <p class="hint">Bakının bütün ili üzrə, adi panelə nisbətən. Material 92% ötürür. Sətrə basın, o konfiqurasiya yuxarıda açılacaq.</p>
+    <div class="tablewrap"><table id="tests"></table></div>
+  </section>
+
+  <section class="answer">
+    <h2 style="color:inherit">Effektivliyi artırmaq olarmı?</h2>
+    <div id="best"></div>
+  </section>
+
+  <footer>
+    <p><b>Necə hesablanıb.</b> Nazik linza, paraksial həndəsi optika. Linza aperturası hüceyrə müstəvisində m = 1 − h/f dəfə kiçilir və ya böyüyür, h·tan(θ) qədər sürüşür.
+      Fokus nöqtəsi Günəş diskinin ölçüsündən (0,53°) kiçik ola bilməz. Linzanın materialında Fresnel əks olunması və udulma (n = 1,49) hesaba alınır.
+      Səpələnmiş işıq səmanın bütün istiqamətlərindən ortalanır. Panel 6 × 24 hüceyrədən ibarətdir və 3 bypass diod qrupu var. Hər qrupda ardıcıl qoşulmuş hüceyrələrin cərəyanını ən zəif hüceyrə məhdudlaşdırır.</p>
+    <p><b>Fərziyyələr.</b> Hüceyrə ölçüsü 182 × 70 mm-dir (aktiv sahə 92%). Konsentrasiyada silikon hüceyrənin seriya müqaviməti itkisi hər əlavə “günəş” üçün 3,5%-dir. Linza başqa heç bir şeyə kölgə salmır. “İndi” rəqəmlərində birbaşa (DNI) və səpələnmiş işıq seçilmiş hava tipinin günorta orta dəyəridir. Saat dəyişdikcə Günəşin bucağı dəqiq hesablanır, səpələnmiş işıq isə Günəşin hündürlüyünə görə sadə yaxınlaşdırma ilə azalır. İllik rəqəmlər bütün 8760 saatlıq məlumatdan hesablanır.
+      Hava məlumatı PVGIS 5.3 TMY-dəndir (Bakı, 40,41° N, 49,87° E). Panel 35° maili və cənuba baxır. Prototipdə ölçülməlidir.</p>
+    <p>Mənbə kodu: <a href="https://github.com/mhmmdkbrov/solarsimulation" target="_blank" rel="noopener">github.com/mhmmdkbrov/solarsimulation</a> (MIT).</p>
+  </footer>
+</div>
+
+<script type="application/json" id="labdata">__LABDATA__</script>
+<script>
+__LENSOPTICS__
+</script>
+<script>
+(() => {
+  const X = JSON.parse(document.getElementById("labdata").textContent);
+  const L = LensOptics, D = X.year;
+  const nf = (v, d = 0) => v.toLocaleString("az-AZ", { minimumFractionDigits: d, maximumFractionDigits: d });
+  const pct = v => `${v >= 0 ? "+" : "−"}${nf(Math.abs(v), 1)}%`;
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const WX = [
+    { id: "clear", name: "Açıq, günəşli" }, { id: "hazy", name: "Dumanlı, tozlu" },
+    { id: "partly", name: "Qismən buludlu" }, { id: "overcast", name: "Tam buludlu" },
+  ];
+  let S = { P: 3, h: 3, mode: "big", tau: 0.92, wx: "clear", hour: 13 };
+  try { const s = JSON.parse(localStorage.getItem("lens-lab") || "null"); if (s && typeof s.P === "number") S = { ...S, ...s }; } catch (e) {}
+
+  // log scale for distance: 2.5 mm … 1000 mm
+  const H_MIN = 2.5, H_MAX = 1000;
+  const h2s = h => Math.round(1000 * Math.log(h / H_MIN) / Math.log(H_MAX / H_MIN));
+  const s2h = s => H_MIN * Math.pow(H_MAX / H_MIN, s / 1000);
+  const fmtLen = mm => (mm >= 100 ? `${nf(mm / 10, mm >= 1000 ? 0 : 1)} sm` : `${nf(mm, mm < 10 ? 1 : 0)} mm`);
+
+  document.getElementById("wx").innerHTML = WX.map(w => `<button class="chip" type="button" data-w="${w.id}">${w.name}</button>`).join("");
+
+  // ---------- inputs ----------
+  const $ = id => document.getElementById(id);
+  $("power").addEventListener("input", e => { S.P = parseFloat(e.target.value); update(true); });
+  $("hlog").addEventListener("input", e => { S.h = +s2h(+e.target.value).toFixed(1); update(true); });
+  $("hour").addEventListener("input", e => { S.hour = parseFloat(e.target.value); update(false); });
+  $("p-chips").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; S.P = parseFloat(b.dataset.p); update(true); });
+  $("mode").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; S.mode = b.dataset.m; update(true); });
+  $("tau").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; S.tau = parseFloat(b.dataset.t); update(true); });
+  $("wx").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; S.wx = b.dataset.w; update(false); });
+  $("h-glass").addEventListener("click", () => { S.h = 3; update(true); });
+  $("h-10").addEventListener("click", () => { S.h = 100; update(true); });
+  $("h-f").addEventListener("click", () => { if (S.P > 0) { S.h = Math.min(H_MAX, +(1000 / S.P).toFixed(1)); update(true); } });
+
+  // ---------- lens icon ----------
+  function lensIcon(P) {
+    const c = css("--accent");
+    const k = Math.max(-1, Math.min(1, P / 12)) * 12;   // bulge
+    const path = `M14 4 Q${14 - k} 28 14 52 L32 52 Q${32 + k} 28 32 4 Z`;
+    $("lens-icon").innerHTML = Math.abs(P) < 1e-9
+      ? `<rect x="18" y="4" width="10" height="48" rx="2" fill="${c}" opacity=".35" stroke="${c}"/>`
+      : `<path d="${path}" fill="${c}" opacity=".35" stroke="${c}" stroke-width="1.5"/>`;
+  }
+
+  // ---------- instantaneous computation ----------
+  const SA = D.meta.sapm.sapm_a, SB = D.meta.sapm.sapm_b, SDT = D.meta.sapm.sapm_dT, PDC0 = D.meta.module.pdc0_W, GAM = D.meta.module.gamma_pdc_per_C;
+  const cellsNow = new Float64Array(L.NX * L.NY);
+  let DF = null, dfKey = "";
+  function now() {
+    const key = `${S.P}|${S.h}|${S.mode}`;
+    if (key !== dfKey) { DF = L.diffuseFactors({ P: S.P, h: S.h, mode: S.mode }); dfKey = key; }
+    const w = X.rep[WX.findIndex(q => q.id === S.wx)];
+    const sun = L.sunInPanel(172, S.hour);
+    const gb = sun.up && sun.cos > 0.02 ? w.dni * sun.cos * L.iamGlass(sun.th) : 0;
+    const gd = sun.up ? w.f_diff * Math.max(0, Math.min(1, Math.sin(sun.elev * Math.PI / 180) / 0.95)) : 0;
+    const gglob = (sun.up ? w.dni * Math.max(0, sun.cos) : 0) + gd;
+    const tc = gglob * Math.exp(SA + SB * w.ws) + w.ta + (gglob / 1000) * SDT, tf = 1 + GAM * (tc - 25);
+    const pA = Math.max(0, PDC0 * (gb + gd) / 1000 * tf);
+    const r = L.moduleIrradiance({ ...S }, DF, gb, gd, sun.tx, sun.ty, sun.th, cellsNow);
+    const pL = Math.max(0, PDC0 * r.g / 1000 * tf);
+    return { sun, gb, gd, pA, pL, r, cells: cellsNow, uniform: gb + gd };
+  }
+
+  // ---------- side view (ray diagram) ----------
+  function drawSide(n) {
+    const cv = $("side"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
+    ctx.clearRect(0, 0, W, H);
+    const big = S.mode === "big";
+    const span = big ? L.LY : 3 * L.PY;                // mm shown along the slope
+    const top = 40, bottom = H - 50;
+    const s = Math.min((W - 80) / span, (bottom - top - 20) / Math.max(S.h, 1));
+    // vertical scale: true scale when possible, exaggerated for small distances so the lens stays visible
+    const sv = Math.min((bottom - top - 30) / S.h, Math.max(s, 90 / S.h));
+    const exaggerated = sv > s * 1.05;
+    const x0 = W / 2, yCell = bottom, yLens = bottom - S.h * sv;
+    const X = y => x0 + y * s;
+    // cells along the slope
+    const nCells = big ? L.NY : 5, firstC = big ? -L.LY / 2 + L.PY / 2 : -2 * L.PY;
+    ctx.fillStyle = "#24364d"; ctx.fillRect(X(-span / 2) - 6, yCell, (span) * s + 12, 14);
+    for (let k = 0; k < nCells; k++) {
+      const cy = firstC + k * L.PY;
+      ctx.fillStyle = "#1e4fa8";
+      ctx.fillRect(X(cy - L.CY / 2), yCell, L.CY * s, 8);
+    }
+    ctx.fillStyle = "rgba(190,215,235,0.35)"; ctx.fillRect(X(-span / 2) - 6, yCell - 4, span * s + 12, 4);
+    // rays
+    const f = Math.abs(S.P) < 1e-9 ? Infinity : 1000 / S.P;
+    const k0 = -n.sun.ty;                                // slope (mm along slope per mm depth)
+    const lenses = big ? [{ c: 0, a: L.LY }] : [-1, 0, 1].map(i => ({ c: i * L.PY, a: L.PY }));
+    const lit = n.gb > 1 && n.sun.up;
+    const nr = big ? 26 : 9;
+    for (const ln of lenses) {
+      for (let i = 0; i < nr; i++) {
+        const u = -ln.a / 2 + (i + 0.5) * ln.a / nr;     // position on the lens relative to its centre
+        const yL = ln.c + u;
+        const kk = k0 - (isFinite(f) ? u / f : 0);
+        const yC = yL + S.h * kk;
+        const local = ((yC % L.PY) + L.PY * 1.5) % L.PY - L.PY / 2;
+        const onPanel = Math.abs(yC) <= (big ? L.LY / 2 : span / 2 + L.PY);
+        const hit = onPanel && Math.abs(local) <= L.CY / 2;
+        const dy = (yLens - 6) / sv;                     // incoming ray drawn from the canvas top (mm of depth)
+        ctx.strokeStyle = lit ? "rgba(255,206,72,0.9)" : "rgba(255,206,72,0.25)"; ctx.lineWidth = 1.3;
+        ctx.beginPath(); ctx.moveTo(X(yL - k0 * dy), yLens - dy * sv); ctx.lineTo(X(yL), yLens); ctx.stroke();
+        ctx.strokeStyle = !lit ? "rgba(160,170,180,0.25)" : hit ? "rgba(255,206,72,0.95)" : "rgba(160,170,180,0.8)";
+        ctx.beginPath(); ctx.moveTo(X(yL), yLens); ctx.lineTo(X(yC), yCell); ctx.stroke();
+      }
+    }
+    // lens shapes
+    ctx.fillStyle = "rgba(180,220,255,0.28)"; ctx.strokeStyle = "rgba(210,235,255,0.95)"; ctx.lineWidth = 1.5;
+    for (const ln of lenses) {
+      const a = X(ln.c - ln.a / 2), b = X(ln.c + ln.a / 2), t = 5, bulge = Math.max(-1, Math.min(1, S.P / 12)) * 9;
+      ctx.beginPath();
+      ctx.moveTo(a, yLens - t); ctx.quadraticCurveTo((a + b) / 2, yLens - t - bulge, b, yLens - t);
+      ctx.lineTo(b, yLens + t); ctx.quadraticCurveTo((a + b) / 2, yLens + t + bulge, a, yLens + t); ctx.closePath();
+      ctx.fill(); ctx.stroke();
+    }
+    // focus marker
+    if (S.P > 0 && isFinite(f)) {
+      for (const ln of lenses) {
+        const yF = ln.c + k0 * f, yy = yLens + f * sv;
+        if (yy < H - 4 && yy > top) { ctx.fillStyle = "#ff6b4a"; ctx.beginPath(); ctx.arc(X(yF), yy, 4, 0, Math.PI * 2); ctx.fill(); }
+      }
+    }
+    // labels
+    ctx.fillStyle = "#c9d7e6"; ctx.font = "13px " + css("--font");
+    ctx.textAlign = "left";
+    ctx.fillText(big ? "Bütün panel boyunca (1762 mm)" : "3 hüceyrə yaxından", 10, 20);
+    ctx.fillText(`Günəşin bucağı panelə: ${nf(n.sun.th * 180 / Math.PI, 0)}°`, 10, H - 14);
+    ctx.textAlign = "right";
+    ctx.fillText(`h = ${fmtLen(S.h)}${exaggerated ? " (şaquli miqyas böyüdülüb)" : ""}`, W - 10, 20);
+    if (S.P > 0) {
+      const ff = 1000 / S.P, yy = yLens + ff * sv;
+      ctx.fillText(yy < H - 4 ? "● fokus nöqtəsi" : `fokus ${fmtLen(ff)} aşağıda (şəkildən kənar)`, W - 10, H - 14);
+    } else if (S.P < 0) ctx.fillText("səpələyici linza: fokus yoxdur, şüalar açılır", W - 10, H - 14);
+    if (!n.sun.up) { ctx.textAlign = "center"; ctx.fillText("Günəş üfüqün altındadır", W / 2, top + 10); }
+  }
+
+  // ---------- top view (cell map) ----------
+  function drawTop(n) {
+    const cv = $("top"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
+    ctx.clearRect(0, 0, W, H);
+    const s = Math.min((W - 30) / L.LX, (H - 60) / L.LY), ox = (W - L.LX * s) / 2, oy = 14;
+    ctx.fillStyle = "#24364d"; ctx.fillRect(ox - 4, oy - 4, L.LX * s + 8, L.LY * s + 8);
+    const ref = Math.max(1, n.uniform);
+    for (let i = 0; i < L.NX; i++) for (let j = 0; j < L.NY; j++) {
+      const v = n.cells[i * L.NY + j] / ref;               // 1 = same as without a lens
+      const c = v <= 1 ? [Math.round(20 + 40 * v), Math.round(40 + 100 * v), Math.round(90 + 130 * v)]
+                       : [Math.min(255, Math.round(60 + 120 * Math.log2(1 + v))), Math.min(255, Math.round(140 + 60 * Math.log2(1 + v))), Math.round(220 - 30 * Math.min(4, v))];
+      ctx.fillStyle = `rgb(${c[0]},${c[1]},${c[2]})`;
+      const x = ox + (i * L.PX + (L.PX - L.CX) / 2) * s, y = oy + ((L.NY - 1 - j) * L.PY + (L.PY - L.CY) / 2) * s;
+      ctx.fillRect(x, y, L.CX * s, L.CY * s);
+    }
+    // substrings
+    const mins = n.r.substringMins;
+    let operating = null;
+    if (mins) { let best = -1; for (const I of mins) { const k = mins.filter(v => v >= I - 1e-9).length; if (I * k > best) { best = I * k; operating = I; } } }
+    ctx.font = "11px " + css("--font"); ctx.textAlign = "center";
+    for (let sIdx = 0; sIdx < 3; sIdx++) {
+      const x = ox + 2 * sIdx * L.PX * s;
+      ctx.strokeStyle = "rgba(255,255,255,0.55)"; ctx.lineWidth = 1; ctx.strokeRect(x + 1, oy + 1, 2 * L.PX * s - 2, L.LY * s - 2);
+      if (mins) {
+        const dead = !(operating > 1);
+        const on = !dead && mins[sIdx] >= operating - 1e-9;
+        ctx.fillStyle = on ? "#7fe0b0" : "#ff9a85";
+        ctx.fillText(dead ? "cərəyan yox" : on ? "işləyir" : "bypass", x + L.PX * s, oy + L.LY * s + 18);
+      }
+    }
+    let minV = Infinity, maxV = 0; for (const v of n.cells) { minV = Math.min(minV, v / ref); maxV = Math.max(maxV, v / ref); }
+    $("top-note").textContent = S.mode === "big"
+      ? `Ən zəif hüceyrə: ${nf(minV * 100, 0)}%, ən güclü: ${nf(maxV * 100, 0)}% (linzasız işıqlanmaya nisbətən). Hər sütun cütü bir bypass qrupudur. Qrupdakı ən zəif hüceyrə hamısını məhdudlaşdırır.`
+      : `Bütün hüceyrələr eyni işıq alır: linzasız halın ${nf(minV * 100, 0)}%-i.`;
+  }
+
+  // ---------- annual ----------
+  let annualTimer = null, annualKey = "";
+  function scheduleAnnual() {
+    const key = `${S.P}|${S.h}|${S.mode}|${S.tau}`;
+    if (key === annualKey) return;
+    clearTimeout(annualTimer);
+    $("y-l").textContent = "…"; $("y-s").textContent = "kWh/m² · hesablanır";
+    annualTimer = setTimeout(() => {
+      const r = L.annual(D, { P: S.P, h: S.h, mode: S.mode, tau: S.tau });
+      annualKey = key;
+      $("y-a").textContent = nf(r.A, 1); $("y-l").textContent = nf(r.L, 1);
+      const d = (r.L / r.A - 1) * 100;
+      $("y-s").innerHTML = `kWh/m² · <b style="color:var(${d >= 0 ? "--good" : "--bad"})">${pct(d)}</b>`;
+    }, 120);
+  }
+
+  // ---------- update ----------
+  function update(lensChanged) {
+    try { localStorage.setItem("lens-lab", JSON.stringify(S)); } catch (e) {}
+    $("power").value = S.P; $("hlog").value = h2s(S.h); $("hour").value = S.hour;
+    const lt = L.lensType(S.P);
+    $("p-read").textContent = `${S.P > 0 ? "+" : S.P < 0 ? "−" : ""}${nf(Math.abs(S.P), 1)} D`;
+    $("p-type").innerHTML = lt.kind === "flat" ? "<b>Düz təbəqə</b>, işığı yığmır<br>(yalnız şüşə kimi keçirir)"
+      : lt.kind === "converging" ? `<b>Toplayıcı (qabarıq) linza</b><br>fokus məsafəsi f = ${fmtLen(lt.f)}`
+      : `<b>Səpələyici (çökük) linza</b><br>xəyali fokus f = −${fmtLen(-lt.f)}`;
+    lensIcon(S.P);
+    $("h-read").textContent = fmtLen(S.h);
+    $("h-f").disabled = !(S.P > 0);
+    const hh = Math.floor(S.hour), mm = Math.round((S.hour - hh) * 60);
+    $("t-read").textContent = `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
+    document.querySelectorAll("#p-chips .chip").forEach(b => b.setAttribute("aria-pressed", Math.abs(parseFloat(b.dataset.p) - S.P) < 1e-9 ? "true" : "false"));
+    document.querySelectorAll("#mode .chip").forEach(b => b.setAttribute("aria-pressed", b.dataset.m === S.mode ? "true" : "false"));
+    document.querySelectorAll("#tau .chip").forEach(b => b.setAttribute("aria-pressed", Math.abs(parseFloat(b.dataset.t) - S.tau) < 1e-9 ? "true" : "false"));
+    document.querySelectorAll("#wx .chip").forEach(b => b.setAttribute("aria-pressed", b.dataset.w === S.wx ? "true" : "false"));
+    $("h-glass").setAttribute("aria-pressed", Math.abs(S.h - 3) < 0.05 ? "true" : "false");
+    $("h-10").setAttribute("aria-pressed", Math.abs(S.h - 100) < 0.05 ? "true" : "false");
+    $("h-f").setAttribute("aria-pressed", S.P > 0 && Math.abs(S.h - 1000 / S.P) < 0.5 ? "true" : "false");
+
+    const n = now();
+    $("n-a").textContent = nf(n.pA); $("n-l").textContent = nf(n.pL);
+    const d = n.pA > 1 ? (n.pL / n.pA - 1) * 100 : 0;
+    $("verdict").className = "verdict " + (d >= 0 ? "good" : "bad");
+    $("v-pct").textContent = n.pA > 1 ? pct(d) : "—";
+    $("v-txt").textContent = n.pA > 1
+      ? `İndi linzalı panel ${nf(n.pL)} W verir, adi panel isə ${nf(n.pA)} W. Linzalı panel ${nf(Math.abs(d), 1)}% ${d >= 0 ? "çox" : "az"} verir.`
+      : "Bu saatda Günəş yoxdur və ya çox aşağıdadır.";
+    // explanation bullets
+    const ex = [];
+    const m = L.mag(S.P, S.h);
+    if (lt.kind === "flat") ex.push("Düz təbəqə işığı yığmır. O, yalnız öz səthindən işığın bir hissəsini əks etdirir və udur.");
+    if (lt.kind === "converging") {
+      if (Math.abs(S.h - lt.f) < lt.f * 0.15) ex.push(`Linza fokusdadır: birbaşa işıq kiçik bir nöqtəyə yığılır. Yerli intensivlik təxminən ${nf(n.r.conc, 0)} “günəş”dir${n.r.conc >= L.C_MAX * 0.99 ? " (Günəş işığı üçün fiziki maksimum)" : ""}.`);
+      else if (S.h < lt.f) ex.push(`Hüceyrələr fokusdan yuxarıdadır (h < f). İşıq ləkəsi linzanın ${nf(Math.abs(m) * 100, 0)}% ölçüsündədir, işıq ${nf(n.r.conc, 1)} dəfə sıxlaşır.`);
+      else ex.push(`Hüceyrələr fokusdan aşağıdadır (h > f). Şüalar fokusda kəsişib yenidən açılır. Ləkə linzanın ${nf(Math.abs(m) * 100, 0)}% ölçüsündədir.`);
+    }
+    if (lt.kind === "diverging") ex.push(`Səpələyici linza işığı açır. Ləkə linzadan ${nf(Math.abs(m) * 100, 0)}% böyükdür, ona görə işığın bir hissəsi boşluqlara və ya paneldən kənara düşür.`);
+    if (S.mode === "big") ex.push(n.r.mismatch < 0.97
+      ? `İşıq hüceyrələrə qeyri-bərabər düşür. Ardıcıl qoşulma ucbatından panel işığın yalnız ${nf(n.r.mismatch * 100, 0)}%-ni elektrikə çevirə bilir. Ən zəif hüceyrə cərəyanı məhdudlaşdırır.`
+      : "İşıq hüceyrələrə demək olar bərabər düşür, ardıcıl qoşulma itkisi kiçikdir.");
+    else ex.push("Hər hüceyrənin öz linzası var. İşıq bütün hüceyrələrə eyni düşür, ardıcıl qoşulma problemi yoxdur. Linza ən çox hüceyrələr arasındakı ~8% boşluğa düşən işığı hüceyrəyə yönəldə bilər.");
+    const aperture = S.mode === "big" ? L.LX : L.PY;          // shortest lens side, mm
+    if (lt.kind !== "flat" && Math.abs(lt.f) < aperture) ex.push(`Diqqət: ${fmtLen(aperture)} enində linza üçün fokus məsafəsi ${fmtLen(Math.abs(lt.f))} çox qısadır (f-ədədi 1-dən kiçikdir). Belə linza praktikada düzəldilə bilməz. Rəqəmlər ideal nazik linza üçündür.`);
+    ex.push(`Linzanın materialı işığın ${nf((1 - S.tau) * 100, 0)}%-ni normal düşmədə itirir, maili şüalarda daha çox.`);
+    $("explain").innerHTML = ex.map(t => `<li>${t}</li>`).join("");
+    drawSide(n); drawTop(n);
+    if (lensChanged !== false) scheduleAnnual(); else scheduleAnnual();
+  }
+
+  // ---------- tests table & best case ----------
+  const MODE_NAME = { array: "hər hüceyrəyə kiçik linza", big: "bir böyük linza" };
+  const cell = v => `<td class="${v >= 0 ? "good" : "bad"}">${pct(v)}</td>`;
+  $("tests").innerHTML = `<thead><tr><th>Linza</th><th>Düzülüş</th><th>Şüşənin üstündə (3 mm)</th><th>Fokusda (h = f) / 10 sm</th><th>Ən yaxşı məsafə</th><th>Ən yaxşı nəticə</th></tr></thead><tbody>${
+    X.tests.tests.map(t => `<tr data-p="${t.P}" data-m="${t.mode}" data-h="${t.best_h}"><td>${t.P > 0 ? "+" : "−"}${Math.abs(t.P)} D ${t.P > 0 ? "toplayıcı" : "səpələyici"}</td><td>${MODE_NAME[t.mode]}</td>${cell(t.glued_pct)}${cell(t.atF_pct)}<td>${fmtLen(t.best_h)}</td>${cell(t.best_pct)}</tr>`).join("")
+  }</tbody>`;
+  $("tests").addEventListener("click", e => { const tr = e.target.closest("tr[data-p]"); if (!tr) return; S.P = +tr.dataset.p; S.mode = tr.dataset.m; S.h = +tr.dataset.h; S.tau = 0.92; update(true); window.scrollTo({ top: 0, behavior: "smooth" }); });
+  const B = X.tests.best;
+  $("best").innerHTML = `<p>Hər dörd testdə linzalı panel <b>adi paneldən az</b> enerji verir. Bunun üç səbəbi var:</p>
+    <ul>
+      <li><b>Bir böyük linza</b> işığı panelin bir hissəsinə yığır. 144 hüceyrə ardıcıl qoşulub, ona görə qaranlıqda qalan hüceyrələr bütün cərəyanı məhdudlaşdırır. Fokusda nəticə −100%-ə qədər düşür.</li>
+      <li><b>Səpələyici (−) linza</b> işığı açır və bir hissəsini boşluqlara, paneldən kənara salır. Bu, heç vaxt qazanc vermir.</li>
+      <li><b>Toplayıcı (+) linza</b> yalnız hüceyrələr arasındakı ~8% boşluğun işığını qaytara bilər. Linzanın özü isə ~8% itirir, buludlu havada da işığı yığa bilmir.</li>
+    </ul>
+    <p>Fiziki cəhətdən mümkün olan ən yaxşı variant: <b>hər hüceyrəyə ayrıca linza, +${nf(B[0].P, 1)} D, hüceyrədən ${fmtLen(B[0].h)} hündürlükdə</b>. Onun illik nəticəsi:
+      adi materialla <b>${pct(B[0].pct)}</b>, əks olunmaya qarşı örtüklə <b>${pct(B[1].pct)}</b>, mükəmməl (itkisiz) materialla isə <b>${pct(B[2].pct)}</b>.</p>
+    <p>Yəni linza ilə qazanc ancaq demək olar ki, itkisiz optika və hər hüceyrəyə dəqiq uyğun linza massivi ilə mümkündür. Qazanc da ən çoxu bir neçə faizdir.
+      Müqayisə üçün: eyni panel 2 oxlu izləmə ilə <b>+23%</b> verir (ətraflı simulyatora baxın).</p>`;
+
+  update(true);
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => update(false));
+})();
+</script>

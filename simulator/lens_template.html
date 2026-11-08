@@ -114,6 +114,8 @@ th { font-size: 0.78rem; color: var(--ink-2); font-weight: 600; }
 td.bad { color: var(--bad); font-weight: 600; } td.good { color: var(--good); font-weight: 600; }
 footer { font-size: 0.82rem; color: var(--ink-2); display: grid; gap: 6px; max-width: 90ch; }
 footer a { color: var(--accent); }
+.lablink { display: inline-block; font-weight: 600; color: var(--accent); background: var(--surface); border: 1px solid var(--accent); border-radius: 10px; padding: 8px 14px; text-decoration: none; }
+.lablink:hover { background: var(--surface-2); }
 @media (prefers-reduced-motion: reduce) { .flow .bar span, .track span { transition: none; } }
 </style>
 
@@ -122,6 +124,7 @@ footer a { color: var(--accent); }
     <h1>Linza günəş panelini gücləndirirmi?</h1>
     <p class="lead">Solda adi panel, sağda eyni panel üstünə linza qatı ilə. Havanı və linzanın keyfiyyətini seçin. İşığın hər paneldə hara getdiyinə və nə qədər elektrik alındığına baxın.</p>
     <p class="answer" id="answer"></p>
+    <p><a class="lablink" href="lab.html">Linzanın gücünü (dioptriya), məsafəsini və düzülüşünü özünüz dəyişin: Linza laboratoriyası →</a></p>
   </header>
 
   <div class="pickers">

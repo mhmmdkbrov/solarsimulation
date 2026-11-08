@@ -5,6 +5,7 @@ Run from the project folder after the notebook has been executed:
     node simulator/verify.js            # JS model vs. notebook numbers
     .venv/Scripts/python simulator/build_simulator.py
 """
+import json
 from pathlib import Path
 
 here = Path(__file__).resolve().parent
@@ -42,6 +43,20 @@ def to_site(page: str) -> str:
 
 
 SITE.mkdir(exist_ok=True)
+
+# lens lab (needs: node simulator/lens_cases.js ... and node simulator/lens_tests.js simulator/lens_tests.json)
+tests = here / "lens_tests.json"
+if cases.exists() and tests.exists():
+    full = json.loads((here / "data.json").read_text(encoding="utf-8"))
+    year = {"meta": full["meta"], **{k: full[k] for k in ("doy", "hour", "f_glob", "f_beam", "f_diff", "ta", "ws")}}
+    labdata = {"rep": json.loads(cases.read_text(encoding="utf-8"))["rep"],
+               "tests": json.loads(tests.read_text(encoding="utf-8")), "year": year}
+    lab = (here / "lab_template.html").read_text(encoding="utf-8")
+    lab = lab.replace("__LENSOPTICS__", (here / "lensoptics.js").read_text(encoding="utf-8"))
+    lab = lab.replace("__LABDATA__", json.dumps(labdata, separators=(",", ":"), ensure_ascii=False).replace("</", "<\\/"))
+    (here / "linza_laboratoriyasi.html").write_text(lab, encoding="utf-8")
+    (SITE / "lab.html").write_text(to_site(lab), encoding="utf-8")
+    print(f"lab.html: {(SITE / 'lab.html').stat().st_size / 1e3:.0f} kB")
 (SITE / ".nojekyll").write_text("", encoding="utf-8")
 (SITE / "simulator.html").write_text(to_site(out.read_text(encoding="utf-8")), encoding="utf-8")
 if cases.exists():

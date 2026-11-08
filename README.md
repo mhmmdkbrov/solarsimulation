@@ -17,6 +17,8 @@ Meteoroloji məlumat: **PVGIS 5.3 TMY** (Avropa Komissiyası JRC), 40,41° N, 49
 
 * **Linza günəş panelini gücləndirirmi?** Sadə vizual izah, hava şəraitini seçmək olur:
   https://mhmmdkbrov.github.io/solarsimulation/
+* **Linza laboratoriyası.** Linzanın gücünü (dioptriya), məsafəsini, düzülüşünü və materialını dəyişmək olur. Şüaların yolu və hüceyrə xəritəsi göstərilir:
+  https://mhmmdkbrov.github.io/solarsimulation/lab.html
 * **Bakı günəş simulyatoru.** Bütün fərziyyələri sürgülərlə dəyişmək olur:
   https://mhmmdkbrov.github.io/solarsimulation/simulator.html
 
@@ -24,6 +26,11 @@ Hər iki səhifə `docs/` qovluğundadır və GitHub Pages ilə yayımlanır. Qu
 
 **Əsas nəticə (baza fərziyyələr, Bakı, il ərzində):** adi panel 355 kWh/m². Orta keyfiyyətli linza qatı ilə 311 kWh/m² (−13%).
 Mükəmməl linzanın nəzəri yuxarı həddi +8%-dir. CPV (2 oxlu izləmə) eyni izləməli adi panelin 0,69-u qədərdir.
+
+**Linza gücü testləri (həndəsi optika, Bakının bütün ili, material 92% ötürür).** +3, −3, +10 və −10 dioptriyanın hamısı adi paneldən az verir:
+hər hüceyrəyə kiçik linza ilə ən yaxşı halda −6%…−10%, bütün panelə bir böyük linza ilə −12%…−38%. Fokusda isə −100%-ə qədər.
+Fiziki mümkün ən yaxşı variant hər hüceyrəyə ayrıca linzadır: +13,5 D, hüceyrədən 8 mm hündürlükdə. Onun nəticəsi adi materialla −4,9%,
+əks olunmaya qarşı örtüklə −0,8%, itkisiz (nəzəri) materialla +3,3%-dir. Model və testlər: `simulator/lensoptics.js`, `simulator/lens_tests.js`.
 B və C üzrə optika və fotoelement parametrləri fərziyyədir, prototipdə ölçülməlidir.
 
 ## Fayllar
@@ -89,7 +96,8 @@ node simulator\verify.js
 
 `verify.js` JS modelinin notebook-un baza, pessimist və optimist nəticələrini tam təkrarladığını yoxlayır.
 
-Sadə izah səhifəsi (`docs/index.html`) üçün hava tipləri və illik nəticələr `node simulator/lens_cases.js simulator/lens_cases.json`
+Linza laboratoriyası (`docs/lab.html`) üçün əvvəlcə `node simulator/lens_tests.js simulator/lens_tests.json` icra olunur.
+Bu skript optika modelini yoxlayır və dioptriya testlərini hesablayır. Sadə izah səhifəsi (`docs/index.html`) üçün hava tipləri və illik nəticələr `node simulator/lens_cases.js simulator/lens_cases.json`
 əmri ilə yenidən hesablanır. `build_simulator.py` hər iki səhifəni həm `simulator/`, həm də sayt üçün `docs/` qovluğuna yazır.
 
 ## Lisenziya
