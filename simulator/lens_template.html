@@ -193,7 +193,8 @@ footer a { color: var(--accent); }
   const C = JSON.parse(document.getElementById("cases").textContent);
   const A_M2 = C.meta.area_m2, PDC0 = C.meta.module.pdc0_W, F_ACT = C.meta.module.active_area_fraction;
   const { sapm_a: SA, sapm_b: SB, sapm_dT: SDT } = C.meta.sapm;
-  const nf = (v, d = 0) => v.toLocaleString("az-AZ", { minimumFractionDigits: d, maximumFractionDigits: d });
+  // Azerbaijani number format: decimal comma, (non-breaking) space as thousands separator, true minus sign
+  const nf = (v, d = 0) => { if (!isFinite(v)) return "—"; const s = Math.abs(v).toFixed(d); const [i, f] = s.split("."); const neg = v < 0 && Number(s) !== 0; return (neg ? "−" : "") + i.replace(/\B(?=(\d{3})+(?!\d))/g, "\u00a0") + (f ? "," + f : ""); };
 
   const WX = [
     { id: "clear", name: "Açıq, günəşli", icon: '<circle cx="12" cy="12" r="5" fill="#f2b705"/><g stroke="#f2b705" stroke-width="2" stroke-linecap="round"><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></g>' },

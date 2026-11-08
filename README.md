@@ -31,6 +31,17 @@ Mükəmməl linzanın nəzəri yuxarı həddi +8%-dir. CPV (2 oxlu izləmə) eyn
 hər hüceyrəyə kiçik linza ilə ən yaxşı halda −6%…−10%, bütün panelə bir böyük linza ilə −12%…−38%. Fokusda isə −100%-ə qədər.
 Fiziki mümkün ən yaxşı variant hər hüceyrəyə ayrıca linzadır: +13,5 D, hüceyrədən 8 mm hündürlükdə. Onun nəticəsi adi materialla −4,9%,
 əks olunmaya qarşı örtüklə −0,8%, itkisiz (nəzəri) materialla +3,3%-dir. Model və testlər: `simulator/lensoptics.js`, `simulator/lens_tests.js`.
+
+**Təqdimat qaralamasındakı rəqəmlərin yoxlanması** (`simulator/claims_check.js`, nəticələr linza laboratoriyasının sonunda):
+
+| Qaralamadakı iddia | Düzgün hesab | Nəticə |
+|---|---|---|
+| Lupa +3…+10 D, fokus 10–33 sm | f = 1/D: 33,3 sm və 10,0 sm | Düzdür |
+| Belə lupalar 2–4 dəfə böyüdür | +3 D: 0,75–1,75×, +10 D: 2,5–3,5× | Qismən düzdür |
+| Panellərin səmərəliliyi 20–22% | Trina: 22,5% (STC) | Düzdür |
+| 20% panel + C = 5 → ~55% | Səmərəlilik konsentrasiya ilə artmır. Silikon üçün nəzəri hədd 29,4%-dir. C = 5 (DNI 1000 W/m², linza 90%): soyutma ilə 15,9%, soyutmasız 10,0% və hüceyrə 170 °C (pasportda maks. 85 °C). Eyni sahədə 5 adi panel: 20,3% | Səhvdir |
+| Linzalar enerjini 50–70% artırır | Bakıda il ərzində: C = 5 linza sistemi 248 kWh/m², adi sabit panel 355, izləməli adi panel 448 kWh/m² (−30% və −45%) | Səhvdir |
+| Kvars 1000 °C, borosilikat 500 °C, şəffaflıq 90%+ | Material üçün təxminən düzdür, amma silikon hüceyrə 85 °C-dən yuxarı işləyə bilməz | Qismən düzdür |
 B və C üzrə optika və fotoelement parametrləri fərziyyədir, prototipdə ölçülməlidir.
 
 ## Fayllar

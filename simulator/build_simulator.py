@@ -50,7 +50,8 @@ if cases.exists() and tests.exists():
     full = json.loads((here / "data.json").read_text(encoding="utf-8"))
     year = {"meta": full["meta"], **{k: full[k] for k in ("doy", "hour", "f_glob", "f_beam", "f_diff", "ta", "ws")}}
     labdata = {"rep": json.loads(cases.read_text(encoding="utf-8"))["rep"],
-               "tests": json.loads(tests.read_text(encoding="utf-8")), "year": year}
+               "tests": json.loads(tests.read_text(encoding="utf-8")), "year": year,
+               "claims": json.loads((here / "claims_check.json").read_text(encoding="utf-8"))}
     lab = (here / "lab_template.html").read_text(encoding="utf-8")
     lab = lab.replace("__LENSOPTICS__", (here / "lensoptics.js").read_text(encoding="utf-8"))
     lab = lab.replace("__LABDATA__", json.dumps(labdata, separators=(",", ":"), ensure_ascii=False).replace("</", "<\\/"))

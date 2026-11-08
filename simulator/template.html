@@ -227,7 +227,8 @@ __MODEL__
   const SHORT = { A_fixed: "A", B_fixed: "B", A_2axis: "A-izləmə", C_2axis: "C" };
   const DASH = { A_fixed: "", B_fixed: "", A_2axis: "6 4", C_2axis: "6 4" };
   const MONTHS = ["Yan", "Fev", "Mar", "Apr", "May", "İyn", "İyl", "Avq", "Sen", "Okt", "Noy", "Dek"];
-  const nf = (v, d = 1) => v.toLocaleString("az-AZ", { minimumFractionDigits: d, maximumFractionDigits: d });
+  // Azerbaijani number format: decimal comma, (non-breaking) space as thousands separator, true minus sign
+  const nf = (v, d = 1) => { if (!isFinite(v)) return "—"; const s = Math.abs(v).toFixed(d); const [i, f] = s.split("."); const neg = v < 0 && Number(s) !== 0; return (neg ? "−" : "") + i.replace(/\B(?=(\d{3})+(?!\d))/g, "\u00a0") + (f ? "," + f : ""); };
   const pct = (v, d = 1) => nf(v * 100, d) + "%";
 
   const CTRL = [
@@ -554,7 +555,8 @@ TRACKER.update(tracker_aux_W=${P.trk}, controller_aux_W=${P.ctrl})`;
   window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", rerenderAll);
   new MutationObserver(rerenderAll).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 
-  document.getElementById("src").textContent = D.meta.source + (D.meta.is_sample ? " — NÜMUNƏ MƏLUMAT" : "");
+  // coordinates in Azerbaijani decimal format (40,41° N); version numbers such as "PVGIS 5.3" stay unchanged
+  document.getElementById("src").textContent = D.meta.source.replace(/(\d+)\.(\d+)°/g, "$1,$2°") + (D.meta.is_sample ? " — NÜMUNƏ MƏLUMAT" : "");
   syncControls(); renderFast(); renderMap();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => renderMap());
 })();

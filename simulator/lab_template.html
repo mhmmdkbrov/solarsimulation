@@ -176,6 +176,16 @@ footer { font-size: 0.82rem; color: var(--ink-2); display: grid; gap: 6px; max-w
     <div id="best"></div>
   </section>
 
+  <section class="card" id="claims-card">
+    <h2>Təqdimat qaralamasındakı hesablamaların yoxlanması</h2>
+    <p class="hint">“Linzalarla günəş panelinin səmərəliliyinin artırılması” təqdimat qaralamasındakı rəqəmlər bu layihənin modeli ilə yenidən hesablanıb.
+      Eyni modul, eyni Bakı hava məlumatı və eyni temperatur modeli işlədilib. Hesab: <span style="font-family:var(--mono)">simulator/claims_check.js</span>.</p>
+    <div class="tablewrap"><table id="claims"></table></div>
+    <h3>Düzgün hesab: C = 5 dəfə konsentrasiya</h3>
+    <div class="tablewrap"><table id="c5"></table></div>
+    <p class="hint" id="c5-note"></p>
+  </section>
+
   <footer>
     <p><b>Necə hesablanıb.</b> Nazik linza, paraksial həndəsi optika. Linza aperturası hüceyrə müstəvisində m = 1 − h/f dəfə kiçilir və ya böyüyür, h·tan(θ) qədər sürüşür.
       Fokus nöqtəsi Günəş diskinin ölçüsündən (0,53°) kiçik ola bilməz. Linzanın materialında Fresnel əks olunması və udulma (n = 1,49) hesaba alınır.
@@ -194,7 +204,8 @@ __LENSOPTICS__
 (() => {
   const X = JSON.parse(document.getElementById("labdata").textContent);
   const L = LensOptics, D = X.year;
-  const nf = (v, d = 0) => v.toLocaleString("az-AZ", { minimumFractionDigits: d, maximumFractionDigits: d });
+  // Azerbaijani number format: decimal comma, (non-breaking) space as thousands separator, true minus sign
+  const nf = (v, d = 0) => { if (!isFinite(v)) return "—"; const s = Math.abs(v).toFixed(d); const [i, f] = s.split("."); const neg = v < 0 && Number(s) !== 0; return (neg ? "−" : "") + i.replace(/\B(?=(\d{3})+(?!\d))/g, "\u00a0") + (f ? "," + f : ""); };
   const pct = v => `${v >= 0 ? "+" : "−"}${nf(Math.abs(v), 1)}%`;
   const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
   const WX = [
@@ -450,6 +461,41 @@ __LENSOPTICS__
       adi materialla <b>${pct(B[0].pct)}</b>, əks olunmaya qarşı örtüklə <b>${pct(B[1].pct)}</b>, mükəmməl (itkisiz) materialla isə <b>${pct(B[2].pct)}</b>.</p>
     <p>Yəni linza ilə qazanc ancaq demək olar ki, itkisiz optika və hər hüceyrəyə dəqiq uyğun linza massivi ilə mümkündür. Qazanc da ən çoxu bir neçə faizdir.
       Müqayisə üçün: eyni panel 2 oxlu izləmə ilə <b>+23%</b> verir (ətraflı simulyatora baxın).</p>`;
+
+  // ---------- check of the presentation draft's numbers (values from simulator/claims_check.js) ----------
+  const K = X.claims, c5 = K.c5, an = K.annual, mg = K.magnifier, pc1 = v => `${nf(v * 100, 1)}%`;
+  const verdict = v => `<td class="${v === "Düzdür" ? "good" : "bad"}" style="text-align:left">${v}</td>`;
+  const plain = c5.plain_module_at_same_air;
+  const rows = [
+    ["Adi lupanın gücü +3…+10 D, fokus məsafəsi 10–33 sm",
+     `f = 1 / D: +3 D → ${nf(mg[0].f_cm, 1)} sm, +10 D → ${nf(mg[1].f_cm, 1)} sm`, "Düzdür"],
+    ["Belə lupalar 2–4 dəfə böyüdür",
+     `Böyütmə M = D/4 … 1 + D/4 (25 sm baxış məsafəsi): +3 D → ${nf(mg[0].M_relaxed, 2)}…${nf(mg[0].M_near, 2)}×, +10 D → ${nf(mg[1].M_relaxed, 2)}…${nf(mg[1].M_near, 2)}×`, "Qismən: +3 D üçün 2× alınmır"],
+    ["Adi panellərin səmərəliliyi təxminən 20–22%-dir",
+     `Trina TSM-450NEG9R.28: 450 W / (1000 W/m² × ${nf(K.inputs.A_MOD, 3)} m²) = ${pc1(K.inputs.ETA_STC)} (STC)`, "Düzdür"],
+    ["Panel 20%, konsentrasiya C = 5 → effektiv çıxış ~55%",
+     `Səmərəlilik = elektrik / düşən işıq. Linza həm düşən işığı, həm elektriki artırır, ona görə nisbət yüksəlmir. Silikon hüceyrənin nəzəri həddi ${pc1(K.inputs.SI_LIMIT)}-dir.
+      Düzgün nəticə: soyutma ilə (60 °C) ${pc1(c5.cooled60.eta_vs_aperture)}, soyutmasız ${pc1(c5.passive.eta_vs_aperture)}.`, "Səhvdir"],
+    ["Linzalar enerji tutumunu 50–70% artırır",
+     `Bakıda il ərzində, hər m² işıqtoplama sahəsinə: C = 5 linza sistemi (izləmə, soyutma) ${nf(an.lens_C5_cooled_kWh_m2, 0)} kWh/m².
+      Adi sabit panel ${nf(an.A_fixed_kWh_m2, 0)} kWh/m², izləməli adi panel ${nf(an.A_2axis_kWh_m2, 0)} kWh/m².
+      Fərq ${pct((an.lens_C5_cooled_kWh_m2 / an.A_fixed_kWh_m2 - 1) * 100)} və ${pct((an.lens_C5_cooled_kWh_m2 / an.A_2axis_kWh_m2 - 1) * 100)}-dir.`, "Səhvdir"],
+    ["Kvars şüşə 1000 °C-yə, borosilikat 500 °C-yə dözür, şəffaflıq 90%+",
+     `Materialların özü üçün təxminən düzdür. Lakin problem örtükdə deyil: silikon hüceyrə pasporta görə ən çoxu ${K.inputs.T_MAX} °C-də işləyə bilər.
+      Hər °C üçün də ${nf(-K.inputs.GAMMA * 100, 2)}% güc itirir. C = 5-də soyutmasız hüceyrə ${nf(c5.passive.T_cell_C, 0)} °C-yə qızır.`, "Qismən: fakt düzdür, nəticəyə kömək etmir"],
+  ];
+  $("claims").innerHTML = `<thead><tr><th>Qaralamadakı iddia</th><th style="text-align:left">Düzgün hesab</th><th style="text-align:left">Nəticə</th></tr></thead><tbody>${
+    rows.map(r => `<tr style="cursor:default"><td style="white-space:normal;min-width:180px">${r[0]}</td><td style="white-space:normal;text-align:left;font-family:var(--font)">${r[1]}</td>${verdict(r[2])}</tr>`).join("")}</tbody>`;
+  const r5 = (name, o, note) => `<tr style="cursor:default"><td style="white-space:normal">${name}</td><td>${nf(o.T_cell_C, 0)} °C</td><td>${nf(o.P_W, 0)} W</td><td>${pc1(o.eta_vs_aperture)}</td><td style="white-space:normal;text-align:left;font-family:var(--font)">${note}</td></tr>`;
+  $("c5").innerHTML = `<thead><tr><th>Variant (DNI 1000 W/m², 25 °C hava, 1 m/s külək)</th><th style="text-align:left">Hüceyrə</th><th>Güc</th><th>Səmərəlilik (işıqtoplama sahəsinə)</th><th style="text-align:left">Qeyd</th></tr></thead><tbody>${
+    r5(`Linza ${nf(c5.passive.aperture_m2, 2)} m², işıq 1 panelə yığılır, soyutmasız`, c5.passive, `Pasportdakı ${K.inputs.T_MAX} °C həddi aşılır: panel zədələnər.`) +
+    r5("Eyni, aktiv soyutma ilə (hüceyrə 60 °C)", c5.cooled60, "Soyutmanın enerji sərfi daxil deyil.") +
+    r5("Eyni, ideal soyutma ilə (hüceyrə 25 °C)", c5.cooled25, "Nəzəri yuxarı hədd.") +
+    `<tr style="cursor:default"><td style="white-space:normal">Linzasız: eyni ${nf(c5.passive.aperture_m2, 2)} m²-də 5 adi panel</td><td>${nf(plain.T_cell_C, 0)} °C</td><td>${nf(5 * plain.P_W, 0)} W</td><td>${pc1(5 * plain.P_W / (1000 * c5.passive.aperture_m2))}</td><td style="white-space:normal;text-align:left;font-family:var(--font)">Soyutma lazım deyil. STC-də ${nf(c5.five_plain_modules_W, 0)} W.</td></tr>`
+  }</tbody>`;
+  $("c5-note").textContent = `Linzanın şəffaflığı 90% götürülüb (qaralamanın öz rəqəmi). İşıq paneldə bərabər paylanır (konsentrasiya üçün ən əlverişli hal). Yüksək işıqda seriya müqaviməti itkisi hər əlavə “günəş” üçün ${nf(K.inputs.RS_K * 100, 1)}%-dir (fərziyyə).
+    C = 5 linza yalnız birbaşa işığı yığır və Günəşi izləməlidir. Bakıda izləmə müstəvisinə düşən işığın ${nf(an.beam_share_on_tracker * 100, 0)}%-i birbaşadır, qalanı itir.
+    Soyutmasız variantda il ərzində ${nf(an.lens_hours_above_Tmax, 0)} saat hüceyrə ${K.inputs.T_MAX} °C-dən isti olardı.`;
 
   update(true);
   window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => update(false));
