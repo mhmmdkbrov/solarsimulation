@@ -13,3 +13,5 @@ nbformat>=5.10
 nbclient>=0.10
 nbconvert>=7.16          # tested 7.17.2 (headless execution)
 jupyterlab>=4.2          # interactive use (optional for headless execution)
+pytest>=8.0              # test suite (tests/)
+# Node.js >= 18 is needed only for the browser parity tests (tests/parity_model.js, tests/parity_lens.py)

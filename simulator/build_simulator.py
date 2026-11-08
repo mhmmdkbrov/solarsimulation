@@ -1,31 +1,15 @@
-"""Build the interactive simulator page (single self-contained HTML).
+"""Assemble the three static pages for GitHub Pages (docs/).
 
-Run from the project folder after the notebook has been executed:
-    .venv/Scripts/python simulator/export_web.py simulator/data.json
-    node simulator/verify.js            # JS model vs. notebook numbers
-    .venv/Scripts/python simulator/build_simulator.py
+Order of the pipeline (Python → export → static site):
+    python -m solarsim.fetch_all            # raw PVGIS downloads (server side), stored with request metadata
+    python -m solarsim.build                # docs/data/<dataset>.json + docs/data/index.json (all numbers)
+    python simulator/build_simulator.py     # docs/index.html, docs/lab.html, docs/simulator.html (JS inlined)
+The pages load the datasets at run time; no number is typed into a page by hand.
 """
-import json
 from pathlib import Path
 
-here = Path(__file__).resolve().parent
-html = (here / "template.html").read_text(encoding="utf-8")
-model = (here / "model.js").read_text(encoding="utf-8")
-data = (here / "data.json").read_text(encoding="utf-8").replace("</", "<\\/")
-out = here / "baku_solar_simulator.html"
-out.write_text(html.replace("__MODEL__", model).replace("__DATA__", data), encoding="utf-8")
-print(f"{out.name}: {out.stat().st_size / 1e6:.2f} MB")
-
-# simple explainer "lens vs. ordinary panel" (needs: node simulator/lens_cases.js simulator/lens_cases.json)
-cases = here / "lens_cases.json"
-if cases.exists():
-    lens = (here / "lens_template.html").read_text(encoding="utf-8")
-    out2 = here / "linza_vs_adi_panel.html"
-    out2.write_text(lens.replace("__CASES__", cases.read_text(encoding="utf-8").replace("</", "<\\/")), encoding="utf-8")
-    print(f"{out2.name}: {out2.stat().st_size / 1e3:.0f} kB")
-
-# ---------- static website (GitHub Pages serves the docs/ folder) ----------
-SITE = here.parent / "docs"
+HERE = Path(__file__).resolve().parent
+SITE = HERE.parent / "docs"
 SKELETON_HEAD = """<!doctype html>
 <html lang="az">
 <head>
@@ -37,31 +21,24 @@ body{margin:0;font:14px system-ui,-apple-system,"Segoe UI",sans-serif}img{max-wi
 
 
 def to_site(page: str) -> str:
-    """Wrap an artifact page (no <html>/<head>/<body>) into a full standalone HTML document."""
-    cut = page.index('<div class="wrap">')
+    """Wrap a page body (no <html>/<head>/<body>) into a full standalone HTML document."""
+    cut = page.index('<div class="wrap"')
     return SKELETON_HEAD + page[:cut] + "</head>\n<body>\n" + page[cut:] + "\n</body>\n</html>\n"
 
 
-SITE.mkdir(exist_ok=True)
+def main():
+    js = {name: (HERE / f"{name}.js").read_text(encoding="utf-8") for name in ("datastore", "model", "lensoptics")}
+    pages = {"index.html": "lens_template.html", "lab.html": "lab_template.html", "simulator.html": "template.html"}
+    SITE.mkdir(exist_ok=True)
+    (SITE / ".nojekyll").write_text("", encoding="utf-8")
+    for out, tpl in pages.items():
+        t = (HERE / tpl).read_text(encoding="utf-8")
+        t = t.replace("__DATASTORE__", js["datastore"]).replace("__MODEL__", js["model"]).replace("__LENSOPTICS__", js["lensoptics"])
+        for leftover in ("__DATASTORE__", "__MODEL__", "__LENSOPTICS__", "__DATA__", "__CASES__", "__LABDATA__"):
+            assert leftover not in t, f"{tpl}: placeholder {leftover} left"
+        (SITE / out).write_text(to_site(t), encoding="utf-8")
+        print(f"docs/{out}: {(SITE / out).stat().st_size / 1e3:.0f} kB")
 
-# lens lab (needs: node simulator/lens_cases.js ... and node simulator/lens_tests.js simulator/lens_tests.json)
-tests = here / "lens_tests.json"
-if cases.exists() and tests.exists():
-    full = json.loads((here / "data.json").read_text(encoding="utf-8"))
-    year = {"meta": full["meta"], **{k: full[k] for k in ("doy", "hour", "f_glob", "f_beam", "f_diff", "ta", "ws")}}
-    labdata = {"rep": json.loads(cases.read_text(encoding="utf-8"))["rep"],
-               "tests": json.loads(tests.read_text(encoding="utf-8")), "year": year,
-               "claims": json.loads((here / "claims_check.json").read_text(encoding="utf-8"))}
-    lab = (here / "lab_template.html").read_text(encoding="utf-8")
-    lab = lab.replace("__LENSOPTICS__", (here / "lensoptics.js").read_text(encoding="utf-8"))
-    lab = lab.replace("__LABDATA__", json.dumps(labdata, separators=(",", ":"), ensure_ascii=False).replace("</", "<\\/"))
-    (here / "linza_laboratoriyasi.html").write_text(lab, encoding="utf-8")
-    (SITE / "lab.html").write_text(to_site(lab), encoding="utf-8")
-    print(f"lab.html: {(SITE / 'lab.html').stat().st_size / 1e3:.0f} kB")
-(SITE / ".nojekyll").write_text("", encoding="utf-8")
-(SITE / "simulator.html").write_text(to_site(out.read_text(encoding="utf-8")), encoding="utf-8")
-if cases.exists():
-    page = out2.read_text(encoding="utf-8").replace("https://claude.ai/artifact/S3NXogBuvnbRhZyb6kdH6g", "simulator.html")
-    page = page.replace('target="_blank" rel="noopener">ətraflı simulyatorda', '>ətraflı simulyatorda')
-    (SITE / "index.html").write_text(to_site(page), encoding="utf-8")
-print("site:", sorted(p.name for p in SITE.iterdir()))
+
+if __name__ == "__main__":
+    main()

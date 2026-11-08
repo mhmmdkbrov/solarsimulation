@@ -4,500 +4,417 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;800&family=Noto+Sans+Mono:wght@500&display=swap">
 <style>
-/* Layout: optical bench — controls on top, ray diagram (side view) beside the cell map (top view), then numbers, tests and the answer. */
+/* Layout: optical bench — dataset bar, controls, then ray diagram (side) beside the cell map (top), light balance, numbers, tables. */
 :root {
   --bg: #f2f6f9; --surface: #ffffff; --surface-2: #eef3f7; --ink: #142231; --ink-2: #485868; --muted: #778594; --line: #d9e1e8;
-  --accent: #1d5fb8; --accent-ink: #ffffff; --panel-a: #2a78d6; --panel-b: #6250d6;
-  --good: #128a5e; --bad: #c2412b; --good-bg: #e2f5ec; --bad-bg: #fbe7e2; --warn-bg: #fff4dc; --warn-ink: #6b4a00;
-  --bench: #0f1b2b; --bench-ink: #dbe6f2;
-  --font: "Noto Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --mono: "Noto Sans Mono", ui-monospace, Consolas, monospace;
+  --accent: #1d5fb8; --accent-ink: #ffffff; --good: #128a5e; --bad: #c2412b; --good-bg: #e2f5ec; --bad-bg: #fbe7e2;
+  --warn-bg: #fff4dc; --warn-ink: #6b4a00; --bench: #0f1b2b; --bench-ink: #dbe6f2;
+  --c-own: #ffc93c; --c-nb: #ff8f3c; --c-gap: #8e9aa6; --c-off: #e5534b; --c-refl: #7cb7ff; --c-abs: #b07cff; --c-glass: #9fd4e8;
+  --font: "Noto Sans", system-ui, -apple-system, "Segoe UI", sans-serif; --mono: "Noto Sans Mono", ui-monospace, Consolas, monospace;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0e151c; --surface: #16202a; --surface-2: #1c2834; --ink: #e5edf4; --ink-2: #aebccb; --muted: #7f8d9b; --line: #2a3846;
-    --accent: #5b9be8; --accent-ink: #08172a; --panel-a: #3987e5; --panel-b: #9085e9;
-    --good: #4cc795; --bad: #ef7a63; --good-bg: #123327; --bad-bg: #3a1c16; --warn-bg: #3a2d0c; --warn-ink: #f1d48f;
-    --bench: #0a121c; --bench-ink: #dbe6f2; color-scheme: dark;
-  }
-}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0e151c; --surface: #16202a; --surface-2: #1c2834; --ink: #e5edf4; --ink-2: #aebccb; --muted: #7f8d9b; --line: #2a3846;
+  --accent: #5b9be8; --accent-ink: #08172a; --good: #4cc795; --bad: #ef7a63; --good-bg: #123327; --bad-bg: #3a1c16;
+  --warn-bg: #3a2d0c; --warn-ink: #f1d48f; --bench: #0a121c; color-scheme: dark; } }
 :root[data-theme="dark"] {
   --bg: #0e151c; --surface: #16202a; --surface-2: #1c2834; --ink: #e5edf4; --ink-2: #aebccb; --muted: #7f8d9b; --line: #2a3846;
-  --accent: #5b9be8; --accent-ink: #08172a; --panel-a: #3987e5; --panel-b: #9085e9;
-  --good: #4cc795; --bad: #ef7a63; --good-bg: #123327; --bad-bg: #3a1c16; --warn-bg: #3a2d0c; --warn-ink: #f1d48f;
-  --bench: #0a121c; --bench-ink: #dbe6f2; color-scheme: dark;
-}
+  --accent: #5b9be8; --accent-ink: #08172a; --good: #4cc795; --bad: #ef7a63; --good-bg: #123327; --bad-bg: #3a1c16;
+  --warn-bg: #3a2d0c; --warn-ink: #f1d48f; --bench: #0a121c; color-scheme: dark; }
 * { box-sizing: border-box; }
 body { background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 15px; line-height: 1.55; }
-.wrap { max-width: 1180px; margin: 0 auto; padding-block: 24px 56px;
-  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 20px; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-block: 24px 56px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 18px; }
 h1, h2, h3 { margin: 0; text-wrap: balance; }
-h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800; line-height: 1.1; letter-spacing: -0.015em; }
-h2 { font-size: 1.25rem; font-weight: 800; }
+h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800; line-height: 1.1; }
+h2 { font-size: 1.2rem; font-weight: 800; }
 h3 { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-2); }
-p { margin: 0; }
-a { color: var(--accent); }
-.lead { color: var(--ink-2); max-width: 70ch; font-size: 1.05rem; }
+p { margin: 0; } a { color: var(--accent); }
 .nav { display: flex; gap: 14px; flex-wrap: wrap; font-size: 0.9rem; }
-.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 14px; min-width: 0; }
-.controls { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 18px 28px; }
+.eyebrow { font-size: 0.8rem; color: var(--muted); }
+.lead { color: var(--ink-2); max-width: 75ch; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.ds { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; display: grid; gap: 6px; }
+.ds-row { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+.ds-lbl { font-size: 0.8rem; font-weight: 600; color: var(--ink-2); }
+.ds-select { font: inherit; padding: 5px 8px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); max-width: 100%; }
+.ds-file { font-size: 0.82rem; color: var(--accent); cursor: pointer; } .ds-file input { display: block; font-size: 0.8rem; max-width: 260px; }
+.ds-msg { font-size: 0.82rem; color: var(--ink-2); }
+.controls { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px 28px; }
 @media (max-width: 860px) { .controls { grid-template-columns: minmax(0, 1fr); } }
 .ctl { display: grid; gap: 8px; align-content: start; }
-.power-read { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-.power-read .d { font-family: var(--mono); font-size: 2.2rem; font-weight: 500; font-variant-numeric: tabular-nums; line-height: 1; }
-.power-read .type { font-size: 0.95rem; }
-.power-read svg { width: 46px; height: 56px; flex: none; }
+.row { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.val { font-family: var(--mono); font-size: 0.95rem; white-space: nowrap; }
+.big { font-family: var(--mono); font-size: 2rem; font-weight: 500; line-height: 1; }
 input[type=range] { width: 100%; accent-color: var(--accent); }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.chip { font: inherit; font-size: 0.88rem; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 5px 12px; cursor: pointer; }
-.chip:hover { border-color: var(--accent); }
+.chip { font: inherit; font-size: 0.86rem; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 5px 12px; cursor: pointer; }
 .chip[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
-.chip:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.chip.user { font-family: var(--mono); font-weight: 500; }
+.chip:disabled { opacity: 0.4; cursor: not-allowed; }
+.chip:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .hint { font-size: 0.8rem; color: var(--muted); }
-.row { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
-.val { font-family: var(--mono); font-size: 0.95rem; white-space: nowrap; }
+.validity { border-radius: 10px; padding: 10px 14px; font-size: 0.9rem; }
+.validity.hi { background: var(--good-bg); } .validity.mid { background: var(--warn-bg); color: var(--warn-ink); } .validity.lo { background: var(--bad-bg); }
 .views { display: grid; grid-template-columns: minmax(0, 2.1fr) minmax(0, 1fr); gap: 16px; }
 @media (max-width: 860px) { .views { grid-template-columns: minmax(0, 1fr); } }
 .view { background: var(--bench); color: var(--bench-ink); border-radius: 14px; padding: 12px; display: grid; gap: 8px; min-width: 0; }
-.view h3 { color: #9fb3c8; }
+.view h3 { color: #9fb3c8; } .view .hint { color: #8ea2b6; }
 .view canvas { width: 100%; height: auto; display: block; max-width: 100%; }
-.view .hint { color: #8ea2b6; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 0.8rem; }
+.legend i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; margin-right: 5px; vertical-align: -1px; }
+.bal { display: flex; height: 22px; border-radius: 6px; overflow: hidden; gap: 1px; background: var(--surface-2); }
+.bal span { height: 100%; }
 .numbers { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
 @media (max-width: 900px) { .numbers { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .num { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 2px; }
-.num .k { font-size: 0.8rem; color: var(--ink-2); }
-.num .v { font-family: var(--mono); font-size: 1.6rem; font-weight: 500; font-variant-numeric: tabular-nums; }
-.num .s { font-size: 0.8rem; color: var(--muted); }
-.verdict { border-radius: 12px; padding: 14px 18px; display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: baseline; }
-.verdict.bad { background: var(--bad-bg); } .verdict.good { background: var(--good-bg); }
-.verdict .pct { font-family: var(--mono); font-size: 2rem; font-weight: 500; }
-.verdict.bad .pct { color: var(--bad); } .verdict.good .pct { color: var(--good); }
-.verdict .txt { flex: 1 1 360px; }
-.explain { display: grid; gap: 6px; padding-left: 18px; margin: 0; color: var(--ink-2); }
+.num .k { font-size: 0.8rem; color: var(--ink-2); } .num .v { font-family: var(--mono); font-size: 1.5rem; font-weight: 500; } .num .s { font-size: 0.78rem; color: var(--muted); }
 .tablewrap { overflow-x: auto; }
-table { border-collapse: collapse; width: 100%; font-size: 0.9rem; font-variant-numeric: tabular-nums; }
-th, td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
-th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) { text-align: left; }
-th { font-size: 0.78rem; color: var(--ink-2); font-weight: 600; }
+table { border-collapse: collapse; width: 100%; font-size: 0.86rem; font-variant-numeric: tabular-nums; }
+th, td { padding: 7px 9px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+th:first-child, td:first-child, td.txt, th.txt { text-align: left; }
+td.txt { white-space: normal; }
+th { font-size: 0.76rem; color: var(--ink-2); font-weight: 600; }
 td.bad { color: var(--bad); font-weight: 600; } td.good { color: var(--good); font-weight: 600; }
-tbody tr { cursor: pointer; } tbody tr:hover { background: var(--surface-2); }
-.answer { background: var(--warn-bg); color: var(--warn-ink); border-radius: 14px; padding: 16px 18px; display: grid; gap: 8px; }
-.answer ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+tr.click { cursor: pointer; } tr.click:hover { background: var(--surface-2); }
+.loading .views, .loading .numbers, .loading .tables { opacity: 0.3; }
 footer { font-size: 0.82rem; color: var(--ink-2); display: grid; gap: 6px; max-width: 95ch; }
 </style>
 
-<div class="wrap">
+<div class="wrap" id="root">
   <header style="display:grid; gap:10px">
     <nav class="nav"><a href="index.html">← Sadə izah</a><a href="simulator.html">Ətraflı simulyator</a></nav>
+    <div class="eyebrow" id="eyebrow">məlumat yüklənir…</div>
     <h1>Linza laboratoriyası</h1>
-    <p class="lead">Linzanın gücünü dioptriya ilə dəyişin. Panelin üstündə nə qədər hündürlükdə və necə qoyulduğunu seçin. Şüaların hara düşdüyünə, hansı hüceyrələrin işıqlandığına və nə qədər elektrik alındığına baxın.</p>
+    <p class="lead">Linzanın gücünü dioptriya ilə, panelə qədər məsafəsini və düzülüşünü dəyişin. Şüaların öz hüceyrəyə, qonşu hüceyrəyə, hüceyrələr arası boşluğa və ya paneldən kənara düşməsinə, hüceyrələrin işıqlanmasına və alınan elektrikə baxın. Rəqəmlər sonlu panel həndəsəsi olan nazik linza modelindən gəlir və Python modeli ilə eynidir.</p>
   </header>
+  <section class="ds" id="ds"></section>
 
   <section class="card" aria-label="Linzanın parametrləri">
     <div class="controls">
       <div class="ctl">
         <h3>Linzanın gücü</h3>
-        <div class="power-read"><svg id="lens-icon" viewBox="0 0 46 56" aria-hidden="true"></svg><span class="d" id="p-read"></span><span class="type" id="p-type"></span></div>
+        <div class="row"><span class="big" id="p-read"></span><span id="p-type"></span></div>
         <input type="range" id="power" min="-15" max="15" step="0.5" aria-label="Linzanın gücü, dioptriya">
         <div class="chips" id="p-chips">
-          <button class="chip user" data-p="-10" type="button">−10 D</button>
-          <button class="chip user" data-p="-3" type="button">−3 D</button>
-          <button class="chip user" data-p="0" type="button">0 (düz təbəqə)</button>
-          <button class="chip user" data-p="3" type="button">+3 D</button>
-          <button class="chip user" data-p="10" type="button">+10 D</button>
-          <button class="chip user" data-p="13.5" type="button">+13,5 D</button>
+          <button class="chip" data-p="-10" type="button">−10 D</button><button class="chip" data-p="-3" type="button">−3 D</button>
+          <button class="chip" data-p="0" type="button">0 (düz təbəqə)</button><button class="chip" data-p="3" type="button">+3 D</button>
+          <button class="chip" data-p="10" type="button">+10 D</button><button class="chip" data-p="13.5" type="button">+13,5 D</button>
         </div>
-        <p class="hint">Müsbət (+) dioptriya toplayıcı, yəni qabarıq linzadır. Mənfi (−) dioptriya səpələyici, yəni çökük linzadır. Fokus məsafəsi f = 1 / D metr.</p>
+        <p class="hint">f = 1/D metr. D = 0: düz təbəqə, işığı yığmır. D &gt; 0: toplayıcı linza, real fokus. D &lt; 0: səpələyici linza, fokus xəyalidir (linzanın üstündə), şüalar açılır.</p>
       </div>
       <div class="ctl">
-        <div class="row"><h3>Linza ilə hüceyrələr arası məsafə</h3><span class="val" id="h-read"></span></div>
-        <input type="range" id="hlog" min="0" max="1000" step="1" aria-label="Linza ilə hüceyrələr arası məsafə">
+        <div class="row"><h3>Linza ilə hüceyrə müstəvisi arası məsafə h</h3><span class="val" id="h-read"></span></div>
+        <input type="range" id="hlog" min="0" max="1000" step="1" aria-label="Məsafə">
         <div class="chips">
-          <button class="chip" id="h-glass" type="button">Şüşənin üstündə (3 mm)</button>
-          <button class="chip" id="h-10" type="button">10 sm</button>
-          <button class="chip" id="h-f" type="button">Fokusda (h = f)</button>
+          <button class="chip" id="h-3" type="button">şüşənin üstündə (3 mm)</button>
+          <button class="chip" id="h-100" type="button">10 sm sınaq məsafəsi</button>
+          <button class="chip" id="h-f" type="button">fokusda (h = f)</button>
         </div>
-        <h3 style="margin-top:6px">Linzanın düzülüşü</h3>
+        <p class="hint">Hüceyrələr 1,6 mm şüşə və ~0,5 mm laminat altındadır, ona görə h ≥ 2,6 mm. Şüşədə şüalar Snell qanunu ilə sınır.</p>
+      </div>
+      <div class="ctl">
+        <h3>Düzülüş</h3>
         <div class="chips" id="mode">
           <button class="chip" data-m="big" type="button">Bütün panelə bir böyük linza</button>
-          <button class="chip" data-m="array" type="button">Hər hüceyrəyə kiçik linza</button>
+          <button class="chip" data-m="array" type="button">Hər hüceyrəyə sferik linza</button>
+          <button class="chip" data-m="array_cyl" type="button">Hər sıraya silindrik linza</button>
         </div>
-        <h3 style="margin-top:6px">Linzanın materialı</h3>
+        <h3>Material (normal düşmədə ötürmə)</h3>
         <div class="chips" id="tau">
-          <button class="chip" data-t="0.92" type="button">Adi plastik, şüşə (92%)</button>
-          <button class="chip" data-t="0.96" type="button">Əks olunmaya qarşı örtüklü (96%)</button>
-          <button class="chip" data-t="1" type="button">Mükəmməl, itkisiz (nəzəri)</button>
+          <button class="chip" data-t="0.92" type="button">adi (92%)</button>
+          <button class="chip" data-t="0.96" type="button">əks olunmaya qarşı örtüklü (96%)</button>
+          <button class="chip" data-t="1" type="button">itkisiz (nəzəri)</button>
         </div>
       </div>
       <div class="ctl">
-        <h3>Hava</h3>
-        <div class="chips" id="wx"></div>
-      </div>
-      <div class="ctl">
-        <div class="row"><h3>Saat (21 iyun, Bakı vaxtı)</h3><span class="val" id="t-read"></span></div>
-        <input type="range" id="hour" min="6" max="20" step="0.25" value="13" aria-label="Saat">
-        <p class="hint">Saat dəyişdikcə Günəşin bucağı, onunla birlikdə də fokus nöqtəsinin yeri dəyişir.</p>
+        <div class="row"><h3>Gün və yerli saat (məlumat dəstindən)</h3><span class="val" id="t-read"></span></div>
+        <input type="range" id="day" min="1" max="365" step="1" value="172" aria-label="İlin günü">
+        <input type="range" id="hour" min="0" max="23" step="1" value="13" aria-label="Yerli saat">
+        <p class="hint" id="sun-read"></p>
       </div>
     </div>
   </section>
 
-  <div class="verdict" id="verdict" aria-live="polite"><span class="pct" id="v-pct"></span><span class="txt" id="v-txt"></span></div>
+  <div class="validity" id="validity"></div>
 
   <div class="views">
-    <section class="view" aria-label="Yandan görünüş">
-      <h3>Yandan görünüş: şüalar linzadan keçib hüceyrələrə düşür</h3>
-      <canvas id="side" width="760" height="400" role="img" aria-label="Şüaların yandan görünüşü"></canvas>
-      <p class="hint">Sarı: hüceyrəyə düşən birbaşa işıq. Boz: hüceyrələr arası boşluğa və ya paneldən kənara düşən işıq. Bu görünüşdə panel boyunca kəsik göstərilir.</p>
+    <section class="view">
+      <h3>Yandan: panelin maililiyi istiqamətində kəsik</h3>
+      <canvas id="side" width="760" height="400" role="img" aria-label="Şüaların yolu"></canvas>
+      <div class="legend"><span><i style="background:var(--c-own)"></i>öz hüceyrəsi</span><span><i style="background:var(--c-nb)"></i>qonşu hüceyrə</span><span><i style="background:var(--c-gap)"></i>hüceyrələr arası boşluq</span><span><i style="background:var(--c-off)"></i>paneldən kənar</span></div>
+      <p class="hint" id="side-note"></p>
     </section>
-    <section class="view" aria-label="Yuxarıdan görünüş">
-      <h3>Yuxarıdan: 144 hüceyrə</h3>
-      <canvas id="top" width="300" height="420" role="img" aria-label="Hüceyrələrin işıqlanma xəritəsi"></canvas>
+    <section class="view">
+      <h3>Yuxarıdan: 144 hüceyrə, bu saat</h3>
+      <canvas id="top" width="300" height="440" role="img" aria-label="Hüceyrələrin işıqlanması"></canvas>
       <p class="hint" id="top-note"></p>
     </section>
   </div>
 
-  <div class="numbers">
-    <div class="num"><span class="k">İndi, adi panel</span><span class="v" id="n-a"></span><span class="s">W, 1 panel</span></div>
-    <div class="num"><span class="k">İndi, linzalı panel</span><span class="v" id="n-l"></span><span class="s">W, 1 panel</span></div>
-    <div class="num"><span class="k">Bakıda il ərzində, adi panel</span><span class="v" id="y-a"></span><span class="s">kWh/m²</span></div>
-    <div class="num"><span class="k">Bakıda il ərzində, linzalı panel</span><span class="v" id="y-l"></span><span class="s" id="y-s">kWh/m²</span></div>
-  </div>
-  <ul class="explain" id="explain"></ul>
-
   <section class="card">
-    <h2>Sizin testləriniz: +3, −3, +10, −10 dioptriya</h2>
-    <p class="hint">Bakının bütün ili üzrə, adi panelə nisbətən. Material 92% ötürür. Sətrə basın, o konfiqurasiya yuxarıda açılacaq.</p>
-    <div class="tablewrap"><table id="tests"></table></div>
+    <h3>Bu saatda işığın balansı (linzaya düşən = 100%)</h3>
+    <div class="bal" id="bal"></div>
+    <div class="legend" id="bal-leg"></div>
   </section>
 
-  <section class="answer">
-    <h2 style="color:inherit">Effektivliyi artırmaq olarmı?</h2>
-    <div id="best"></div>
-  </section>
+  <div class="numbers">
+    <div class="num"><span class="k">Bu saat, linzasız modul</span><span class="v" id="n-a">—</span><span class="s">W, 1 panel (brüt DC)</span></div>
+    <div class="num"><span class="k">Bu saat, linzalı modul</span><span class="v" id="n-l">—</span><span class="s" id="n-ls">W</span></div>
+    <div class="num"><span class="k">İl ərzində, linzasız</span><span class="v" id="y-a">—</span><span class="s">kWh/m² apertura (brüt DC)</span></div>
+    <div class="num"><span class="k">İl ərzində, linzalı</span><span class="v" id="y-l">—</span><span class="s" id="y-s">kWh/m² apertura</span></div>
+  </div>
+  <p class="hint">Hesab üsulu: linza və “boş linza” (n = 1, ötürmə 100%, D = 0) eyni optik zəncirdən keçirilir. Onların nisbəti pvlib baza ssenarisi A-ya tətbiq olunur. Elektrik: hüceyrə xəritəsindən sürətli “ən zəif hüceyrə” qaydası (T1 topologiyası). Hüceyrə I–V modeli ilə yoxlama aşağıdakı cədvəldədir.</p>
 
-  <section class="card" id="claims-card">
-    <h2>Təqdimat qaralamasındakı hesablamaların yoxlanması</h2>
-    <p class="hint">“Linzalarla günəş panelinin səmərəliliyinin artırılması” təqdimat qaralamasındakı rəqəmlər bu layihənin modeli ilə yenidən hesablanıb.
-      Eyni modul, eyni Bakı hava məlumatı və eyni temperatur modeli işlədilib. Hesab: <span style="font-family:var(--mono)">simulator/claims_check.js</span>.</p>
-    <div class="tablewrap"><table id="claims"></table></div>
-    <h3>Düzgün hesab: C = 5 dəfə konsentrasiya</h3>
-    <div class="tablewrap"><table id="c5"></table></div>
-    <p class="hint" id="c5-note"></p>
-  </section>
+  <div class="tables" style="display:grid; gap:18px">
+    <section class="card"><h2>Tələb olunan sınaqlar: +3, −3, +10, −10 D</h2><p class="hint" id="tests-note"></p><div class="tablewrap" id="tests"></div></section>
+    <section class="card" id="best-card"><h2>Sınanmış diapazonda ən yaxşı linza massivi</h2><div id="best"></div></section>
+    <section class="card" id="iv-card"><h2>Elektrik modeli: sürətli qayda ↔ hüceyrə I–V modeli</h2><div class="tablewrap" id="iv"></div><p class="hint" id="iv-note"></p></section>
+    <section class="card" id="tr-card"><h2>Növbəti dəqiqlik səviyyəsi: Snell/Fresnel şüa izləməsi ↔ paraksial model</h2><div class="tablewrap" id="tr"></div><p class="hint">2D izləmə maililik istiqamətindədir. Sferik plan-qabarıq (D &gt; 0) və ya plan-çökük (D &lt; 0) linza götürülür, əyri tərəfi Günəşə baxır, R = (n − 1)·|f|. Günəş diski ±0,27° ilə nümunələnir. Real linza profili məlum olmadığı üçün bu profil fərziyyədir.</p></section>
+    <section class="card" id="c5-card"><h2>C = 5 sınağı: eyni ümumi apertura</h2><div id="c5"></div></section>
+  </div>
 
-  <footer>
-    <p><b>Necə hesablanıb.</b> Nazik linza, paraksial həndəsi optika. Linza aperturası hüceyrə müstəvisində m = 1 − h/f dəfə kiçilir və ya böyüyür, h·tan(θ) qədər sürüşür.
-      Fokus nöqtəsi Günəş diskinin ölçüsündən (0,53°) kiçik ola bilməz. Linzanın materialında Fresnel əks olunması və udulma (n = 1,49) hesaba alınır.
-      Səpələnmiş işıq səmanın bütün istiqamətlərindən ortalanır. Panel 6 × 24 hüceyrədən ibarətdir və 3 bypass diod qrupu var. Hər qrupda ardıcıl qoşulmuş hüceyrələrin cərəyanını ən zəif hüceyrə məhdudlaşdırır.</p>
-    <p><b>Fərziyyələr.</b> Hüceyrə ölçüsü 182 × 70 mm-dir (aktiv sahə 92%). Konsentrasiyada silikon hüceyrənin seriya müqaviməti itkisi hər əlavə “günəş” üçün 3,5%-dir. Linza başqa heç bir şeyə kölgə salmır. “İndi” rəqəmlərində birbaşa (DNI) və səpələnmiş işıq seçilmiş hava tipinin günorta orta dəyəridir. Saat dəyişdikcə Günəşin bucağı dəqiq hesablanır, səpələnmiş işıq isə Günəşin hündürlüyünə görə sadə yaxınlaşdırma ilə azalır. İllik rəqəmlər bütün 8760 saatlıq məlumatdan hesablanır.
-      Hava məlumatı PVGIS 5.3 TMY-dəndir (Bakı, 40,41° N, 49,87° E). Panel 35° maili və cənuba baxır. Prototipdə ölçülməlidir.</p>
-    <p>Mənbə kodu: <a href="https://github.com/mhmmdkbrov/solarsimulation" target="_blank" rel="noopener">github.com/mhmmdkbrov/solarsimulation</a> (MIT).</p>
-  </footer>
+  <footer><p id="foot"></p><p>Mənbə kodu: <a href="https://github.com/mhmmdkbrov/solarsimulation" target="_blank" rel="noopener">github.com/mhmmdkbrov/solarsimulation</a> (MIT).</p></footer>
 </div>
 
-<script type="application/json" id="labdata">__LABDATA__</script>
+<script>
+__DATASTORE__
+</script>
 <script>
 __LENSOPTICS__
 </script>
 <script>
 (() => {
-  const X = JSON.parse(document.getElementById("labdata").textContent);
-  const L = LensOptics, D = X.year;
-  // Azerbaijani number format: decimal comma, (non-breaking) space as thousands separator, true minus sign
-  const nf = (v, d = 0) => { if (!isFinite(v)) return "—"; const s = Math.abs(v).toFixed(d); const [i, f] = s.split("."); const neg = v < 0 && Number(s) !== 0; return (neg ? "−" : "") + i.replace(/\B(?=(\d{3})+(?!\d))/g, "\u00a0") + (f ? "," + f : ""); };
-  const pct = v => `${v >= 0 ? "+" : "−"}${nf(Math.abs(v), 1)}%`;
-  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
-  const WX = [
-    { id: "clear", name: "Açıq, günəşli" }, { id: "hazy", name: "Dumanlı, tozlu" },
-    { id: "partly", name: "Qismən buludlu" }, { id: "overcast", name: "Tam buludlu" },
-  ];
-  let S = { P: 3, h: 3, mode: "big", tau: 0.92, wx: "clear", hour: 13 };
-  try { const s = JSON.parse(localStorage.getItem("lens-lab") || "null"); if (s && typeof s.P === "number") S = { ...S, ...s }; } catch (e) {}
-
-  // log scale for distance: 2.5 mm … 1000 mm
-  const H_MIN = 2.5, H_MAX = 1000;
-  const h2s = h => Math.round(1000 * Math.log(h / H_MIN) / Math.log(H_MAX / H_MIN));
-  const s2h = s => H_MIN * Math.pow(H_MAX / H_MIN, s / 1000);
+  const L = LensOptics, $ = id => document.getElementById(id), nf = (v, d = 0) => DataStore.fmt(v, d);
+  const pct = (v, d = 1) => `${v >= 0 ? "+" : "−"}${nf(Math.abs(v), d)}%`;
+  const sgnD = v => `${v > 0 ? "+" : v < 0 ? "−" : ""}${nf(Math.abs(v), 1)} D`;
+  const MODE = { big: "bir böyük linza", array: "hər hüceyrəyə sferik linza", array_cyl: "hər sıraya silindrik linza" };
+  const H_MIN = 2.6, H_MAX = 1000, h2s = h => Math.round(1000 * Math.log(h / H_MIN) / Math.log(H_MAX / H_MIN)), s2h = s => H_MIN * Math.pow(H_MAX / H_MIN, s / 1000);
   const fmtLen = mm => (mm >= 100 ? `${nf(mm / 10, mm >= 1000 ? 0 : 1)} sm` : `${nf(mm, mm < 10 ? 1 : 0)} mm`);
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  let D = null, S = { P: 3, h: 3, mode: "big", tau: 0.92, day: 172, hour: 13 };
+  try { const s = JSON.parse(localStorage.getItem("solarsim-lab") || "null"); if (s && typeof s.P === "number") S = { ...S, ...s }; } catch (e) {}
+  const cfg = () => ({ P: S.P, h: S.h, mode: S.mode, tau: S.tau, n: 1.49, K: 4, L: 0.003 });
+  const NULL = { P: 0, h: L.T_GLASS, mode: "array", tau: 1, n: 1, K: 0, L: 0.003 };
 
-  document.getElementById("wx").innerHTML = WX.map(w => `<button class="chip" type="button" data-w="${w.id}">${w.name}</button>`).join("");
+  $("power").addEventListener("input", e => { S.P = parseFloat(e.target.value); update(); });
+  $("hlog").addEventListener("input", e => { S.h = +Math.max(H_MIN, s2h(+e.target.value)).toFixed(1); update(); });
+  $("day").addEventListener("input", e => { S.day = +e.target.value; update(); });
+  $("hour").addEventListener("input", e => { S.hour = +e.target.value; update(); });
+  $("p-chips").addEventListener("click", e => { const b = e.target.closest("button"); if (b) { S.P = parseFloat(b.dataset.p); update(); } });
+  $("mode").addEventListener("click", e => { const b = e.target.closest("button"); if (b) { S.mode = b.dataset.m; update(); } });
+  $("tau").addEventListener("click", e => { const b = e.target.closest("button"); if (b) { S.tau = parseFloat(b.dataset.t); update(); } });
+  $("h-3").addEventListener("click", () => { S.h = 3; update(); });
+  $("h-100").addEventListener("click", () => { S.h = 100; update(); });
+  $("h-f").addEventListener("click", () => { if (S.P > 0) { S.h = Math.min(H_MAX, +(1000 / S.P).toFixed(1)); update(); } });
 
-  // ---------- inputs ----------
-  const $ = id => document.getElementById(id);
-  $("power").addEventListener("input", e => { S.P = parseFloat(e.target.value); update(true); });
-  $("hlog").addEventListener("input", e => { S.h = +s2h(+e.target.value).toFixed(1); update(true); });
-  $("hour").addEventListener("input", e => { S.hour = parseFloat(e.target.value); update(false); });
-  $("p-chips").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; S.P = parseFloat(b.dataset.p); update(true); });
-  $("mode").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; S.mode = b.dataset.m; update(true); });
-  $("tau").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; S.tau = parseFloat(b.dataset.t); update(true); });
-  $("wx").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; S.wx = b.dataset.w; update(false); });
-  $("h-glass").addEventListener("click", () => { S.h = 3; update(true); });
-  $("h-10").addEventListener("click", () => { S.h = 100; update(true); });
-  $("h-f").addEventListener("click", () => { if (S.P > 0) { S.h = Math.min(H_MAX, +(1000 / S.P).toFixed(1)); update(true); } });
-
-  // ---------- lens icon ----------
-  function lensIcon(P) {
-    const c = css("--accent");
-    const k = Math.max(-1, Math.min(1, P / 12)) * 12;   // bulge
-    const path = `M14 4 Q${14 - k} 28 14 52 L32 52 Q${32 + k} 28 32 4 Z`;
-    $("lens-icon").innerHTML = Math.abs(P) < 1e-9
-      ? `<rect x="18" y="4" width="10" height="48" rx="2" fill="${c}" opacity=".35" stroke="${c}"/>`
-      : `<path d="${path}" fill="${c}" opacity=".35" stroke="${c}" stroke-width="1.5"/>`;
+  function hourIndex() {
+    const h = D.hourly; let best = -1, bd = 1e9;
+    for (let i = 0; i < h.n; i++) if (h.doy[i] === S.day && h.year_ok[i]) { const d = Math.abs(h.hour[i] - S.hour); if (d < bd) { bd = d; best = i; } }
+    return best;
   }
 
-  // ---------- instantaneous computation ----------
-  const SA = D.meta.sapm.sapm_a, SB = D.meta.sapm.sapm_b, SDT = D.meta.sapm.sapm_dT, PDC0 = D.meta.module.pdc0_W, GAM = D.meta.module.gamma_pdc_per_C;
-  const cellsNow = new Float64Array(L.NX * L.NY);
-  let DF = null, dfKey = "";
+  // ---------- this hour (actual dataset hour; differential method as in the annual result) ----------
+  let DSKY = null, DGND = null, dKey = "", NSKY = null, NGND = null;
   function now() {
-    const key = `${S.P}|${S.h}|${S.mode}`;
-    if (key !== dfKey) { DF = L.diffuseFactors({ P: S.P, h: S.h, mode: S.mode }); dfKey = key; }
-    const w = X.rep[WX.findIndex(q => q.id === S.wx)];
-    const sun = L.sunInPanel(172, S.hour);
-    const gb = sun.up && sun.cos > 0.02 ? w.dni * sun.cos * L.iamGlass(sun.th) : 0;
-    const gd = sun.up ? w.f_diff * Math.max(0, Math.min(1, Math.sin(sun.elev * Math.PI / 180) / 0.95)) : 0;
-    const gglob = (sun.up ? w.dni * Math.max(0, sun.cos) : 0) + gd;
-    const tc = gglob * Math.exp(SA + SB * w.ws) + w.ta + (gglob / 1000) * SDT, tf = 1 + GAM * (tc - 25);
-    const pA = Math.max(0, PDC0 * (gb + gd) / 1000 * tf);
-    const r = L.moduleIrradiance({ ...S }, DF, gb, gd, sun.tx, sun.ty, sun.th, cellsNow);
-    const pL = Math.max(0, PDC0 * r.g / 1000 * tf);
-    return { sun, gb, gd, pA, pL, r, cells: cellsNow, uniform: gb + gd };
+    const c = cfg(), key = `${c.P}|${c.h}|${c.mode}|${c.tau}`, tilt = D.inputs.tilt;
+    if (key !== dKey) { DSKY = L.diffuseResponse(c, tilt, "sky"); DGND = L.diffuseResponse(c, tilt, "ground"); dKey = key; }
+    if (!NSKY) { NSKY = L.diffuseResponse(NULL, tilt, "sky"); NGND = L.diffuseResponse(NULL, tilt, "ground"); }
+    const h = D.hourly, i = hourIndex();
+    if (i < 0 || !(h.f_glob[i] > 0)) return i < 0 ? null : { i, dark: true };
+    const beam = h.cos[i] > 0.02 ? h.beam[i] : 0, th = h.aoi[i] * Math.PI / 180;
+    const r = L.hour(c, beam, h.sky[i], h.ground[i], h.tx[i], h.ty[i], th, DSKY, DGND, new Float64Array(144));
+    const rn = L.hour(NULL, beam, h.sky[i], h.ground[i], h.tx[i], h.ty[i], th, NSKY, NGND, new Float64Array(144));
+    const fg = h.f_glob[i], tc = fg * Math.exp(-3.47 - 0.0594 * h.ws[i]) + h.ta[i] + fg / 1000 * 3, tf = 1 - 0.003 * (tc - 25);
+    const mean = a => a.reduce((s, v) => s + v, 0) / a.length;
+    const ff = L.fastFactor(r.cells), fn = L.fastFactor(rn.cells);
+    const pLc = Math.max(0, 450 * mean(r.cells) / 1000 * tf) * ff.f, pNc = Math.max(0, 450 * mean(rn.cells) / 1000 * tf) * fn.f;
+    const pA = Math.max(0, 450 * (h.f_beam[i] + h.f_diff[i]) / 1000 * tf);
+    return { i, r, rn, ff, pA, pL: pNc > 0 ? pA * pLc / pNc : 0, beam, th };
   }
 
-  // ---------- side view (ray diagram) ----------
+  // ---------- side view ----------
   function drawSide(n) {
-    const cv = $("side"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
-    ctx.clearRect(0, 0, W, H);
-    const big = S.mode === "big";
-    const span = big ? L.LY : 3 * L.PY;                // mm shown along the slope
-    const top = 40, bottom = H - 50;
-    const s = Math.min((W - 80) / span, (bottom - top - 20) / Math.max(S.h, 1));
-    // vertical scale: true scale when possible, exaggerated for small distances so the lens stays visible
-    const sv = Math.min((bottom - top - 30) / S.h, Math.max(s, 90 / S.h));
-    const exaggerated = sv > s * 1.05;
-    const x0 = W / 2, yCell = bottom, yLens = bottom - S.h * sv;
-    const X = y => x0 + y * s;
-    // cells along the slope
-    const nCells = big ? L.NY : 5, firstC = big ? -L.LY / 2 + L.PY / 2 : -2 * L.PY;
-    ctx.fillStyle = "#24364d"; ctx.fillRect(X(-span / 2) - 6, yCell, (span) * s + 12, 14);
-    for (let k = 0; k < nCells; k++) {
-      const cy = firstC + k * L.PY;
-      ctx.fillStyle = "#1e4fa8";
-      ctx.fillRect(X(cy - L.CY / 2), yCell, L.CY * s, 8);
-    }
-    ctx.fillStyle = "rgba(190,215,235,0.35)"; ctx.fillRect(X(-span / 2) - 6, yCell - 4, span * s + 12, 4);
-    // rays
-    const f = Math.abs(S.P) < 1e-9 ? Infinity : 1000 / S.P;
-    const k0 = -n.sun.ty;                                // slope (mm along slope per mm depth)
+    const cv = $("side"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height; ctx.clearRect(0, 0, W, H);
+    const big = S.mode === "big", span = big ? L.LY : 3 * L.PY, top = 36, bottom = H - 50;
+    const s = (W - 80) / span, sv = Math.min((bottom - top - 30) / S.h, Math.max(s, 90 / S.h)), exag = sv > s * 1.05;
+    const X = y => W / 2 + y * s, yCell = bottom, yGlass = bottom - L.T_GLASS * sv, yLens = bottom - S.h * sv;
+    const cells = big ? Array.from({ length: L.NY }, (_, j) => -L.LY / 2 + (j + 0.5) * L.PY) : [-2, -1, 0, 1, 2].map(k => k * L.PY);
+    ctx.fillStyle = "#24364d"; ctx.fillRect(X(-span / 2) - 6, yCell, span * s + 12, 12);
+    ctx.fillStyle = "rgba(190,215,235,0.30)"; ctx.fillRect(X(-span / 2) - 6, yGlass, span * s + 12, yCell - yGlass);
+    for (const c of cells) { ctx.fillStyle = "#1e4fa8"; ctx.fillRect(X(c - L.CY / 2), yCell, L.CY * s, 7); }
+    if (big) { ctx.fillStyle = "#e5534b"; ctx.fillRect(X(-L.LY / 2) - 3, yCell - 2, 3, 16); ctx.fillRect(X(L.LY / 2), yCell - 2, 3, 16); }
+    const f = L.focal(S.P), ty = n && !n.dark ? D.hourly.ty[n.i] : 0, k0 = -ty;
     const lenses = big ? [{ c: 0, a: L.LY }] : [-1, 0, 1].map(i => ({ c: i * L.PY, a: L.PY }));
-    const lit = n.gb > 1 && n.sun.up;
-    const nr = big ? 26 : 9;
+    const lit = n && !n.dark && n.beam > 1, nr = big ? 26 : 9;
+    const col = { own: css("--c-own"), nb: css("--c-nb"), gap: css("--c-gap"), off: css("--c-off") };
+    for (const ln of lenses) for (let i = 0; i < nr; i++) {
+      const u = -ln.a / 2 + (i + 0.5) * ln.a / nr, yL = ln.c + u;
+      const kk = k0 - (isFinite(f) ? u / f : 0);
+      const yG = yL + Math.max(S.h - L.T_GLASS, 0) * kk;
+      const yC = yG + L.T_GLASS * Math.tan(Math.asin(Math.sin(Math.atan(kk)) / 1.5));
+      const idx = big ? Math.floor((yC + L.LY / 2) / L.PY) : Math.round(yC / L.PY);
+      const centre = big ? -L.LY / 2 + (idx + 0.5) * L.PY : idx * L.PY;
+      const onPanel = !big || Math.abs(yC) <= L.LY / 2;
+      const onCell = onPanel && Math.abs(yC - centre) <= L.CY / 2 && (!big || (idx >= 0 && idx < L.NY));
+      const c = !onPanel ? col.off : !onCell ? col.gap : big || Math.abs(centre - ln.c) < 1e-6 ? col.own : col.nb;
+      const dy = (yLens - 6) / sv;
+      ctx.globalAlpha = lit ? 0.95 : 0.25; ctx.lineWidth = 1.2;
+      ctx.strokeStyle = col.own; ctx.beginPath(); ctx.moveTo(X(yL - k0 * dy), yLens - dy * sv); ctx.lineTo(X(yL), yLens); ctx.stroke();
+      ctx.strokeStyle = c; ctx.beginPath(); ctx.moveTo(X(yL), yLens); ctx.lineTo(X(yG), yGlass); ctx.lineTo(X(yC), yCell); ctx.stroke();
+    }
+    ctx.globalAlpha = 1; ctx.fillStyle = "rgba(180,220,255,0.28)"; ctx.strokeStyle = "rgba(210,235,255,0.95)"; ctx.lineWidth = 1.5;
     for (const ln of lenses) {
-      for (let i = 0; i < nr; i++) {
-        const u = -ln.a / 2 + (i + 0.5) * ln.a / nr;     // position on the lens relative to its centre
-        const yL = ln.c + u;
-        const kk = k0 - (isFinite(f) ? u / f : 0);
-        const yC = yL + S.h * kk;
-        const local = ((yC % L.PY) + L.PY * 1.5) % L.PY - L.PY / 2;
-        const onPanel = Math.abs(yC) <= (big ? L.LY / 2 : span / 2 + L.PY);
-        const hit = onPanel && Math.abs(local) <= L.CY / 2;
-        const dy = (yLens - 6) / sv;                     // incoming ray drawn from the canvas top (mm of depth)
-        ctx.strokeStyle = lit ? "rgba(255,206,72,0.9)" : "rgba(255,206,72,0.25)"; ctx.lineWidth = 1.3;
-        ctx.beginPath(); ctx.moveTo(X(yL - k0 * dy), yLens - dy * sv); ctx.lineTo(X(yL), yLens); ctx.stroke();
-        ctx.strokeStyle = !lit ? "rgba(160,170,180,0.25)" : hit ? "rgba(255,206,72,0.95)" : "rgba(160,170,180,0.8)";
-        ctx.beginPath(); ctx.moveTo(X(yL), yLens); ctx.lineTo(X(yC), yCell); ctx.stroke();
-      }
+      const a = X(ln.c - ln.a / 2), b = X(ln.c + ln.a / 2), t = 4, bulge = Math.max(-1, Math.min(1, S.P / 12)) * 9;
+      ctx.beginPath(); ctx.moveTo(a, yLens - t); ctx.quadraticCurveTo((a + b) / 2, yLens - t - bulge, b, yLens - t); ctx.lineTo(b, yLens + t); ctx.quadraticCurveTo((a + b) / 2, yLens + t + bulge, a, yLens + t); ctx.closePath(); ctx.fill(); ctx.stroke();
     }
-    // lens shapes
-    ctx.fillStyle = "rgba(180,220,255,0.28)"; ctx.strokeStyle = "rgba(210,235,255,0.95)"; ctx.lineWidth = 1.5;
-    for (const ln of lenses) {
-      const a = X(ln.c - ln.a / 2), b = X(ln.c + ln.a / 2), t = 5, bulge = Math.max(-1, Math.min(1, S.P / 12)) * 9;
-      ctx.beginPath();
-      ctx.moveTo(a, yLens - t); ctx.quadraticCurveTo((a + b) / 2, yLens - t - bulge, b, yLens - t);
-      ctx.lineTo(b, yLens + t); ctx.quadraticCurveTo((a + b) / 2, yLens + t + bulge, a, yLens + t); ctx.closePath();
-      ctx.fill(); ctx.stroke();
-    }
-    // focus marker
-    if (S.P > 0 && isFinite(f)) {
-      for (const ln of lenses) {
-        const yF = ln.c + k0 * f, yy = yLens + f * sv;
-        if (yy < H - 4 && yy > top) { ctx.fillStyle = "#ff6b4a"; ctx.beginPath(); ctx.arc(X(yF), yy, 4, 0, Math.PI * 2); ctx.fill(); }
-      }
-    }
-    // labels
-    ctx.fillStyle = "#c9d7e6"; ctx.font = "13px " + css("--font");
-    ctx.textAlign = "left";
-    ctx.fillText(big ? "Bütün panel boyunca (1762 mm)" : "3 hüceyrə yaxından", 10, 20);
-    ctx.fillText(`Günəşin bucağı panelə: ${nf(n.sun.th * 180 / Math.PI, 0)}°`, 10, H - 14);
-    ctx.textAlign = "right";
-    ctx.fillText(`h = ${fmtLen(S.h)}${exaggerated ? " (şaquli miqyas böyüdülüb)" : ""}`, W - 10, 20);
-    if (S.P > 0) {
-      const ff = 1000 / S.P, yy = yLens + ff * sv;
-      ctx.fillText(yy < H - 4 ? "● fokus nöqtəsi" : `fokus ${fmtLen(ff)} aşağıda (şəkildən kənar)`, W - 10, H - 14);
-    } else if (S.P < 0) ctx.fillText("səpələyici linza: fokus yoxdur, şüalar açılır", W - 10, H - 14);
-    if (!n.sun.up) { ctx.textAlign = "center"; ctx.fillText("Günəş üfüqün altındadır", W / 2, top + 10); }
+    if (S.P > 0) for (const ln of lenses) { const yy = yLens + f * sv; if (yy < H - 4) { ctx.fillStyle = "#ff6b4a"; ctx.beginPath(); ctx.arc(X(ln.c + k0 * f), yy, 4, 0, 7); ctx.fill(); } }
+    ctx.fillStyle = "#c9d7e6"; ctx.font = "13px " + css("--font"); ctx.textAlign = "left";
+    ctx.fillText(big ? "bütün panel boyunca (1762 mm)" : "3 hüceyrə yaxından", 10, 20);
+    ctx.fillText(n && !n.dark ? `düşmə bucağı ${nf(n.th * 180 / Math.PI, 1)}°, maililik üzrə tan = ${nf(ty, 3)}` : "bu saatda Günəş yoxdur", 10, H - 14);
+    ctx.textAlign = "right"; ctx.fillText(`h = ${fmtLen(S.h)}${exag ? " (şaquli miqyas böyüdülüb)" : ""}`, W - 10, 20);
+    $("side-note").textContent = `Kəsik maililik istiqamətindədir. Eni üzrə (x) fokuslanma və sürüşmə sağdakı xəritədə görünür. ${S.P > 0 ? `Fokus linzanın ${fmtLen(1000 / S.P)} altındadır. Hüceyrə müstəvisinə qədər ekvivalent hava məsafəsi h_eff = ${fmtLen(L.hEff(S.h))}.` : S.P < 0 ? "Səpələyici linzanın fokusu xəyalidir: linzanın üstündədir." : ""}`;
   }
 
-  // ---------- top view (cell map) ----------
+  // ---------- top view ----------
   function drawTop(n) {
-    const cv = $("top"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
-    ctx.clearRect(0, 0, W, H);
+    const cv = $("top"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height; ctx.clearRect(0, 0, W, H);
+    if (!n || n.dark) { $("top-note").textContent = "Bu saatda Günəş yoxdur."; return; }
     const s = Math.min((W - 30) / L.LX, (H - 60) / L.LY), ox = (W - L.LX * s) / 2, oy = 14;
     ctx.fillStyle = "#24364d"; ctx.fillRect(ox - 4, oy - 4, L.LX * s + 8, L.LY * s + 8);
-    const ref = Math.max(1, n.uniform);
-    for (let i = 0; i < L.NX; i++) for (let j = 0; j < L.NY; j++) {
-      const v = n.cells[i * L.NY + j] / ref;               // 1 = same as without a lens
-      const c = v <= 1 ? [Math.round(20 + 40 * v), Math.round(40 + 100 * v), Math.round(90 + 130 * v)]
-                       : [Math.min(255, Math.round(60 + 120 * Math.log2(1 + v))), Math.min(255, Math.round(140 + 60 * Math.log2(1 + v))), Math.round(220 - 30 * Math.min(4, v))];
-      ctx.fillStyle = `rgb(${c[0]},${c[1]},${c[2]})`;
-      const x = ox + (i * L.PX + (L.PX - L.CX) / 2) * s, y = oy + ((L.NY - 1 - j) * L.PY + (L.PY - L.CY) / 2) * s;
-      ctx.fillRect(x, y, L.CX * s, L.CY * s);
+    const ref = Math.max(1e-9, n.rn.cells.reduce((a, v) => a + v, 0) / 144);
+    let mn = 1e9, mx = 0;
+    for (let i = 0; i < 6; i++) for (let j = 0; j < 24; j++) {
+      const v = n.r.cells[i * 24 + j] / ref; mn = Math.min(mn, v); mx = Math.max(mx, v);
+      const c = v <= 1 ? [20 + 40 * v, 40 + 100 * v, 90 + 130 * v] : [Math.min(255, 60 + 120 * Math.log2(1 + v)), Math.min(255, 140 + 60 * Math.log2(1 + v)), 220 - 30 * Math.min(4, v)];
+      ctx.fillStyle = `rgb(${c.map(Math.round)})`;
+      const pxc = -L.LX / 2 + (i + 0.5) * L.PX, pyc = -L.LY / 2 + (j + 0.5) * L.PY;
+      ctx.fillRect(ox + (pxc - L.CX / 2 + L.LX / 2) * s, oy + (L.LY / 2 - pyc - L.CY / 2) * s, L.CX * s, L.CY * s);
     }
-    // substrings
-    const mins = n.r.substringMins;
-    let operating = null;
-    if (mins) { let best = -1; for (const I of mins) { const k = mins.filter(v => v >= I - 1e-9).length; if (I * k > best) { best = I * k; operating = I; } } }
+    const caps = n.ff.caps;
+    let I = 0, bestP = -1; for (const c of caps) { const p = c * caps.filter(x => x >= c - 1e-12).length; if (p > bestP) { bestP = p; I = c; } }
     ctx.font = "11px " + css("--font"); ctx.textAlign = "center";
-    for (let sIdx = 0; sIdx < 3; sIdx++) {
-      const x = ox + 2 * sIdx * L.PX * s;
-      ctx.strokeStyle = "rgba(255,255,255,0.55)"; ctx.lineWidth = 1; ctx.strokeRect(x + 1, oy + 1, 2 * L.PX * s - 2, L.LY * s - 2);
-      if (mins) {
-        const dead = !(operating > 1);
-        const on = !dead && mins[sIdx] >= operating - 1e-9;
-        ctx.fillStyle = on ? "#7fe0b0" : "#ff9a85";
-        ctx.fillText(dead ? "cərəyan yox" : on ? "işləyir" : "bypass", x + L.PX * s, oy + L.LY * s + 18);
-      }
+    for (let g = 0; g < 3; g++) {
+      const x = ox + 2 * g * L.PX * s; ctx.strokeStyle = "rgba(255,255,255,0.55)"; ctx.strokeRect(x + 1, oy + 1, 2 * L.PX * s - 2, L.LY * s - 2);
+      const on = I > 0 && caps[g] >= I - 1e-9; ctx.fillStyle = on ? "#7fe0b0" : "#ff9a85"; ctx.fillText(I > 0 ? (on ? "işləyir" : "bypass") : "cərəyan yox", x + L.PX * s, oy + L.LY * s + 18);
     }
-    let minV = Infinity, maxV = 0; for (const v of n.cells) { minV = Math.min(minV, v / ref); maxV = Math.max(maxV, v / ref); }
-    $("top-note").textContent = S.mode === "big"
-      ? `Ən zəif hüceyrə: ${nf(minV * 100, 0)}%, ən güclü: ${nf(maxV * 100, 0)}% (linzasız işıqlanmaya nisbətən). Hər sütun cütü bir bypass qrupudur. Qrupdakı ən zəif hüceyrə hamısını məhdudlaşdırır.`
-      : `Bütün hüceyrələr eyni işıq alır: linzasız halın ${nf(minV * 100, 0)}%-i.`;
+    ctx.strokeStyle = "rgba(255,255,255,0.25)"; ctx.beginPath(); ctx.moveTo(ox, oy + L.LY * s / 2); ctx.lineTo(ox + L.LX * s, oy + L.LY * s / 2); ctx.stroke();
+    $("top-note").textContent = `Rəng: hüceyrəyə düşən işıq linzasız hala nisbətən (ən zəif ${nf(mn * 100)}%, ən güclü ${nf(mx * 100)}%). Hər sütun cütü bir bypass qrupudur. Qrupda iki paralel sıra var: yuxarı və aşağı yarım (T1 topologiyası, fərziyyə). Lokal konsentrasiya ≈ ${nf(n.r.conc, n.r.conc < 10 ? 2 : 0)} günəş.`;
+  }
+
+  function drawBalance(n) {
+    // one big lens has no "own cell": everything that lands on a cell is reported as one share
+    const cellsKeys = S.mode === "big" ? [["neighbours", "hüceyrələrə düşən", "--c-own"]] : [["own", "öz hüceyrəsi", "--c-own"], ["neighbours", "qonşu hüceyrə", "--c-nb"]];
+    const keys = [...cellsKeys, ["gap", "boşluq", "--c-gap"], ["off", "paneldən kənar", "--c-off"], ["refl_lens", "linzadan əks olunan", "--c-refl"], ["abs_lens", "linzada udulan", "--c-abs"], ["refl_glass", "modul şüşəsindən əks olunan (bucaq hissəsi)", "--c-glass"]];
+    if (!n || n.dark) { $("bal").innerHTML = ""; $("bal-leg").textContent = ""; return; }
+    const b = n.r.balance, tot = b.in || 1;
+    $("bal").innerHTML = keys.map(([k, , c]) => `<span style="width:${100 * Math.max(0, b[k]) / tot}%;background:var(${c})"></span>`).join("");
+    $("bal-leg").innerHTML = keys.map(([k, name, c]) => `<span><i style="background:var(${c})"></i>${name} ${nf(100 * b[k] / tot, 1)}%</span>`).join("") +
+      `<span>cəm ${nf(100 * keys.reduce((a, [k]) => a + b[k], 0) / tot, 3)}%. Seriya müqaviməti itkisi (hüceyrəyə çatan işığın içindən): ${nf(100 * b.rs_loss / tot, 2)}%</span>`;
   }
 
   // ---------- annual ----------
-  let annualTimer = null, annualKey = "";
+  let annTimer = null, annKey = "";
   function scheduleAnnual() {
-    const key = `${S.P}|${S.h}|${S.mode}|${S.tau}`;
-    if (key === annualKey) return;
-    clearTimeout(annualTimer);
-    $("y-l").textContent = "…"; $("y-s").textContent = "kWh/m² · hesablanır";
-    annualTimer = setTimeout(() => {
-      const r = L.annual(D, { P: S.P, h: S.h, mode: S.mode, tau: S.tau });
-      annualKey = key;
-      $("y-a").textContent = nf(r.A, 1); $("y-l").textContent = nf(r.L, 1);
-      const d = (r.L / r.A - 1) * 100;
-      $("y-s").innerHTML = `kWh/m² · <b style="color:var(${d >= 0 ? "--good" : "--bad"})">${pct(d)}</b>`;
+    const c = cfg(), key = JSON.stringify(c) + D.dataset.id;
+    if (key === annKey) return;
+    clearTimeout(annTimer); $("y-l").textContent = "…"; $("y-s").textContent = "kWh/m² apertura · hesablanır";
+    annTimer = setTimeout(() => {
+      if (!D) return;
+      const r = L.annual(D, c); annKey = key;
+      $("y-a").textContent = nf(r.A_kWh_m2, 1); $("y-l").textContent = nf(r.L_kWh_m2, 1);
+      $("y-s").innerHTML = `kWh/m² apertura · <b style="color:var(${r.delta_pct >= 0 ? "--good" : "--bad"})">${pct(r.delta_pct)}</b>`;
     }, 120);
   }
 
-  // ---------- update ----------
-  function update(lensChanged) {
-    try { localStorage.setItem("lens-lab", JSON.stringify(S)); } catch (e) {}
-    $("power").value = S.P; $("hlog").value = h2s(S.h); $("hour").value = S.hour;
-    const lt = L.lensType(S.P);
-    $("p-read").textContent = `${S.P > 0 ? "+" : S.P < 0 ? "−" : ""}${nf(Math.abs(S.P), 1)} D`;
-    $("p-type").innerHTML = lt.kind === "flat" ? "<b>Düz təbəqə</b>, işığı yığmır<br>(yalnız şüşə kimi keçirir)"
-      : lt.kind === "converging" ? `<b>Toplayıcı (qabarıq) linza</b><br>fokus məsafəsi f = ${fmtLen(lt.f)}`
-      : `<b>Səpələyici (çökük) linza</b><br>xəyali fokus f = −${fmtLen(-lt.f)}`;
-    lensIcon(S.P);
+  function update() {
+    if (!D) return;
+    try { localStorage.setItem("solarsim-lab", JSON.stringify(S)); } catch (e) {}
+    $("power").value = S.P; $("hlog").value = h2s(S.h); $("day").value = S.day; $("hour").value = S.hour;
+    const f = L.focal(S.P), kind = L.kind(S.P);
+    $("p-read").textContent = sgnD(S.P);
+    $("p-type").innerHTML = kind === "flat" ? "<b>düz təbəqə</b>, fokus yoxdur" : kind === "converging" ? `<b>toplayıcı</b>, f = ${fmtLen(f)}` : `<b>səpələyici</b>, xəyali fokus f = −${fmtLen(-f)}`;
     $("h-read").textContent = fmtLen(S.h);
     $("h-f").disabled = !(S.P > 0);
-    const hh = Math.floor(S.hour), mm = Math.round((S.hour - hh) * 60);
-    $("t-read").textContent = `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
     document.querySelectorAll("#p-chips .chip").forEach(b => b.setAttribute("aria-pressed", Math.abs(parseFloat(b.dataset.p) - S.P) < 1e-9 ? "true" : "false"));
     document.querySelectorAll("#mode .chip").forEach(b => b.setAttribute("aria-pressed", b.dataset.m === S.mode ? "true" : "false"));
     document.querySelectorAll("#tau .chip").forEach(b => b.setAttribute("aria-pressed", Math.abs(parseFloat(b.dataset.t) - S.tau) < 1e-9 ? "true" : "false"));
-    document.querySelectorAll("#wx .chip").forEach(b => b.setAttribute("aria-pressed", b.dataset.w === S.wx ? "true" : "false"));
-    $("h-glass").setAttribute("aria-pressed", Math.abs(S.h - 3) < 0.05 ? "true" : "false");
-    $("h-10").setAttribute("aria-pressed", Math.abs(S.h - 100) < 0.05 ? "true" : "false");
+    $("h-3").setAttribute("aria-pressed", Math.abs(S.h - 3) < 0.05 ? "true" : "false");
+    $("h-100").setAttribute("aria-pressed", Math.abs(S.h - 100) < 0.05 ? "true" : "false");
     $("h-f").setAttribute("aria-pressed", S.P > 0 && Math.abs(S.h - 1000 / S.P) < 0.5 ? "true" : "false");
-
-    const n = now();
-    $("n-a").textContent = nf(n.pA); $("n-l").textContent = nf(n.pL);
-    const d = n.pA > 1 ? (n.pL / n.pA - 1) * 100 : 0;
-    $("verdict").className = "verdict " + (d >= 0 ? "good" : "bad");
-    $("v-pct").textContent = n.pA > 1 ? pct(d) : "—";
-    $("v-txt").textContent = n.pA > 1
-      ? `İndi linzalı panel ${nf(n.pL)} W verir, adi panel isə ${nf(n.pA)} W. Linzalı panel ${nf(Math.abs(d), 1)}% ${d >= 0 ? "çox" : "az"} verir.`
-      : "Bu saatda Günəş yoxdur və ya çox aşağıdadır.";
-    // explanation bullets
-    const ex = [];
-    const m = L.mag(S.P, S.h);
-    if (lt.kind === "flat") ex.push("Düz təbəqə işığı yığmır. O, yalnız öz səthindən işığın bir hissəsini əks etdirir və udur.");
-    if (lt.kind === "converging") {
-      if (Math.abs(S.h - lt.f) < lt.f * 0.15) ex.push(`Linza fokusdadır: birbaşa işıq kiçik bir nöqtəyə yığılır. Yerli intensivlik təxminən ${nf(n.r.conc, 0)} “günəş”dir${n.r.conc >= L.C_MAX * 0.99 ? " (Günəş işığı üçün fiziki maksimum)" : ""}.`);
-      else if (S.h < lt.f) ex.push(`Hüceyrələr fokusdan yuxarıdadır (h < f). İşıq ləkəsi linzanın ${nf(Math.abs(m) * 100, 0)}% ölçüsündədir, işıq ${nf(n.r.conc, 1)} dəfə sıxlaşır.`);
-      else ex.push(`Hüceyrələr fokusdan aşağıdadır (h > f). Şüalar fokusda kəsişib yenidən açılır. Ləkə linzanın ${nf(Math.abs(m) * 100, 0)}% ölçüsündədir.`);
-    }
-    if (lt.kind === "diverging") ex.push(`Səpələyici linza işığı açır. Ləkə linzadan ${nf(Math.abs(m) * 100, 0)}% böyükdür, ona görə işığın bir hissəsi boşluqlara və ya paneldən kənara düşür.`);
-    if (S.mode === "big") ex.push(n.r.mismatch < 0.97
-      ? `İşıq hüceyrələrə qeyri-bərabər düşür. Ardıcıl qoşulma ucbatından panel işığın yalnız ${nf(n.r.mismatch * 100, 0)}%-ni elektrikə çevirə bilir. Ən zəif hüceyrə cərəyanı məhdudlaşdırır.`
-      : "İşıq hüceyrələrə demək olar bərabər düşür, ardıcıl qoşulma itkisi kiçikdir.");
-    else ex.push("Hər hüceyrənin öz linzası var. İşıq bütün hüceyrələrə eyni düşür, ardıcıl qoşulma problemi yoxdur. Linza ən çox hüceyrələr arasındakı ~8% boşluğa düşən işığı hüceyrəyə yönəldə bilər.");
-    const aperture = S.mode === "big" ? L.LX : L.PY;          // shortest lens side, mm
-    if (lt.kind !== "flat" && Math.abs(lt.f) < aperture) ex.push(`Diqqət: ${fmtLen(aperture)} enində linza üçün fokus məsafəsi ${fmtLen(Math.abs(lt.f))} çox qısadır (f-ədədi 1-dən kiçikdir). Belə linza praktikada düzəldilə bilməz. Rəqəmlər ideal nazik linza üçündür.`);
-    ex.push(`Linzanın materialı işığın ${nf((1 - S.tau) * 100, 0)}%-ni normal düşmədə itirir, maili şüalarda daha çox.`);
-    $("explain").innerHTML = ex.map(t => `<li>${t}</li>`).join("");
-    drawSide(n); drawTop(n);
-    if (lensChanged !== false) scheduleAnnual(); else scheduleAnnual();
+    const v = L.validity(cfg());
+    $("validity").className = "validity " + (v.reliability === "yüksək" ? "hi" : v.reliability === "orta" ? "mid" : "lo");
+    $("validity").innerHTML = `<b>Model etibarlılığı: ${v.reliability}.</b> ` + (kind === "flat" ? "Düz təbəqə üçün paraksial yaxınlaşmaya ehtiyac yoxdur." :
+      `Fokuslanan apertura ${fmtLen(v.aperture_mm)}, f-ədədi ${nf(v.f_number, 2)}, kənarda şüanın meyli ${nf(v.edge_deflection_deg, 1)}°. ` +
+      (v.realizable ? "Fresnel və ya nazik linza kimi düzəldilə bilər (meyl ≤ 30°)." : "<b>Bu ölçüdə belə linza praktikada düzəldilə bilməz</b>: kənarda meyl 30°-dən böyükdür. Nəticə aşağı etibarlı yaxınlaşmadır.") +
+      ` Paraksial model: ${v.paraxial}.`);
+    const n = now(), h = D.hourly;
+    const dd = new Date(Date.UTC(2001, 0, S.day));
+    $("t-read").textContent = `${String(dd.getUTCDate()).padStart(2, "0")}.${String(dd.getUTCMonth() + 1).padStart(2, "0")} ${String(S.hour).padStart(2, "0")}:00`;
+    $("sun-read").textContent = n ? `${D.site.name}, ${nf(D.site.latitude, 4)}° N ${nf(D.site.longitude, 4)}° E. Günəşin hündürlüyü ${nf(h.elev[n.i], 1)}°, azimutu ${nf(h.azim[n.i], 1)}°, panelə düşmə bucağı ${nf(h.aoi[n.i], 1)}°. Panel müstəvisində birbaşa ${nf(h.beam[n.i], 0)}, səma ${nf(h.sky[n.i], 0)}, yer ${nf(h.ground[n.i], 0)} W/m². Bu, faktiki TMY saatıdır, nümunə ssenarisi deyil.` : "Bu gün və saat məlumat dəstində tapılmadı.";
+    const live = n && !n.dark;
+    $("n-a").textContent = live ? nf(n.pA, 0) : "0"; $("n-l").textContent = live ? nf(n.pL, 0) : "0";
+    $("n-ls").innerHTML = live && n.pA > 1 ? `W · <b style="color:var(${n.pL >= n.pA ? "--good" : "--bad"})">${pct((n.pL / n.pA - 1) * 100)}</b>` : "W";
+    drawSide(n); drawTop(n); drawBalance(n);
+    scheduleAnnual();
   }
 
-  // ---------- tests table & best case ----------
-  const MODE_NAME = { array: "hər hüceyrəyə kiçik linza", big: "bir böyük linza" };
-  const cell = v => `<td class="${v >= 0 ? "good" : "bad"}">${pct(v)}</td>`;
-  $("tests").innerHTML = `<thead><tr><th>Linza</th><th>Düzülüş</th><th>Şüşənin üstündə (3 mm)</th><th>Fokusda (h = f) / 10 sm</th><th>Ən yaxşı məsafə</th><th>Ən yaxşı nəticə</th></tr></thead><tbody>${
-    X.tests.tests.map(t => `<tr data-p="${t.P}" data-m="${t.mode}" data-h="${t.best_h}"><td>${t.P > 0 ? "+" : "−"}${Math.abs(t.P)} D ${t.P > 0 ? "toplayıcı" : "səpələyici"}</td><td>${MODE_NAME[t.mode]}</td>${cell(t.glued_pct)}${cell(t.atF_pct)}<td>${fmtLen(t.best_h)}</td>${cell(t.best_pct)}</tr>`).join("")
-  }</tbody>`;
-  $("tests").addEventListener("click", e => { const tr = e.target.closest("tr[data-p]"); if (!tr) return; S.P = +tr.dataset.p; S.mode = tr.dataset.m; S.h = +tr.dataset.h; S.tau = 0.92; update(true); window.scrollTo({ top: 0, behavior: "smooth" }); });
-  const B = X.tests.best;
-  $("best").innerHTML = `<p>Hər dörd testdə linzalı panel <b>adi paneldən az</b> enerji verir. Bunun üç səbəbi var:</p>
-    <ul>
-      <li><b>Bir böyük linza</b> işığı panelin bir hissəsinə yığır. 144 hüceyrə ardıcıl qoşulub, ona görə qaranlıqda qalan hüceyrələr bütün cərəyanı məhdudlaşdırır. Fokusda nəticə −100%-ə qədər düşür.</li>
-      <li><b>Səpələyici (−) linza</b> işığı açır və bir hissəsini boşluqlara, paneldən kənara salır. Bu, heç vaxt qazanc vermir.</li>
-      <li><b>Toplayıcı (+) linza</b> yalnız hüceyrələr arasındakı ~8% boşluğun işığını qaytara bilər. Linzanın özü isə ~8% itirir, buludlu havada da işığı yığa bilmir.</li>
-    </ul>
-    <p>Fiziki cəhətdən mümkün olan ən yaxşı variant: <b>hər hüceyrəyə ayrıca linza, +${nf(B[0].P, 1)} D, hüceyrədən ${fmtLen(B[0].h)} hündürlükdə</b>. Onun illik nəticəsi:
-      adi materialla <b>${pct(B[0].pct)}</b>, əks olunmaya qarşı örtüklə <b>${pct(B[1].pct)}</b>, mükəmməl (itkisiz) materialla isə <b>${pct(B[2].pct)}</b>.</p>
-    <p>Yəni linza ilə qazanc ancaq demək olar ki, itkisiz optika və hər hüceyrəyə dəqiq uyğun linza massivi ilə mümkündür. Qazanc da ən çoxu bir neçə faizdir.
-      Müqayisə üçün: eyni panel 2 oxlu izləmə ilə <b>+23%</b> verir (ətraflı simulyatora baxın).</p>`;
+  // ---------- tables generated from the dataset ----------
+  function renderTables() {
+    const Ls = D.lens, cell = v => (v == null ? "<td>—</td>" : `<td class="${v >= 0 ? "good" : "bad"}">${pct(v)}</td>`);
+    for (const id of ["best-card", "iv-card", "tr-card"]) $(id).hidden = false;
+    if (!Ls) {
+      $("tests").innerHTML = ""; $("tests-note").textContent = "Bu məlumat dəsti üçün illik sınaq cədvəli hesablanmayıb. Tam cədvəl üçün dəsti “python -m solarsim.build” ilə yaradın.";
+      for (const id of ["best-card", "iv-card", "tr-card"]) $(id).hidden = true;
+    } else {
+      const iv = !!Ls.search.iv;
+      $("tests-note").textContent = `Bütün il, adi panelə nisbətən, material 92%. Bütün namizədlər eyni illik funksiya ilə hesablanır. “Ən yaxşı h” sınanmış diapazonda ən yaxşıdır: ${nf(Ls.search.h_min_mm, 1)} mm – 1 m, ${Ls.search.h_grid_mm.length} nöqtə + sınaq nöqtələri. Elektrik: ${Ls.search.electrical}${iv ? `; mötərizədə — ${Ls.search.iv}` : ""}. Sətrə basın, konfiqurasiya yuxarıda açılacaq.`;
+      const both = (fast, ivv) => (fast == null ? "<td>—</td>" : ivv == null ? cell(fast) : `<td class="${ivv >= 0 ? "good" : "bad"}">${pct(fast)} <span style="font-weight:400">(${pct(ivv)})</span></td>`);
+      $("tests").innerHTML = `<thead><tr><th>Linza</th><th class="txt">Düzülüş</th><th>şüşənin üstündə 3 mm</th><th>10 sm sınaq məsafəsi</th><th>fokusda h = f</th><th>ən yaxşı h</th><th>ən yaxşı nəticə</th><th class="txt">etibarlılıq</th></tr></thead><tbody>${
+        Ls.tests.map(t => { const p = t.points, pi = t.points_iv || {};
+          return `<tr class="click" data-p="${t.P}" data-m="${t.mode}" data-h="${t.best_h}"><td>${sgnD(t.P)} ${t.P > 0 ? "toplayıcı" : "səpələyici"}</td><td class="txt">${MODE[t.mode]}</td>${both(p["şüşənin üstündə 3 mm"], pi["şüşənin üstündə 3 mm"])}${both(p["10 sm sınaq məsafəsi"], pi["10 sm sınaq məsafəsi"])}${t.P > 0 ? both(p["fokusda h = f"], pi["fokusda h = f"]) : "<td>—</td>"}<td>${fmtLen(t.best_h)}</td>${both(t.best_pct, t.best_iv)}<td class="txt">${t.validity_best.reliability}</td></tr>`; }).join("")}</tbody>`;
+      $("tests").onclick = e => { const tr = e.target.closest("tr[data-p]"); if (!tr) return; S.P = +tr.dataset.p; S.mode = tr.dataset.m; S.h = +tr.dataset.h; S.tau = 0.92; update(); window.scrollTo({ top: 0, behavior: "smooth" }); };
+      $("best-card").hidden = !Ls.array;
+      if (Ls.array) {
+        const v1 = Ls.v1_point_13p5D_8mm;
+        const line = (m, x) => `<li><b>${MODE[m]}</b>: ${sgnD(x.P)}, h = ${fmtLen(x.h)} → adi material ${pct(x.delta_pct["0.92"])}, örtüklü ${pct(x.delta_pct["0.96"])}, itkisiz ${pct(x.delta_pct["1.0"])}. Başabaş ötürmə: ${x.tau_breakeven == null ? "itkisiz materialla belə yoxdur" : nf(x.tau_breakeven * 100, 1) + "%"}. Etibarlılıq ${x.validity.reliability} (kənarda meyl ${nf(x.validity.edge_deflection_deg, 1)}°${x.validity.realizable ? "" : ", praktikada düzəldilə bilməz"}).</li>`;
+        $("best").innerHTML = `<ul style="margin:0; padding-left:18px; display:grid; gap:6px">${line("array", Ls.array)}${line("array_cyl", Ls.array_cyl)}</ul>
+          <p class="hint">Axtarış: D ${Ls.array.search.P_range.join("…")} dioptriya, addım ${nf(Ls.array.search.P_step, 1)}; h ${nf(Ls.array.search.h_grid_mm[0], 1)} mm – 1 m (${Ls.array.search.h_grid_mm.length} nöqtə); ${Ls.array.search.note}.</p>
+          <p><b>Əvvəlki modelin nəticəsi (v1: sonsuz periodik hüceyrə, şüşədə sınma yoxdur).</b> +13,5 D / 8 mm: adi material ${pct(v1.v1["0.92"])}, örtüklü ${pct(v1.v1["0.96"])}, itkisiz ${pct(v1.v1["1.0"])}, başabaş ötürmə ≈ ${nf(v1.v1.tau_breakeven_v1 * 100, 1)}%.
+          <b>Yeni həndəsə ilə (v2):</b> sferik massiv ${pct(v1.v2.array.delta_pct["0.92"])} / ${pct(v1.v2.array.delta_pct["0.96"])} / ${pct(v1.v2.array.delta_pct["1.0"])}; silindrik ${pct(v1.v2.array_cyl.delta_pct["0.92"])} / ${pct(v1.v2.array_cyl.delta_pct["0.96"])} / ${pct(v1.v2.array_cyl.delta_pct["1.0"])}. Hüceyrə müstəvisi fokusdan xeyli əvvəldədir: h_eff ≈ ${fmtLen(L.hEff(8))}, fokus məsafəsi ≈ ${fmtLen(1000 / 13.5)}.</p>`;
+      }
+      const IVr = Ls.iv_validation;
+      $("iv-card").hidden = !IVr;
+      if (IVr) {
+        $("iv").innerHTML = `<thead><tr><th>Konfiqurasiya</th><th>sürətli qayda (T1)</th><th>I–V modeli (T1)</th><th>I–V modeli (T3)</th></tr></thead><tbody>${
+          IVr.rows.map(r => `<tr><td class="txt">${sgnD(r.P)}, ${fmtLen(r.h)}, ${MODE[r.mode]}</td>${cell(r.fast_T1_pct)}${cell(r.iv_T1_pct)}${cell(r.iv_T3_pct)}</tr>`).join("")}</tbody>`;
+        $("iv-note").textContent = `Hesab: ${IVr.note}. I–V modeli: De Soto tək diod modeli pasportdan çıxarılıb (STC-də 450 W, Vmp 44,6 V, Imp 10,09 A, Voc 52,9 V, Isc 10,74 A), hər hüceyrəyə bölünür. Hüceyrə → 24 hüceyrəlik sıra → 2 paralel sıra + bypass diod → modul. Topologiya pasportda verilmir: Voc = 52,9 V 72 ardıcıl hüceyrə deməkdir, yəni 144 hüceyrə iki paralel yoldadır. T1 əsas fərziyyədir, T3 həssaslıq yoxlamasıdır.`;
+      }
+      const TR = Ls.trace2d;
+      $("tr-card").hidden = !TR;
+      if (TR) $("tr").innerHTML = `<thead><tr><th>Linza</th><th>bucaq</th><th>şüa izləməsi: hüceyrədə</th><th>boşluqda</th><th>kənarda</th><th>paraksial: hüceyrədə</th></tr></thead><tbody>${
+        TR.map(r => `<tr><td class="txt">${sgnD(r.P)}, ${fmtLen(r.h)}, ${MODE[r.mode]}</td><td>${nf(r.theta, 0)}°</td>${r.trace.realizable ? (r.trace.on_cells == null ? `<td class="txt" colspan="3">${r.trace.note}</td>` : `<td>${nf(r.trace.on_cells * 100, 1)}%</td><td>${nf(r.trace.gap * 100, 1)}%</td><td>${nf(r.trace.off * 100, 1)}%</td>`) : `<td class="txt" colspan="3">${r.trace.note}</td>`}<td>${r.paraxial_y_on_cells == null ? "—" : nf(r.paraxial_y_on_cells * 100, 1) + "%"}</td></tr>`).join("")}</tbody>`;
+    }
+    const c5 = D.c5, a = c5.annual, ins = c5.instant;
+    const row = (name, x, note) => `<tr><td class="txt">${name}</td><td>${nf(x.gross_kWh_m2_ap, 1)}</td><td>${nf((x.drive_kWh || 0) + (x.controller_kWh || 0), 1)}</td><td>${x.cooling_kWh == null ? "daxil edilməyib" : nf(x.cooling_kWh, 1)}</td><td>${nf(x.net_kWh_m2_ap, 1)}</td><td class="txt">${note}</td></tr>`;
+    $("c5").innerHTML = `<div class="tablewrap"><table><thead><tr><th>Variant (ümumi apertura ${nf(a.aperture_m2, 2)} m²)</th><th>brüt, kWh/m²</th><th>izləmə + idarəetmə, kWh</th><th>soyutma, kWh</th><th>xalis, kWh/m²</th><th class="txt">status</th></tr></thead><tbody>
+      ${row("Linza C = 5 → 1 panel, 2 oxlu izləmə, aktiv soyutma (hüceyrə = hava + 10 K)", a.lens_cooled, a.lens_cooled.cooling_status)}
+      ${row("Eyni, soyutmasız", a.lens_passive, `${a.lens_passive.status}; ${a.lens_passive.hours_above_tmax} saat hüceyrə ${c5.t_max_C} °C-dən isti olardı (maks. ${nf(a.lens_passive.max_t_cell_C, 0)} °C)`)}
+      ${row("5 adi panel, sabit (eyni apertura)", a.plain_fixed, "linzasız müqayisə")}
+      ${row("5 adi panel, eyni 2 oxlu izləmə (eyni apertura)", a.plain_2axis, "linzasız müqayisə")}</tbody></table></div>
+      <p class="hint">Ani nümunə (DNI 1000 W/m², 25 °C hava, 1 m/s, linza 90%): soyutmasız hüceyrə ${nf(ins.passive.t_cell_C, 0)} °C, ${nf(ins.passive.P_W, 0)} W, apertura üzrə səmərəlilik ${nf(ins.passive.eta_aperture * 100, 1)}%. 60 °C soyutma ilə ${nf(ins.cooled_60C.P_W, 0)} W (${nf(ins.cooled_60C.eta_aperture * 100, 1)}%), 25 °C ideal soyutma ilə ${nf(ins.cooled_25C.eta_aperture * 100, 1)}%. Eyni aperturada 5 adi panel ${nf(ins.plain_array.P_W, 0)} W (${nf(ins.plain_array.eta_aperture * 100, 1)}%) verir. ${nf(ins.passive.t_cell_C, 0)} °C və soyutmasız saatlar SAPM-in yüksək konsentrasiyaya uzadılmış proqnozudur, ölçü deyil.
+      Silikon hüceyrənin nəzəri həddi ${nf(c5.si_limit.value * 100, 1)}%-dir: ${c5.si_limit.conditions}. Konsentrasiya bu həddi qaldırmır. C = 5-də yalnız birbaşa işıq yığılır: izləmə müstəvisinə düşən işığın ${nf(c5.beam_share_2axis * 100, 0)}%-i.</p>
+      <p class="hint">Brüt və xalis: 2 oxlu adi panel üçün ${nf(a.plain_2axis.gross_kWh_m2_ap, 2)} kWh/m² brüt DC-dir. Ətraflı simulyatordakı ${nf(D.annual.A_2axis.net_kWh_m2_ap, 2)} kWh/m² isə 1 modulun xalis enerjisidir: ${nf(D.annual.A_2axis.aux_kWh_unit, 3)} kWh/qurğu izləmə və idarəetmə sərfi çıxılıb. Bu cədvəldə ${nf(a.aperture_m2, 2)} m² apertura üçün izləmə mühərrikinin sərfi aperturaya mütənasib götürülür (5 × ${nf(D.params.find(p => p.name === "drive_W").value, 1)} W). İdarəetmə sərfi isə bir dəfə hesablanır, ona görə burada xalis dəyər ${nf(a.plain_2axis.net_kWh_m2_ap, 2)} kWh/m² alınır.</p>`;
+    const m = D.dataset;
+    $("foot").textContent = `Mənbə: ${DataStore.label(D)}; sorğu ${m.requested_utc || "—"} UTC. Günəş mövqeyi pvlib SPA ilə hesablanır, ofset ${DataStore.fmtSmart(m.solpos_offset_h)} saat (${m.offset_rule}). Model v${D.version.model}, dəst ${D.version.built_utc} tarixində yaradılıb. Modul Trina TSM-450NEG9R.28: maililik ${nf(D.inputs.tilt, 0)}°, azimut ${nf(D.inputs.azimuth, 0)}°, albedo ${nf(D.inputs.albedo, 2)}. Bunlar fərziyyədir: hüceyrə ölçüsü (182 × 70,1 mm, aktiv sahə 92%), şüşə + laminat qalınlığı (2,1 mm), seriya müqaviməti itkisi (hər əlavə günəş üçün 3,5%), linza materialı (n = 1,49) və topologiya.`;
+  }
 
-  // ---------- check of the presentation draft's numbers (values from simulator/claims_check.js) ----------
-  const K = X.claims, c5 = K.c5, an = K.annual, mg = K.magnifier, pc1 = v => `${nf(v * 100, 1)}%`;
-  const verdict = v => `<td class="${v === "Düzdür" ? "good" : "bad"}" style="text-align:left">${v}</td>`;
-  const plain = c5.plain_module_at_same_air;
-  const rows = [
-    ["Adi lupanın gücü +3…+10 D, fokus məsafəsi 10–33 sm",
-     `f = 1 / D: +3 D → ${nf(mg[0].f_cm, 1)} sm, +10 D → ${nf(mg[1].f_cm, 1)} sm`, "Düzdür"],
-    ["Belə lupalar 2–4 dəfə böyüdür",
-     `Böyütmə M = D/4 … 1 + D/4 (25 sm baxış məsafəsi): +3 D → ${nf(mg[0].M_relaxed, 2)}…${nf(mg[0].M_near, 2)}×, +10 D → ${nf(mg[1].M_relaxed, 2)}…${nf(mg[1].M_near, 2)}×`, "Qismən: +3 D üçün 2× alınmır"],
-    ["Adi panellərin səmərəliliyi təxminən 20–22%-dir",
-     `Trina TSM-450NEG9R.28: 450 W / (1000 W/m² × ${nf(K.inputs.A_MOD, 3)} m²) = ${pc1(K.inputs.ETA_STC)} (STC)`, "Düzdür"],
-    ["Panel 20%, konsentrasiya C = 5 → effektiv çıxış ~55%",
-     `Səmərəlilik = elektrik / düşən işıq. Linza həm düşən işığı, həm elektriki artırır, ona görə nisbət yüksəlmir. Silikon hüceyrənin nəzəri həddi ${pc1(K.inputs.SI_LIMIT)}-dir.
-      Düzgün nəticə: soyutma ilə (60 °C) ${pc1(c5.cooled60.eta_vs_aperture)}, soyutmasız ${pc1(c5.passive.eta_vs_aperture)}.`, "Səhvdir"],
-    ["Linzalar enerji tutumunu 50–70% artırır",
-     `Bakıda il ərzində, hər m² işıqtoplama sahəsinə: C = 5 linza sistemi (izləmə, soyutma) ${nf(an.lens_C5_cooled_kWh_m2, 0)} kWh/m².
-      Adi sabit panel ${nf(an.A_fixed_kWh_m2, 0)} kWh/m², izləməli adi panel ${nf(an.A_2axis_kWh_m2, 0)} kWh/m².
-      Fərq ${pct((an.lens_C5_cooled_kWh_m2 / an.A_fixed_kWh_m2 - 1) * 100)} və ${pct((an.lens_C5_cooled_kWh_m2 / an.A_2axis_kWh_m2 - 1) * 100)}-dir.`, "Səhvdir"],
-    ["Kvars şüşə 1000 °C-yə, borosilikat 500 °C-yə dözür, şəffaflıq 90%+",
-     `Materialların özü üçün təxminən düzdür. Lakin problem örtükdə deyil: silikon hüceyrə pasporta görə ən çoxu ${K.inputs.T_MAX} °C-də işləyə bilər.
-      Hər °C üçün də ${nf(-K.inputs.GAMMA * 100, 2)}% güc itirir. C = 5-də soyutmasız hüceyrə ${nf(c5.passive.T_cell_C, 0)} °C-yə qızır.`, "Qismən: fakt düzdür, nəticəyə kömək etmir"],
-  ];
-  $("claims").innerHTML = `<thead><tr><th>Qaralamadakı iddia</th><th style="text-align:left">Düzgün hesab</th><th style="text-align:left">Nəticə</th></tr></thead><tbody>${
-    rows.map(r => `<tr style="cursor:default"><td style="white-space:normal;min-width:180px">${r[0]}</td><td style="white-space:normal;text-align:left;font-family:var(--font)">${r[1]}</td>${verdict(r[2])}</tr>`).join("")}</tbody>`;
-  const r5 = (name, o, note) => `<tr style="cursor:default"><td style="white-space:normal">${name}</td><td>${nf(o.T_cell_C, 0)} °C</td><td>${nf(o.P_W, 0)} W</td><td>${pc1(o.eta_vs_aperture)}</td><td style="white-space:normal;text-align:left;font-family:var(--font)">${note}</td></tr>`;
-  $("c5").innerHTML = `<thead><tr><th>Variant (DNI 1000 W/m², 25 °C hava, 1 m/s külək)</th><th style="text-align:left">Hüceyrə</th><th>Güc</th><th>Səmərəlilik (işıqtoplama sahəsinə)</th><th style="text-align:left">Qeyd</th></tr></thead><tbody>${
-    r5(`Linza ${nf(c5.passive.aperture_m2, 2)} m², işıq 1 panelə yığılır, soyutmasız`, c5.passive, `Pasportdakı ${K.inputs.T_MAX} °C həddi aşılır: panel zədələnər.`) +
-    r5("Eyni, aktiv soyutma ilə (hüceyrə 60 °C)", c5.cooled60, "Soyutmanın enerji sərfi daxil deyil.") +
-    r5("Eyni, ideal soyutma ilə (hüceyrə 25 °C)", c5.cooled25, "Nəzəri yuxarı hədd.") +
-    `<tr style="cursor:default"><td style="white-space:normal">Linzasız: eyni ${nf(c5.passive.aperture_m2, 2)} m²-də 5 adi panel</td><td>${nf(plain.T_cell_C, 0)} °C</td><td>${nf(5 * plain.P_W, 0)} W</td><td>${pc1(5 * plain.P_W / (1000 * c5.passive.aperture_m2))}</td><td style="white-space:normal;text-align:left;font-family:var(--font)">Soyutma lazım deyil. STC-də ${nf(c5.five_plain_modules_W, 0)} W.</td></tr>`
-  }</tbody>`;
-  $("c5-note").textContent = `Linzanın şəffaflığı 90% götürülüb (qaralamanın öz rəqəmi). İşıq paneldə bərabər paylanır (konsentrasiya üçün ən əlverişli hal). Yüksək işıqda seriya müqaviməti itkisi hər əlavə “günəş” üçün ${nf(K.inputs.RS_K * 100, 1)}%-dir (fərziyyə).
-    C = 5 linza yalnız birbaşa işığı yığır və Günəşi izləməlidir. Bakıda izləmə müstəvisinə düşən işığın ${nf(an.beam_share_on_tracker * 100, 0)}%-i birbaşadır, qalanı itir.
-    Soyutmasız variantda il ərzində ${nf(an.lens_hours_above_Tmax, 0)} saat hüceyrə ${K.inputs.T_MAX} °C-dən isti olardı.`;
-
-  update(true);
-  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => update(false));
+  DataStore.mount($("ds"), {
+    onLoading: name => {
+      D = null; NSKY = null; dKey = ""; annKey = ""; $("root").classList.add("loading"); $("eyebrow").textContent = `${name} yüklənir…`;
+      for (const id of ["n-a", "n-l", "y-a", "y-l"]) $(id).textContent = "—";
+      for (const id of ["tests", "best", "iv", "tr", "c5", "bal", "bal-leg", "sun-read", "top-note", "side-note", "validity"]) $(id).innerHTML = "";
+      for (const id of ["side", "top"]) $(id).getContext("2d").clearRect(0, 0, 2000, 2000);
+    },
+    onLoad: data => { D = data; NSKY = null; dKey = ""; annKey = ""; $("eyebrow").textContent = DataStore.provenance(D); $("root").classList.remove("loading"); renderTables(); update(); },
+    onError: msg => { $("eyebrow").textContent = `Məlumat yoxdur: ${msg}`; },
+  });
 })();
 </script>

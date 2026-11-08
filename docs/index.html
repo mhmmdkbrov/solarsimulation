@@ -59,6 +59,16 @@ h2 { font-size: 1.3rem; font-weight: 800; }
 h3 { font-size: 1rem; font-weight: 600; }
 p { margin: 0; }
 .lead { color: var(--ink-2); max-width: 68ch; font-size: 1.05rem; }
+.ds { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; display: grid; gap: 6px; }
+.ds-row { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+.ds-lbl { font-size: 0.8rem; font-weight: 600; color: var(--ink-2); }
+.ds-select { font: inherit; padding: 5px 8px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); max-width: 100%; }
+.ds-file { font-size: 0.82rem; color: var(--accent); cursor: pointer; }
+.ds-file input { display: block; font-size: 0.8rem; max-width: 260px; }
+.ds-msg { font-size: 0.82rem; color: var(--ink-2); }
+.eyebrow { font-size: 0.8rem; color: var(--muted); }
+.chip:disabled { opacity: 0.4; cursor: not-allowed; }
+.loading .scenes, .loading .year, .loading .verdict, .loading .why { opacity: 0.3; }
 .answer { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; max-width: 80ch; }
 .answer b { font-variant-numeric: tabular-nums; }
 .pickers { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px; }
@@ -130,15 +140,17 @@ footer a { color: var(--accent); }
 <body>
 <div class="wrap">
   <header style="display:grid; gap:10px">
+    <div class="eyebrow" id="eyebrow">məlumat yüklənir…</div>
     <h1>Linza günəş panelini gücləndirirmi?</h1>
     <p class="lead">Solda adi panel, sağda eyni panel üstünə linza qatı ilə. Havanı və linzanın keyfiyyətini seçin. İşığın hər paneldə hara getdiyinə və nə qədər elektrik alındığına baxın.</p>
     <p class="answer" id="answer"></p>
     <p><a class="lablink" href="lab.html">Linzanın gücünü (dioptriya), məsafəsini və düzülüşünü özünüz dəyişin: Linza laboratoriyası →</a></p>
   </header>
+  <section class="ds" id="ds"></section>
 
   <div class="pickers">
     <div class="picker">
-      <span class="label" id="lbl-wx">Hava</span>
+      <span class="label" id="lbl-wx">Hava (nümunə ssenarisi)</span>
       <div class="chips" role="group" aria-labelledby="lbl-wx" id="wx"></div>
     </div>
     <div class="picker">
@@ -171,7 +183,7 @@ footer a { color: var(--accent); }
     <span><i style="background:#ffc93c"></i>Birbaşa günəş işığı</span>
     <span><i style="background:#cfe3f5"></i>Səpələnmiş işıq (buluddan, səmadan)</span>
     <span><i style="background:#9aa4ae"></i>Əks olunan və ya boşluqdan keçib itən işıq</span>
-    <span class="caption">Hüceyrələr arasındakı boşluq görünsün deyə şəkildə böyüdülüb.</span>
+    <span class="caption">Animasiya illüstrativdir: şüaların sayı və yolu sxematikdir, boşluqlar böyüdülüb. Rəqəmlər modeldən gəlir. Hava düymələri seçilmiş məkanda aprel–sentyabr, 11–14 yerli saat üçün həmin DHI/GHI sinfinin ortalamasıdır.</span>
   </div>
 
   <section style="display:grid; gap:12px">
@@ -180,28 +192,155 @@ footer a { color: var(--accent); }
   </section>
 
   <section class="year">
-    <h2>Bakıda bütün il ərzində</h2>
-    <p class="caption">1 m² panel səthindən bir ildə alınan elektrik, kWh/m². Qara xətt adi paneldir.</p>
+    <h2 id="year-h">Bütün il ərzində</h2>
+    <p class="caption">1 m² apertura (panel səthi) üzrə bir ildə alınan DC elektrik, kWh/m². Qara xətt adi paneldir. Bu səhifədə linza üçün sadə optik qat modeli işlədilir. Həndəsi model linza laboratoriyasındadır.</p>
     <div class="yearbars" id="yearbars"></div>
-    <h3 style="margin-top:6px">Hava tipinə görə (seçilmiş linza)</h3>
+    <h3 style="margin-top:6px">Hava sinfinə görə (seçilmiş linza): DHI/GHI payı üzrə, yalnız GHI &gt; 10 W/m² saatları; qalan saatlar ayrıca sətirdədir</h3>
     <div class="wx"><table id="wxtable"></table></div>
   </section>
 
   <footer>
-    <p><b>Necə hesablanıb.</b> Hava məlumatı Avropa Komissiyasının PVGIS 5.3 sistemindəki Bakı üçün tipik meteoroloji ildən götürülüb (40,41° N, 49,87° E). Hər hava tipi üçün aprel–sentyabr aylarında saat 11–14 arasındakı orta göstəricilər işlədilib.
-      Panel Trina Vertex S+ 450 W-dır, 35° maili və cənuba baxır. Model pvlib əsasındadır və ətraflı notebook-dakı modelin eynisidir.</p>
+    <p id="foot-prov"><b>Necə hesablanıb.</b></p>
     <p><b>Diqqət.</b> Linzanın ötürməsi, işığı hüceyrələrə yönəltməsi, qeyri-bərabər işıq itkisi və əlavə qızma hələ fərziyyədir. Konkret linza seçilib prototipdə ölçülməlidir.
-      “Mükəmməl linza” fiziki olaraq mümkün olan yuxarı həddir, real məhsul deyil.</p>
-    <p>Linzanın işığı kiçik xüsusi fotoelementə topladığı CPV sistemi ayrı texnologiyadır. Onu <a href="simulator.html" >ətraflı simulyatorda</a> görə bilərsiniz.</p>
+      “Sadə modelin ideal ssenarisi” bu şərtlərdən çıxır: aktiv sahə 92%, hüceyrələr arası boşluğa düşən işıq tam qaytarılır, ötürmə 100%, əlavə istilik və qeyri-bərabərlik itkisi sıfırdır. Bu, real məhsul deyil.</p>
+    <p>Linzanın işığı kiçik xüsusi fotoelementə topladığı CPV sistemi ayrı texnologiyadır. Onu <a href="simulator.html">ətraflı simulyatorda</a> görə bilərsiniz.</p>
   </footer>
 </div>
 
-<script type="application/json" id="cases">{"meta":{"source":"PVGIS 5.3 TMY (PVGIS-SARAH3 + ERA5, 2005–2023), 40.41° N, 49.87° E","is_sample":false,"area_m2":1.9981079999999998,"tilt":35,"azimuth":180,"start_local":"1990-01-01 04:00:00+04:00","tz":"UTC+4","module":{"pdc0_W":450,"gamma_pdc_per_C":-0.003,"active_area_fraction":0.92},"sapm":{"sapm_a":-3.47,"sapm_b":-0.0594,"sapm_dT":3},"layer_n":1.49,"note":"Apr–Sep, 11–14 h Baku time means per weather class"},"classes":[{"id":"clear","lo":0,"hi":0.3},{"id":"hazy","lo":0.3,"hi":0.5},{"id":"partly","lo":0.5,"hi":0.9},{"id":"overcast","lo":0.9,"hi":1.0001}],"hours":[827,895,1071,1169],"rep":[{"n":414,"ghi":867.3382,"dni":744.7775,"dhi":212.8986,"f_glob":948.272,"f_beam":696.9504,"f_diff":238.0316,"f_layer":0.9992,"ta":24.6793,"ws":6.0502},{"n":120,"ghi":778.975,"dni":563.7758,"dhi":294.2,"f_glob":858.0032,"f_beam":527.0218,"f_diff":314.7639,"f_layer":0.9992,"ta":23.6273,"ws":6.2257},{"n":101,"ghi":606.9802,"dni":245.3921,"dhi":397.6733,"f_glob":644.6455,"f_beam":231.3852,"f_diff":394.3582,"f_layer":0.9993,"ta":21.2286,"ws":6.4005},{"n":93,"ghi":267.4301,"dni":8.9914,"dhi":259.9355,"f_glob":249.4461,"f_beam":8.4525,"f_diff":230.2886,"f_layer":0.9993,"ta":19.8041,"ws":7.2598}],"levels":{"weak":{"optics":true,"tau_b":0.88,"tau_d":0.78,"gap_beam":0,"gap_diff":0,"nonunif":0.06,"heat":5,"f_act":0.92,"gamma_pdc":-0.003,"tau_c":0.85,"intercept":0.95,"eta":0.3,"gamma_c":-0.0015,"R":4,"fan":0,"trk":4,"ctrl":0.5},"base":{"optics":true,"tau_b":0.92,"tau_d":0.84,"gap_beam":0.3,"gap_diff":0.1,"nonunif":0.02,"heat":2,"f_act":0.92,"gamma_pdc":-0.003,"tau_c":0.85,"intercept":0.95,"eta":0.3,"gamma_c":-0.0015,"R":4,"fan":0,"trk":4,"ctrl":0.5},"good":{"optics":true,"tau_b":0.96,"tau_d":0.9,"gap_beam":0.7,"gap_diff":0.3,"nonunif":0,"heat":0,"f_act":0.92,"gamma_pdc":-0.003,"tau_c":0.85,"intercept":0.95,"eta":0.3,"gamma_c":-0.0015,"R":4,"fan":0,"trk":4,"ctrl":0.5},"ideal":{"optics":true,"tau_b":1,"tau_d":1,"gap_beam":1,"gap_diff":1,"nonunif":0,"heat":0,"f_act":0.92,"gamma_pdc":-0.003,"tau_c":0.85,"intercept":0.95,"eta":0.3,"gamma_c":-0.0015,"R":4,"fan":0,"trk":4,"ctrl":0.5}},"annual":{"weak":{"A":355.4006458361172,"B":274.70852523830587},"base":{"A":355.4006458361172,"B":310.73637097435443},"good":{"A":355.4006458361172,"B":344.92716769548736},"ideal":{"A":355.4006458361172,"B":383.27891225175733}},"perClass":{"weak":[{"A_kWh_m2":149.2754298948814,"B_kWh_m2":117.92922334684214},{"A_kWh_m2":104.81251759765794,"B_kWh_m2":80.93978245926965},{"A_kWh_m2":73.34386183062827,"B_kWh_m2":55.308046848928},{"A_kWh_m2":27.703194720476475,"B_kWh_m2":20.33672092961646}],"base":[{"A_kWh_m2":149.2754298948814,"B_kWh_m2":133.4002896352288},{"A_kWh_m2":104.81251759765794,"B_kWh_m2":91.4664390868002},{"A_kWh_m2":73.34386183062827,"B_kWh_m2":62.59110309680962},{"A_kWh_m2":27.703194720476475,"B_kWh_m2":23.05796895838176}],"good":[{"A_kWh_m2":149.2754298948814,"B_kWh_m2":148.0353245951185},{"A_kWh_m2":104.81251759765794,"B_kWh_m2":101.45641087231728},{"A_kWh_m2":73.34386183062827,"B_kWh_m2":69.5284841434173},{"A_kWh_m2":27.703194720476475,"B_kWh_m2":25.66163366410704}],"ideal":[{"A_kWh_m2":149.2754298948814,"B_kWh_m2":161.81535358098142},{"A_kWh_m2":104.81251759765794,"B_kWh_m2":112.16633810365467},{"A_kWh_m2":73.34386183062827,"B_kWh_m2":78.91079748309201},{"A_kWh_m2":27.703194720476475,"B_kWh_m2":30.097682005255788}]}}</script>
+<script>
+// Dataset selection shared by the three pages. Datasets are static JSON files built by `python -m solarsim.build`
+// (PVGIS does not allow browser calls: PVGIS 5.x forbids AJAX, PVGIS 6 has a strict CORS policy). A dataset for any
+// coordinate can be made with `python -m solarsim.cli dataset ...` and opened here from a local file.
+const DataStore = (() => {
+  const LAST_OK_KEY = "solarsim-last-ok-dataset";
+  const REQUIRED = ["version", "dataset", "site", "inputs", "areas", "annual", "hourly"];
+
+  function validate(D) {
+    const miss = REQUIRED.filter(k => !(k in D));
+    if (miss.length) throw new Error(`fayl tam deyil: ${miss.join(", ")} yoxdur`);
+    if (!D.hourly.n || D.hourly.ghi.length !== D.hourly.n) throw new Error("saatlıq məlumatın uzunluğu uyğun gəlmir");
+    if (!D.version.model || !String(D.version.model).startsWith("2.")) throw new Error(`model versiyası ${D.version.model} dəstəklənmir (2.x lazımdır)`);
+    return D;
+  }
+
+  async function fetchJSON(url) {
+    const r = await fetch(url, { cache: "no-cache" });
+    if (!r.ok) throw new Error(`${url}: HTTP ${r.status}`);
+    return r.json();
+  }
+
+  // Renders the selector into `host`, calls onLoading() immediately when the choice changes (pages must clear old
+  // results there) and onLoad(D) / onError(msg, retry) afterwards.
+  async function mount(host, { onLoading, onLoad, onError, initial }) {
+    host.innerHTML = `<div class="ds-row">
+        <label class="ds-lbl" for="ds-select">Məkan və məlumat dəsti</label>
+        <select id="ds-select" class="ds-select"><option>yüklənir…</option></select>
+        <label class="ds-file">Öz məlumat dəstini aç (JSON)<input type="file" id="ds-file" accept=".json,application/json"></label>
+      </div>
+      <p class="ds-msg" id="ds-msg" role="status"></p>`;
+    const sel = host.querySelector("#ds-select"), msg = host.querySelector("#ds-msg"), file = host.querySelector("#ds-file");
+    let index = [];
+    try { index = (await fetchJSON("data/index.json")).datasets; }
+    catch (e) { msg.textContent = `Məlumat siyahısı yüklənmədi: ${e.message}`; }
+    const label = d => `${d.name} — ${d.api_version.startsWith("6") ? "PVGIS 6 TMY (beta)" : "PVGIS 5.3 TMY"}`;
+    sel.innerHTML = index.map(d => `<option value="${d.id}">${label(d)}</option>`).join("") + `<option value="__file" disabled>yerli fayl</option>`;
+    let lastOk = null;
+    try { lastOk = localStorage.getItem(LAST_OK_KEY); } catch (e) {}
+    const want = initial || (location.hash.length > 1 ? location.hash.slice(1) : null) || lastOk || (index[0] && index[0].id);
+    if (want && index.some(d => d.id === want)) sel.value = want;
+
+    async function load(id) {
+      const d = index.find(x => x.id === id);
+      if (!d) return;
+      onLoading(label(d));
+      msg.textContent = `${label(d)} yüklənir…`;
+      try {
+        const D = validate(await fetchJSON(d.file));
+        msg.textContent = "";
+        try { localStorage.setItem(LAST_OK_KEY, id); } catch (e) {}
+        if (location.hash.slice(1) !== id) history.replaceState(null, "", `#${id}`);
+        onLoad(D);
+      } catch (e) {
+        const fallback = lastOk && lastOk !== id && index.some(x => x.id === lastOk) ? lastOk : null;
+        msg.innerHTML = `<b>Məlumat gəlmədi:</b> ${e.message}.` + (fallback
+          ? ` <button type="button" class="ds-fallback">Son yoxlanmış dəsti aç: ${label(index.find(x => x.id === fallback))}</button>` : "");
+        const b = msg.querySelector(".ds-fallback");
+        if (b) b.addEventListener("click", () => { sel.value = fallback; load(fallback); });
+        onError(e.message);
+      }
+    }
+    sel.addEventListener("change", () => load(sel.value));
+    file.addEventListener("change", async () => {
+      const f = file.files && file.files[0];
+      if (!f) return;
+      onLoading(f.name);
+      try {
+        const D = validate(JSON.parse(await f.text()));
+        D.dataset.label = `${D.dataset.label || f.name} (yerli fayl: ${f.name})`;
+        sel.value = "__file";
+        msg.textContent = `Yerli fayl açıldı: ${f.name}`;
+        onLoad(D);
+      } catch (e) {
+        msg.innerHTML = `<b>Fayl oxunmadı:</b> ${e.message}. Faylı <code>python -m solarsim.cli dataset</code> ilə yaradın.`;
+        onError(e.message);
+      }
+    });
+    if (sel.value && sel.value !== "__file") await load(sel.value);
+    return { reload: () => load(sel.value) };
+  }
+
+  // short provenance line for page headers
+  function provenance(D) {
+    const m = D.dataset, s = D.site;
+    const yrs = m.years ? `${m.years[0]}–${m.years[1]}` : "";
+    return `${s.name} (${fmt(s.latitude, 4)}° N, ${fmt(s.longitude, 4)}° E, ${fmt(s.elevation_m ?? 0, 0)} m) · ` +
+           `${m.api ? `PVGIS ${m.api_version.split(" ")[0]}` : m.source_label} ${m.kind === "TMY" ? "TMY" : m.kind} ${yrs} · ` +
+           `${m.radiation_db || ""} · addım ${fmt(D.hourly.step_h, 2)} saat · model v${D.version.model}`;
+  }
+  function fmt(v, d) {
+    if (!isFinite(v)) return "—";
+    const s = Math.abs(v).toFixed(d), [i, f] = s.split(".");
+    return (v < 0 && Number(s) !== 0 ? "−" : "") + i.replace(/\B(?=(\d{3})+(?!\d))/g, " ") + (f ? "," + f : "");
+  }
+  // up to `max` decimals, trailing zeros removed (keeps 1,526 as 1,526 and 450 as 450)
+  function fmtSmart(v, max = 4) {
+    const s = fmt(v, max);
+    return s.includes(",") ? s.replace(/,?0+$/, "") : s;
+  }
+  // parameter values of any type (numbers, ranges, booleans, text) in Azerbaijani notation
+  function fmtValue(v) {
+    if (v === null || v === undefined) return "məkan seçimi";
+    if (typeof v === "boolean") return v ? "bəli" : "xeyr";
+    if (typeof v === "number") return fmtSmart(v);
+    if (Array.isArray(v)) return v.map(fmtValue).join(" … ");
+    return String(v);
+  }
+  // dataset labels come from Python with decimal points in coordinates: convert those (not version numbers)
+  const label = D => String(D.dataset.label || "").replace(/(\d+)\.(\d+)°/g, "$1,$2°").replace(/(^|[\s(,])-(\d)/g, "$1−$2");
+  return { mount, validate, provenance, fmt, fmtSmart, fmtValue, label };
+})();
+if (typeof module !== "undefined") module.exports = DataStore;
+
+</script>
 <script>
 (() => {
-  const C = JSON.parse(document.getElementById("cases").textContent);
-  const A_M2 = C.meta.area_m2, PDC0 = C.meta.module.pdc0_W, F_ACT = C.meta.module.active_area_fraction;
-  const { sapm_a: SA, sapm_b: SB, sapm_dT: SDT } = C.meta.sapm;
+  let C = null;
+  let A_M2 = 1.998108;
+  const PDC0 = 450, F_ACT = 0.92;
+  const SA = -3.47, SB = -0.0594, SDT = 3;      // SAPM open_rack_glass_glass (same as the Python model)
+  const KEYS = ["clear", "hazy", "partly", "overcast"];
+  // the page's view of a dataset: representative hours per sky class, lens levels, annual and per-class energy
+  function fromDataset(D) {
+    const L = D.b_levels, map = q => ({ tau_b: q.tau_beam_normal, tau_d: q.tau_diffuse, gap_beam: q.gap_recovery_beam,
+      gap_diff: q.gap_recovery_diffuse, nonunif: q.nonuniformity_loss, heat: q.extra_heating_K_per_kWm2, gamma_pdc: -0.0030 });
+    return {
+      rep: D.index_cases.rep, levels: Object.fromEntries(Object.entries(L).map(([k, v]) => [k, map(v.params)])),
+      annual: Object.fromEntries(Object.entries(L).map(([k, v]) => [k, { A: v.A_kWh_m2, B: v.B_kWh_m2 }])),
+      perClass: Object.fromEntries(Object.entries(L).map(([k, v]) => [k, [...KEYS, "low_light", "kd_above_1"].map(c => ({
+        key: c, A_kWh_m2: v.by_class_kWh_m2.A[c] || 0, B_kWh_m2: v.by_class_kWh_m2.B[c] || 0, hours: v.hours[c] || 0 }))])),
+      site: D.site, area: D.areas.aperture_m2,
+    };
+  }
   // Azerbaijani number format: decimal comma, (non-breaking) space as thousands separator, true minus sign
   const nf = (v, d = 0) => { if (!isFinite(v)) return "—"; const s = Math.abs(v).toFixed(d); const [i, f] = s.split("."); const neg = v < 0 && Number(s) !== 0; return (neg ? "−" : "") + i.replace(/\B(?=(\d{3})+(?!\d))/g, "\u00a0") + (f ? "," + f : ""); };
 
@@ -212,7 +351,7 @@ footer a { color: var(--accent); }
     { id: "overcast", name: "Tam buludlu", icon: '<path d="M6 18h12a4.5 4.5 0 0 0 0-9 6 6 0 0 0-11.5 1.8A3.6 3.6 0 0 0 6 18z" fill="#8f9ba6"/>' },
   ];
   const QL = [
-    { id: "weak", name: "Zəif" }, { id: "base", name: "Orta" }, { id: "good", name: "Yaxşı" }, { id: "ideal", name: "Mükəmməl (nəzəri)" },
+    { id: "weak", name: "Zəif" }, { id: "base", name: "Orta" }, { id: "good", name: "Yaxşı" }, { id: "ideal", name: "Sadə modelin ideal ssenarisi" },
   ];
   let state = { wx: "clear", ql: "base" };
   try { const s = JSON.parse(localStorage.getItem("lens-explainer") || "null"); if (s && s.wx && s.ql) state = s; } catch (e) {}
@@ -226,7 +365,7 @@ footer a { color: var(--accent); }
 
   // ---------- physics (same formulas as the notebook model) ----------
   function compute(wxIdx, p) {
-    const r = C.rep[wxIdx];
+    const r = C.rep.find(x => x.key === WX[wxIdx].id);
     const tcA = r.f_glob * Math.exp(SA + SB * r.ws) + r.ta + (r.f_glob / 1000) * SDT;
     const eA = r.f_beam + r.f_diff;
     const pA = Math.max(0, PDC0 * eA / 1000 * (1 + p.gamma_pdc * (tcA - 25)));
@@ -294,6 +433,7 @@ footer a { color: var(--accent); }
   }
 
   function step(S, dt, cur) {
+    if (!cur) return;
     const r = cur.r, pr = S.probs;
     S.acc.b += r.f_beam * RATE * dt; S.acc.d += r.f_diff * RATE * dt;
     while (S.acc.b >= 1) { spawn(S, "b"); S.acc.b -= 1; }
@@ -346,6 +486,7 @@ footer a { color: var(--accent); }
   }
 
   function draw(S, cur) {
+    if (!cur) return;
     const ctx = S.ctx, sky = SKY[state.wx];
     const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, sky.top); g.addColorStop(1, sky.bot);
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
@@ -400,8 +541,9 @@ footer a { color: var(--accent); }
   }
 
   // ---------- page text ----------
-  const pctTxt = v => `${v >= 0 ? "+" : "−"}${nf(Math.abs(v), 0)}%`;
+  const pctTxt = (v, d = 1) => `${v >= 0 ? "+" : "−"}${nf(Math.abs(v), d)}%`;
   function update() {
+    if (!C) return;
     try { localStorage.setItem("lens-explainer", JSON.stringify(state)); } catch (e) {}
     document.querySelectorAll("#wx .chip").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === state.wx ? "true" : "false"));
     document.querySelectorAll("#ql .chip").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === state.ql ? "true" : "false"));
@@ -435,21 +577,34 @@ footer a { color: var(--accent); }
     document.getElementById("yearbars").innerHTML = row("Adi panel", A, "var(--panel-a)", false) +
       QL.map(q => row(`Linza: ${q.name.toLowerCase()}`, C.annual[q.id].B, "var(--panel-b)", q.id === state.ql)).join("");
     const pc = C.perClass[state.ql];
-    document.getElementById("wxtable").innerHTML = `<thead><tr><th>Hava</th><th>Bakıda ildə, saat</th><th>Adi panel, kWh/m²</th><th>Linzalı, kWh/m²</th><th>Fərq</th></tr></thead><tbody>${
-      WX.map((w, i) => { const dd = (pc[i].B_kWh_m2 / pc[i].A_kWh_m2 - 1) * 100;
-        return `<tr${w.id === state.wx ? ' style="font-weight:700"' : ""}><td>${w.name}</td><td>${nf(C.hours[i])}</td><td>${nf(pc[i].A_kWh_m2, 1)}</td><td>${nf(pc[i].B_kWh_m2, 1)}</td><td class="${dd >= 0 ? "good" : "bad"}">${pctTxt(dd)}</td></tr>`; }).join("")
-    }</tbody>`;
+    const names = { clear: "Açıq, günəşli (DHI/GHI < 0,3)", hazy: "Dumanlı, tozlu (0,3–0,5)", partly: "Qismən buludlu (0,5–0,9)", overcast: "Tam buludlu (≥ 0,9)",
+                    low_light: "Zəif işıq: GHI ≤ 10 W/m² (gecə, alaqaranlıq)", kd_above_1: "DHI > GHI (məlumat uyğunsuzluğu)" };
+    const rows = pc.filter(r => r.key !== "kd_above_1" || r.hours > 0);
+    const tot = k => rows.reduce((a, r) => a + r[k], 0);
+    document.getElementById("wxtable").innerHTML = `<thead><tr><th>Hava sinfi</th><th>ildə, saat</th><th>Adi panel, kWh/m²</th><th>Linzalı, kWh/m²</th><th>Fərq</th></tr></thead><tbody>${
+      rows.map(r => { const dd = r.A_kWh_m2 > 0 ? (r.B_kWh_m2 / r.A_kWh_m2 - 1) * 100 : 0;
+        return `<tr${r.key === state.wx ? ' style="font-weight:700"' : ""}><td>${names[r.key]}</td><td>${nf(r.hours)}</td><td>${nf(r.A_kWh_m2, 1)}</td><td>${nf(r.B_kWh_m2, 1)}</td><td class="${dd >= 0 ? "good" : "bad"}">${r.A_kWh_m2 > 0.05 ? pctTxt(dd) : "—"}</td></tr>`; }).join("")
+    }<tr style="border-top:2px solid var(--line)"><td><b>Cəm = illik enerji</b></td><td>${nf(tot("hours"))}</td><td><b>${nf(tot("A_kWh_m2"), 1)}</b></td><td><b>${nf(tot("B_kWh_m2"), 1)}</b></td><td></td></tr></tbody>`;
   }
 
-  const an = C.annual;
-  document.getElementById("answer").innerHTML =
-    `<b>Qısa cavab:</b> Bakıda il ərzində adi panel <b>${nf(an.base.A)} kWh/m²</b> elektrik verir. Orta keyfiyyətli linza qatı ilə bu <b>${nf(an.base.B)} kWh/m²</b> olur (<b>${pctTxt((an.base.B / an.base.A - 1) * 100)}</b>).
-     Mükəmməl linza belə nəzəri olaraq ən çoxu <b>${pctTxt((an.ideal.B / an.ideal.A - 1) * 100)}</b> qazandıra bilər. Linzanın zərəri günəşli havada ən az, buludlu havada isə ən çoxdur.`;
-
+  function answer() {
+    const an = C.annual;
+    document.getElementById("answer").innerHTML =
+      `<b>Qısa cavab (${C.site.name}):</b> il ərzində adi panel <b>${nf(an.base.A, 1)} kWh/m²</b> DC elektrik verir. Orta keyfiyyətli optik qatla bu <b>${nf(an.base.B, 1)} kWh/m²</b> olur (<b>${pctTxt((an.base.B / an.base.A - 1) * 100)}</b>).
+       Sadə modelin ideal ssenarisi (aktiv sahə 92%, boşluq işığı tam qaytarılır, ötürmə 100%, əlavə istilik və qeyri-bərabərlik itkisi yoxdur) <b>${pctTxt((an.ideal.B / an.ideal.A - 1) * 100, 2)}</b> verir. Bu, sadə modelin yuxarı həddidir. Həndəsi linza modeli laboratoriyadadır.`;
+    document.getElementById("year-h").textContent = `${C.site.name}: bütün il ərzində`;
+  }
+  function selectAvailableWeather() {
+    document.querySelectorAll("#wx .chip").forEach(b => { const r = C.rep.find(x => x.key === b.dataset.v); b.disabled = !r || !r.n;
+      b.title = r && r.n ? `${r.n} saatın ortası` : "bu məkanda nümunə saatı yoxdur"; });
+    if (!C.rep.find(x => x.key === state.wx && x.n)) { const f = C.rep.find(x => x.n); if (f) state.wx = f.key; }
+  }
   let current = null;
-  update();
   // ---------- animation loop ----------
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let started = false;
+  function startAnimation() {
+  if (started) return; started = true;
   // warm up so the first still frame already shows light on the panels
   for (let i = 0; i < 90; i++) { step(scA, 1 / 60, current); step(scB, 1 / 60, current); }
   draw(scA, current); draw(scB, current);
@@ -468,6 +623,25 @@ footer a { color: var(--accent); }
       draw(scA, current); draw(scB, current);
     }));
   }
+  }
+
+  DataStore.mount(document.getElementById("ds"), {
+    onLoading: name => {
+      C = null; current = null; document.body.classList.add("loading");
+      document.getElementById("eyebrow").textContent = `${name} yüklənir…`;
+      for (const id of ["answer", "yearbars", "wxtable", "why"]) document.getElementById(id).innerHTML = "";
+      document.getElementById("pw-a").textContent = "—"; document.getElementById("pw-b").textContent = "—";
+    },
+    onLoad: D => {
+      C = fromDataset(D); A_M2 = C.area;
+      document.getElementById("eyebrow").textContent = DataStore.provenance(D);
+      document.getElementById("foot-prov").innerHTML = `<b>Necə hesablanıb.</b> Məlumat: ${DataStore.label(D)}. Panel Trina Vertex S+ 450 W, ${DataStore.fmt(D.inputs.tilt, 0)}° maili, azimut ${DataStore.fmt(D.inputs.azimuth, 0)}°. Günəş mövqeyi pvlib SPA ilə hesablanır, ofset ${DataStore.fmtSmart(D.dataset.solpos_offset_h)} saat (${D.dataset.offset_rule}). Model v${D.version.model}, nəticələr Python modeli ilə yaradılıb.`;
+      selectAvailableWeather(); answer(); update();
+      document.body.classList.remove("loading");
+      startAnimation();
+    },
+    onError: msg => { document.getElementById("eyebrow").textContent = `Məlumat yoxdur: ${msg}`; },
+  });
 })();
 </script>
 

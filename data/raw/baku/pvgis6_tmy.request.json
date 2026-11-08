@@ -1,0 +1,13 @@
+{
+ "url": "https://photovoltaic-geographic-information-system.ec.europa.eu/api/v6/meteorological/typical-meteorological-year?longitude=49.87&latitude=40.41&start_time=2014-01-01T00%3A00%3A00&end_time=2024-12-31T23%3A59%3A59&metadata=true",
+ "endpoint": "https://photovoltaic-geographic-information-system.ec.europa.eu/api/v6/meteorological/typical-meteorological-year",
+ "params": {
+  "longitude": 49.87,
+  "latitude": 40.41,
+  "start_time": "2014-01-01T00:00:00",
+  "end_time": "2024-12-31T23:59:59",
+  "metadata": "true"
+ },
+ "http_status": 200,
+ "requested_utc": "2026-11-08T15:18:42+00:00"
+}

@@ -1,464 +1,349 @@
-<title>Bakı Günəş Simulyatoru</title>
+<title>Günəş Simulyatoru</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
-/* Layout: engineering bench — sticky control rack on the left, results instrument panel on the right; one column on phones. */
+/* Layout: engineering bench — dataset bar on top, sticky control rack on the left, results on the right; one column on phones. */
 :root {
-  --bg: #eef2f1;
-  --surface: #ffffff;
-  --surface-2: #f6f8f8;
-  --ink: #13201e;
-  --ink-2: #44524f;
-  --muted: #74827f;
-  --line: #d6dfdd;
-  --accent: #0b6a66;
-  --accent-ink: #ffffff;
-  --track: #c9d4d1;
-  --warn-bg: #fff4dc;
-  --warn-ink: #6b4a00;
-  --s-A_fixed: #2a78d6;
-  --s-B_fixed: #eb6834;
-  --s-A_2axis: #1baf7a;
-  --s-C_2axis: #eda100;
-  --div-lo: #c2412b;
-  --div-mid: #e6e9e8;
-  --div-hi: #2a6fbf;
+  --bg: #eef2f1; --surface: #ffffff; --surface-2: #f6f8f8; --ink: #13201e; --ink-2: #44524f; --muted: #74827f; --line: #d6dfdd;
+  --accent: #0b6a66; --accent-ink: #ffffff; --warn-bg: #fff4dc; --warn-ink: #6b4a00; --bad: #b8402a; --good: #1f7a55;
+  --s-A_fixed: #2a78d6; --s-B_fixed: #eb6834; --s-A_2axis: #1baf7a; --s-C_2axis: #eda100;
+  --div-lo: #c2412b; --div-mid: #e6e9e8; --div-hi: #2a6fbf;
   --font-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
   --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-data: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
-  --r: 10px;
+  --font-data: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace; --r: 10px;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0d1413; --surface: #151f1d; --surface-2: #1b2725; --ink: #e4ecea; --ink-2: #aab9b6;
-    --muted: #7c8c89; --line: #2a3835; --accent: #4bb3ab; --accent-ink: #06211f; --track: #34433f;
-    --warn-bg: #3a2d0c; --warn-ink: #f1d48f;
-    --s-A_fixed: #3987e5; --s-B_fixed: #d95926; --s-A_2axis: #199e70; --s-C_2axis: #c98500;
-    --div-lo: #d0573f; --div-mid: #2c3836; --div-hi: #4a8ad6; color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #0d1413; --surface: #151f1d; --surface-2: #1b2725; --ink: #e4ecea; --ink-2: #aab9b6;
-  --muted: #7c8c89; --line: #2a3835; --accent: #4bb3ab; --accent-ink: #06211f; --track: #34433f;
-  --warn-bg: #3a2d0c; --warn-ink: #f1d48f;
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0d1413; --surface: #151f1d; --surface-2: #1b2725; --ink: #e4ecea; --ink-2: #aab9b6; --muted: #7c8c89; --line: #2a3835;
+  --accent: #4bb3ab; --accent-ink: #06211f; --warn-bg: #3a2d0c; --warn-ink: #f1d48f; --bad: #ef7a63; --good: #4cc795;
   --s-A_fixed: #3987e5; --s-B_fixed: #d95926; --s-A_2axis: #199e70; --s-C_2axis: #c98500;
-  --div-lo: #d0573f; --div-mid: #2c3836; --div-hi: #4a8ad6; color-scheme: dark;
-}
+  --div-lo: #d0573f; --div-mid: #2c3836; --div-hi: #4a8ad6; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0d1413; --surface: #151f1d; --surface-2: #1b2725; --ink: #e4ecea; --ink-2: #aab9b6; --muted: #7c8c89; --line: #2a3835;
+  --accent: #4bb3ab; --accent-ink: #06211f; --warn-bg: #3a2d0c; --warn-ink: #f1d48f; --bad: #ef7a63; --good: #4cc795;
+  --s-A_fixed: #3987e5; --s-B_fixed: #d95926; --s-A_2axis: #199e70; --s-C_2axis: #c98500;
+  --div-lo: #d0573f; --div-mid: #2c3836; --div-hi: #4a8ad6; color-scheme: dark; }
 * { box-sizing: border-box; }
 body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 14px; line-height: 1.5; }
-.wrap { max-width: 1320px; margin: 0 auto; padding-block: 20px 48px;
-  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.wrap { max-width: 1320px; margin: 0 auto; padding-block: 20px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 16px; }
 h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; }
-h1 { font-size: clamp(1.7rem, 3.2vw, 2.4rem); font-weight: 700; letter-spacing: -0.01em; line-height: 1.1; }
+h1 { font-size: clamp(1.7rem, 3.2vw, 2.4rem); font-weight: 700; line-height: 1.1; }
 h2 { font-size: 1.15rem; font-weight: 600; }
 h3 { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
+p { margin: 0; }
+a { color: var(--accent); }
 .num { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
-header.top { display: grid; gap: 10px; margin-bottom: 18px; }
-.eyebrow { font-family: var(--font-data); font-size: 0.78rem; color: var(--muted); letter-spacing: 0.02em; }
-.lead { color: var(--ink-2); max-width: 70ch; margin: 0; }
-.notice { display: inline-flex; gap: 8px; align-items: baseline; background: var(--warn-bg); color: var(--warn-ink);
-  border-radius: 6px; padding: 6px 10px; font-size: 0.85rem; max-width: 100%; }
+.nav { display: flex; gap: 14px; flex-wrap: wrap; font-size: 0.9rem; }
+.eyebrow { font-family: var(--font-data); font-size: 0.78rem; color: var(--muted); }
+.lead { color: var(--ink-2); max-width: 75ch; }
+.notice { background: var(--warn-bg); color: var(--warn-ink); border-radius: 6px; padding: 6px 10px; font-size: 0.85rem; }
+.ds { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 10px 14px; display: grid; gap: 6px; }
+.ds-row { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+.ds-lbl { font-size: 0.8rem; font-weight: 600; color: var(--ink-2); }
+.ds-select { font: inherit; padding: 5px 8px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); max-width: 100%; }
+.ds-file { font-size: 0.82rem; color: var(--accent); cursor: pointer; }
+.ds-file input { display: block; font-size: 0.8rem; max-width: 260px; }
+.ds-msg { font-size: 0.82rem; color: var(--ink-2); }
+.ds-msg button { font: inherit; margin-left: 6px; }
 .layout { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 18px; align-items: start; }
 @media (max-width: 920px) { .layout { grid-template-columns: minmax(0, 1fr); } }
-aside.rack { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); max-height: calc(100vh - 24px); overflow: auto;
-  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px; display: grid; gap: 14px; }
+aside.rack { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); max-height: calc(100vh - 24px); overflow: auto; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px; display: grid; gap: 12px; }
 @media (max-width: 920px) { aside.rack { position: static; max-height: none; } }
-.presets { display: flex; flex-wrap: wrap; gap: 6px; }
 button { font: inherit; cursor: pointer; }
 .btn { border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); border-radius: 6px; padding: 5px 10px; font-size: 0.85rem; }
-.btn:hover { border-color: var(--accent); }
 .btn[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
-.btn:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 10px; }
+.btn:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 9px; }
 .grp-head { display: flex; align-items: center; gap: 8px; padding-top: 10px; border-top: 1px solid var(--line); }
-.swatch { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+.swatch { width: 10px; height: 10px; border-radius: 3px; flex: none; display: inline-block; }
 .ctl { display: grid; gap: 2px; }
 .ctl-top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
-.ctl label { font-size: 0.86rem; color: var(--ink); }
-.ctl output { font-family: var(--font-data); font-size: 0.86rem; white-space: nowrap; }
+.ctl label { font-size: 0.85rem; }
+.ctl output { font-family: var(--font-data); font-size: 0.85rem; white-space: nowrap; }
 .ctl-meta { display: flex; justify-content: space-between; gap: 8px; font-size: 0.72rem; color: var(--muted); }
 .tag { font-size: 0.68rem; border: 1px solid var(--line); border-radius: 999px; padding: 0 6px; color: var(--ink-2); white-space: nowrap; }
-.tag.meas { border-color: var(--s-C_2axis); }
-.tag.ds { border-color: var(--s-A_fixed); }
 input[type=range] { width: 100%; accent-color: var(--accent); margin: 2px 0; }
-.toggle { display: flex; gap: 8px; align-items: center; font-size: 0.86rem; }
-.toggle input { accent-color: var(--accent); width: 16px; height: 16px; }
-main { display: grid; gap: 18px; min-width: 0; }
+.toggle { display: flex; gap: 8px; align-items: center; font-size: 0.85rem; }
+main { display: grid; gap: 16px; min-width: 0; }
 .cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
 @media (max-width: 1100px) { .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 460px) { .cards { grid-template-columns: minmax(0, 1fr); } }
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 12px 14px; display: grid; gap: 4px; min-width: 0; }
 .card .name { display: flex; gap: 8px; align-items: center; font-size: 0.8rem; color: var(--ink-2); min-height: 2.4em; }
-.card .big { font-family: var(--font-data); font-size: 1.9rem; font-weight: 500; line-height: 1.1; }
-.card .big small { font-size: 0.8rem; color: var(--muted); margin-left: 4px; font-weight: 400; }
-.card .sub { font-size: 0.8rem; color: var(--ink-2); font-variant-numeric: tabular-nums; }
-.delta { font-family: var(--font-data); font-size: 0.75rem; border-radius: 4px; padding: 0 5px; justify-self: start; }
-.delta.up { background: color-mix(in srgb, var(--s-A_2axis) 18%, transparent); }
-.delta.down { background: color-mix(in srgb, var(--div-lo) 18%, transparent); }
-.delta.same { color: var(--muted); }
+.card .big { font-family: var(--font-data); font-size: 1.8rem; font-weight: 500; line-height: 1.1; }
+.card .big small, .card .unit { font-size: 0.75rem; color: var(--muted); font-weight: 400; }
+.card dl { display: grid; grid-template-columns: auto auto; gap: 1px 10px; margin: 0; font-size: 0.78rem; font-variant-numeric: tabular-nums; }
+.card dt { color: var(--ink-2); } .card dd { margin: 0; text-align: right; font-family: var(--font-data); }
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; display: grid; gap: 10px; min-width: 0; }
 .panel-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; }
-.panel-note { font-size: 0.78rem; color: var(--muted); margin: 0; }
-.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; }
+.note { font-size: 0.78rem; color: var(--muted); }
+.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
 @media (max-width: 1100px) { .two { grid-template-columns: minmax(0, 1fr); } }
 .chart { width: 100%; overflow-x: auto; }
 .chart svg { display: block; width: 100%; height: auto; }
 .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 0.8rem; color: var(--ink-2); }
 .legend span { display: inline-flex; align-items: center; gap: 6px; }
-.legend i { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
-.legend i.dash { background: none !important; border-top: 3px dashed; height: 0; }
-.daybar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.daybar input[type=range] { flex: 1 1 200px; width: auto; }
-#tip { position: fixed; pointer-events: none; z-index: 20; background: var(--surface); color: var(--ink); border: 1px solid var(--line);
-  border-radius: 6px; padding: 6px 8px; font-size: 0.78rem; box-shadow: 0 4px 14px rgba(0,0,0,0.12); max-width: 260px; }
-#tip .row { display: flex; gap: 8px; justify-content: space-between; font-variant-numeric: tabular-nums; }
+.tablewrap { overflow-x: auto; }
 table { border-collapse: collapse; width: 100%; font-size: 0.82rem; }
 th, td { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
 th:first-child, td:first-child { text-align: left; }
 th { font-weight: 600; color: var(--ink-2); font-size: 0.75rem; }
 td { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
-.bad { color: var(--div-lo); } .good { color: var(--div-hi); }
-.mapwrap { position: relative; width: 100%; }
+td.txt { font-family: var(--font-body); white-space: normal; text-align: left; }
+tr.total td { font-weight: 600; border-top: 2px solid var(--line); }
+.bad { color: var(--bad); } .good { color: var(--good); }
 #map { width: 100%; height: auto; display: block; border-radius: 6px; }
-pre.code { background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: 10px; font-family: var(--font-data);
-  font-size: 0.75rem; overflow-x: auto; margin: 0; white-space: pre; }
-footer { color: var(--ink-2); font-size: 0.82rem; display: grid; gap: 6px; }
+pre.code { background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: 10px; font-family: var(--font-data); font-size: 0.75rem; overflow-x: auto; margin: 0; white-space: pre; }
+#tip { position: fixed; pointer-events: none; z-index: 20; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; font-size: 0.78rem; box-shadow: 0 4px 14px rgba(0,0,0,0.12); max-width: 280px; }
+#tip .row { display: flex; gap: 8px; justify-content: space-between; font-variant-numeric: tabular-nums; }
+.loading main, .loading aside { opacity: 0.35; pointer-events: none; }
+footer { color: var(--ink-2); font-size: 0.8rem; display: grid; gap: 6px; }
 footer ul { margin: 0; padding-left: 18px; display: grid; gap: 3px; }
-footer a { color: var(--accent); }
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 
-<div class="wrap">
-  <header class="top">
-    <div class="eyebrow" id="eyebrow">PVGIS 5.3 TMY · 40,41° N, 49,87° E · Bakı vaxtı (UTC+4) · 1 qurğu = 1,998 m² işıqtoplama sahəsi</div>
-    <h1>Bakı günəş simulyatoru</h1>
-    <p class="lead">Eyni işıqtoplama sahəsində linzasız və linzalı qurğuların illik xalis DC enerjisi. Sürgüləri dəyişin. 8760 saatlıq hesab brauzerdə dərhal yenilənir və notebook-dakı modellə eyni nəticəni verir.</p>
-    <div class="notice"><strong>Diqqət:</strong> <span>B və C üzrə optika, fotoelement və soyutma rəqəmləri fərziyyədir. Bu, prototip ölçüsü və ya kommersiya məhsulu haqqında nəticə deyil.</span></div>
+<div class="wrap" id="root">
+  <header style="display:grid; gap:10px">
+    <nav class="nav"><a href="index.html">Sadə izah</a><a href="lab.html">Linza laboratoriyası</a></nav>
+    <div class="eyebrow" id="eyebrow">məlumat yüklənir…</div>
+    <h1>Günəş simulyatoru: adi PV, optik qat və CPV</h1>
+    <p class="lead">Eyni işıqtoplama sahəsində (apertura) dörd ssenarinin illik enerjisi. Sürgüləri dəyişin: 8760 saatlıq hesab brauzerdə yenidən aparılır və Python modeli ilə eyni nəticəni verir (paritet testi). Brüt = modulun DC çıxışı; xalis = brüt − izləmə − idarəetmə − soyutma sərfi.</p>
+    <p class="notice">B və C üzrə optika, fotoelement, soyutma və izləmə rəqəmləri fərziyyədir. Prototip ölçüsü və ya kommersiya məhsulu haqqında nəticə deyil.</p>
   </header>
+  <section class="ds" id="ds"></section>
 
   <div class="layout">
     <aside class="rack" aria-label="Parametrlər">
       <div style="display:grid; gap:8px">
         <h3>Fərziyyə dəsti</h3>
-        <div class="presets" role="group" aria-label="Fərziyyə dəsti">
+        <div class="presets" role="group" style="display:flex; flex-wrap:wrap; gap:6px">
           <button class="btn" id="p-base" data-preset="base" aria-pressed="true">Baza</button>
           <button class="btn" id="p-pess" data-preset="pess" aria-pressed="false">Pessimist</button>
           <button class="btn" id="p-opt" data-preset="opt" aria-pressed="false">Optimist</button>
           <button class="btn" id="copy-py" type="button">Notebook üçün kopyala</button>
         </div>
       </div>
-      <div id="controls"></div>
+      <div id="controls" style="display:grid; gap:12px"></div>
       <pre class="code" id="pycode" hidden></pre>
     </aside>
 
     <main>
-      <section class="cards" id="cards" aria-label="İllik xalis enerji"></section>
+      <section class="cards" id="cards" aria-label="İllik enerji"></section>
+      <p class="note" id="cards-note"></p>
 
       <section class="panel">
-        <div class="panel-head"><h2>İllik xalis enerji, kWh/m²</h2>
-          <p class="panel-note">Ədalətli cütlər: A ↔ B (sabit) və A-izləmə ↔ C (eyni izləmə). Boz xətt — baza fərziyyə.</p></div>
+        <div class="panel-head"><h2>İllik enerji: brüt və xalis, kWh/m² apertura</h2>
+          <p class="note">Ədalətli cütlər: sabit A ↔ sabit B; iki oxlu A-izləmə ↔ iki oxlu C. Açıq zolaq — brüt DC, dolu zolaq — xalis.</p></div>
         <div class="chart" id="annual"></div>
       </section>
 
       <div class="two">
         <section class="panel">
-          <div class="panel-head"><h2>Aylıq xalis enerji, kWh/m²</h2></div>
+          <div class="panel-head"><h2>Aylıq xalis enerji, kWh/m² apertura</h2></div>
           <div class="legend" id="leg-month"></div>
           <div class="chart" id="monthly"></div>
+          <p class="note">Aylar yerli standart vaxtla (yay saatı olmadan). Ayların cəmi illik xalis enerjiyə bərabərdir.</p>
         </section>
         <section class="panel">
-          <div class="panel-head"><h2>Hansı şəraitdə kim üstündür</h2>
-            <p class="panel-note">Gündüz saatları (GHI &gt; 10 W/m²) səpələnmiş paya görə; DC enerji nisbəti.</p></div>
-          <div class="chart" id="sky"></div>
+          <div class="panel-head"><h2>Hava sinifləri üzrə brüt DC, kWh/m² apertura</h2></div>
+          <div class="tablewrap" id="sky"></div>
+          <p class="note">Siniflər DHI/GHI payına görədir və yalnız GHI &gt; 10 W/m² olan saatları əhatə edir. Qalan saatlar ayrıca sətirdədir, cəm illik enerjiyə bərabərdir.</p>
         </section>
       </div>
 
       <section class="panel">
-        <div class="panel-head"><h2>Gündəlik profil: DC güc, W / qurğu</h2>
-          <p class="panel-note" id="day-label"></p></div>
-        <div class="daybar">
-          <button class="btn" id="d-clear" type="button">Açıq gün (5 iyun)</button>
-          <button class="btn" id="d-cloud" type="button">Buludlu gün (30 iyun)</button>
-          <label for="day" class="panel-note">Gün</label>
-          <input type="range" id="day" min="1" max="365" step="1" value="156">
-        </div>
-        <div class="legend" id="leg-day"></div>
-        <div class="chart" id="daychart"></div>
-        <div class="chart" id="irrchart"></div>
+        <div class="panel-head"><h2>CPV başabaş xəritəsi: optik ötürmə × fotoelement səmərəliliyi</h2>
+          <p class="note">Rəng: C / A-izləmə illik xalis nisbəti. Bütöv xətt — A-izləmə ilə bərabərlik, qırıq — sabit A ilə. Ştrixli xanalar: model etibarlılıq diapazonundan çıxır.</p></div>
+        <canvas id="map" width="900" height="440" role="img" aria-label="CPV başabaş xəritəsi"></canvas>
+        <p class="note" id="map-note"></p>
       </section>
 
+      <section class="panel" id="reg-panel" hidden>
+        <div class="panel-head"><h2>Əvvəlki model (v1) ilə müqayisə — reqressiya bazası</h2></div>
+        <div class="tablewrap" id="reg"></div>
+        <p class="note" id="reg-note"></p>
+      </section>
+
+      <section class="panel" id="ia-panel" hidden>
+        <div class="panel-head"><h2>İllərarası dəyişkənlik (konkret təqvim illəri)</h2><p class="note" id="ia-src"></p></div>
+        <div class="tablewrap" id="ia"></div>
+      </section>
+
+      <div class="two">
+        <section class="panel">
+          <h2>Xəbərdarlıqlar və məlumatın keyfiyyəti</h2>
+          <div id="warn"></div>
+        </section>
+        <section class="panel">
+          <h2>NOCT yoxlaması (pasporta qarşı)</h2>
+          <div id="noct"></div>
+        </section>
+      </div>
+
       <section class="panel">
-        <div class="panel-head"><h2>CPV hədd xəritəsi: optik ötürmə × fotoelement səmərəliliyi</h2>
-          <p class="panel-note">Rəng: CPV / A-izləmə illik xalis enerji nisbəti. Bütöv xətt — A-izləməyə bərabər, qırıq — sabit A-ya bərabər. Digər CPV və izləmə parametrləri sürgülərdən götürülür.</p></div>
-        <div class="mapwrap"><canvas id="map" width="900" height="460" role="img" aria-label="CPV hədd xəritəsi"></canvas></div>
-        <p class="panel-note" id="map-note"></p>
+        <h2>Parametrlər: dəyər, vahid, status</h2>
+        <div class="tablewrap" id="params"></div>
       </section>
 
       <footer>
-        <h3>Model və mənbələr</h3>
-        <ul>
-          <li>Meteoroloji məlumat: <span id="src"></span>. Saatlıq addım, 8760 saat.</li>
-          <li>A: Trina Vertex S+ TSM-450NEG9R.28, 450 W, 1762 × 1134 mm, γ texniki pasportdan (TSM_EN_2023_B). PVWatts DC, SAPM hüceyrə temperaturu, Perez transpozisiyası, zavod şüşəsinin IAM-ı.</li>
-          <li>Sabit qurğular 35° maililik və cənub istiqamətindədir. Maililiyi və koordinatları notebook-da dəyişin (bu səhifədə şüalanma əvvəlcədən hesablanıb).</li>
-          <li>B: əlavə qat zavod şüşəsinin üstündə ayrıca vuruqdur. Bucaq asılılığı n = 1,49 Fresnel modeli ilə verilir. Qeyri-bərabər işıqlanma sabit itki payıdır.</li>
-          <li>C: P_in = DNI · max(cos AOI, 0) · A_apertura; P_hüceyrə = P_in · τ · düşmə payı. C = 100 yalnız fotoelementdəki intensivlik üçündür. Səpələnmiş işığın töhfəsi 0-dır. İstilik analitik balansla hesablanır.</li>
-          <li>Ölçmə nöqtəsi DC çıxışdır. Xalis = DC − izləmə/idarəetmə/fan sərfi. Çirklənmə və spektral təsir 0 qəbul edilir.</li>
-          <li>Mənbələr: <a href="https://joint-research-centre.ec.europa.eu/photovoltaic-geographical-information-system-pvgis/using-pvgis-5/pvgis-5-tools/pvgis-typical-meteorological-year-tmy-generator_en" target="_blank" rel="noopener">PVGIS TMY</a>,
-            <a href="https://pages.trinasolar.com/rs/567-KJK-096/images/NEG9R.28_EN_2023_MEA%20region.pdf" target="_blank" rel="noopener">Trina datasheet TSM_EN_2023_B</a>. Tam hesab: <span class="num">solar_simulation.ipynb</span>.</li>
-        </ul>
+        <h3>Mənbə və anlayışlar</h3>
+        <ul id="prov"></ul>
+        <p>Mənbə kodu: <a href="https://github.com/mhmmdkbrov/solarsimulation" target="_blank" rel="noopener">github.com/mhmmdkbrov/solarsimulation</a> (MIT).</p>
       </footer>
     </main>
   </div>
 </div>
 <div id="tip" hidden></div>
 
-<script type="application/json" id="data">__DATA__</script>
+<script>
+__DATASTORE__
+</script>
 <script>
 __MODEL__
 </script>
 <script>
 (() => {
-  const D = JSON.parse(document.getElementById("data").textContent);
-  const M = SolarModel;
-  const SC = M.SCEN;
-  const NAMES = { A_fixed: "A: adi panel, sabit", B_fixed: "B: panel + optik qat", A_2axis: "A-izləmə: adi panel, 2 oxlu", C_2axis: "C: CPV, 2 oxlu izləmə" };
+  const M = SolarModel, SC = M.SCEN, $ = id => document.getElementById(id);
+  const NAMES = { A_fixed: "A: adi panel, sabit", B_fixed: "B: panel + optik qat, sabit", A_2axis: "A-izləmə: adi panel, 2 oxlu", C_2axis: "C: CPV, 2 oxlu" };
   const SHORT = { A_fixed: "A", B_fixed: "B", A_2axis: "A-izləmə", C_2axis: "C" };
-  const DASH = { A_fixed: "", B_fixed: "", A_2axis: "6 4", C_2axis: "6 4" };
+  const PAIR = { A_fixed: null, B_fixed: "A_fixed", A_2axis: null, C_2axis: "A_2axis" };
   const MONTHS = ["Yan", "Fev", "Mar", "Apr", "May", "İyn", "İyl", "Avq", "Sen", "Okt", "Noy", "Dek"];
-  // Azerbaijani number format: decimal comma, (non-breaking) space as thousands separator, true minus sign
-  const nf = (v, d = 1) => { if (!isFinite(v)) return "—"; const s = Math.abs(v).toFixed(d); const [i, f] = s.split("."); const neg = v < 0 && Number(s) !== 0; return (neg ? "−" : "") + i.replace(/\B(?=(\d{3})+(?!\d))/g, "\u00a0") + (f ? "," + f : ""); };
+  const nf = (v, d = 1) => DataStore.fmt(v, d);
   const pct = (v, d = 1) => nf(v * 100, d) + "%";
-
   const CTRL = [
-    { g: "B", id: "tau_b", label: "Birbaşa işığın ötürməsi (normal düşmə)", min: 0.80, max: 1, step: 0.005, f: v => nf(v, 3), st: "fərziyyə" },
-    { g: "B", id: "tau_d", label: "Səpələnmiş işığın ötürməsi", min: 0.70, max: 1, step: 0.005, f: v => nf(v, 3), st: "fərziyyə" },
-    { g: "B", id: "gap_beam", label: "Boşluqdan hüceyrəyə yönələn birbaşa işıq", min: 0, max: 1, step: 0.01, f: v => pct(v, 0), st: "fərziyyə" },
-    { g: "B", id: "gap_diff", label: "Boşluqdan hüceyrəyə yönələn səpələnmiş işıq", min: 0, max: 1, step: 0.01, f: v => pct(v, 0), st: "fərziyyə" },
-    { g: "B", id: "nonunif", label: "Qeyri-bərabər işıqlanma itkisi", min: 0, max: 0.10, step: 0.0025, f: v => pct(v, 2), st: "fərziyyə" },
-    { g: "B", id: "heat", label: "Əlavə qızma", min: 0, max: 8, step: 0.1, f: v => nf(v, 1) + " K/(kW/m²)", st: "fərziyyə" },
-    { g: "M", id: "f_act", label: "Aktiv hüceyrə sahəsi payı", min: 0.85, max: 0.97, step: 0.005, f: v => nf(v, 3), st: "ölçülməlidir" },
-    { g: "M", id: "gamma_pdc", label: "Pmax temperatur əmsalı", min: -0.0040, max: -0.0020, step: 0.0001, f: v => nf(v * 100, 2) + " %/°C", st: "texniki pasport" },
-    { g: "C", id: "tau_c", label: "Linzanın optik ötürməsi τ", min: 0.60, max: 1, step: 0.005, f: v => nf(v, 3), st: "fərziyyə" },
-    { g: "C", id: "intercept", label: "Fokusun fotoelementə düşmə payı", min: 0.80, max: 1, step: 0.005, f: v => nf(v, 3), st: "fərziyyə" },
-    { g: "C", id: "eta", label: "Fotoelementin səmərəliliyi η (25 °C)", min: 0.15, max: 0.45, step: 0.005, f: v => pct(v, 1), st: "fərziyyə" },
-    { g: "C", id: "gamma_c", label: "η-nın temperatur əmsalı", min: -0.004, max: 0, step: 0.0001, f: v => nf(v * 100, 2) + " %/°C", st: "fərziyyə" },
-    { g: "C", id: "R", label: "İstilik müqaviməti, hər linza", min: 0, max: 10, step: 0.1, f: v => nf(v, 1) + " K/W", st: "fərziyyə" },
-    { g: "C", id: "fan", label: "Fan sərfi (gündüz)", min: 0, max: 5, step: 0.1, f: v => nf(v, 1) + " W", st: "fərziyyə" },
-    { g: "T", id: "trk", label: "İzləmə mühərriki (gündüz)", min: 0, max: 10, step: 0.1, f: v => nf(v, 1) + " W", st: "fərziyyə" },
-    { g: "T", id: "ctrl", label: "İdarəetmə (24 saat)", min: 0, max: 2, step: 0.05, f: v => nf(v, 2) + " W", st: "fərziyyə" },
+    { g: "B", id: "tau_b", label: "Birbaşa işığın ötürməsi (normal düşmə)", min: 0.80, max: 1, step: 0.005, f: v => nf(v, 3) },
+    { g: "B", id: "tau_d", label: "Səpələnmiş işığın ötürməsi", min: 0.70, max: 1, step: 0.005, f: v => nf(v, 3) },
+    { g: "B", id: "gap_beam", label: "Boşluqdan hüceyrəyə yönələn birbaşa işıq", min: 0, max: 1, step: 0.01, f: v => pct(v, 0) },
+    { g: "B", id: "gap_diff", label: "Boşluqdan hüceyrəyə yönələn səpələnmiş işıq", min: 0, max: 1, step: 0.01, f: v => pct(v, 0) },
+    { g: "B", id: "nonunif", label: "Qeyri-bərabər işıqlanma itkisi", min: 0, max: 0.10, step: 0.0025, f: v => pct(v, 2) },
+    { g: "B", id: "heat", label: "Əlavə qızma", min: 0, max: 8, step: 0.1, f: v => nf(v, 1) + " K/(kW/m²)" },
+    { g: "C", id: "tau_c", label: "Linzanın optik ötürməsi τ", min: 0.60, max: 1, step: 0.005, f: v => nf(v, 3) },
+    { g: "C", id: "intercept", label: "Optik düşmə payı (ideal izləmədə)", min: 0.80, max: 1, step: 0.005, f: v => nf(v, 3) },
+    { g: "C", id: "accept", label: "Qəbul bucağı (yarım)", min: 0.2, max: 3, step: 0.05, f: v => nf(v, 2) + "°" },
+    { g: "C", id: "track_sigma", label: "İzləmə xətası (1σ, hər ox)", min: 0, max: 1, step: 0.01, f: v => nf(v, 2) + "°" },
+    { g: "C", id: "eta", label: "Fotoelementin səmərəliliyi η (25 °C)", min: 0.15, max: 0.45, step: 0.005, f: v => pct(v, 1) },
+    { g: "C", id: "gamma_c", label: "η-nın temperatur əmsalı", min: -0.004, max: 0, step: 0.0001, f: v => nf(v * 100, 2) + " %/°C" },
+    { g: "C", id: "R", label: "İstilik müqaviməti, hər linza", min: 0, max: 10, step: 0.1, f: v => nf(v, 1) + " K/W" },
+    { g: "C", id: "fan", label: "Soyutma (fan) sərfi, gündüz", min: 0, max: 5, step: 0.1, f: v => nf(v, 1) + " W" },
+    { g: "T", id: "trk", label: "İzləmə mühərriki, gündüz", min: 0, max: 10, step: 0.1, f: v => nf(v, 1) + " W" },
+    { g: "T", id: "ctrl", label: "İdarəetmə, 24 saat", min: 0, max: 2, step: 0.05, f: v => nf(v, 2) + " W" },
+    { g: "M", id: "f_act", label: "Aktiv hüceyrə sahəsi payı (B üçün)", min: 0.85, max: 0.97, step: 0.005, f: v => nf(v, 3) },
+    { g: "M", id: "gamma_pdc", label: "Pmax temperatur əmsalı", min: -0.0040, max: -0.0020, step: 0.0001, f: v => nf(v * 100, 2) + " %/°C" },
   ];
-  const GROUPS = [
-    { g: "B", title: "B · Optik retrofit qatı", color: "B_fixed" },
-    { g: "C", title: "C · CPV (linza + fotoelement)", color: "C_2axis" },
-    { g: "T", title: "İzləmə (A-izləmə və C üçün eyni)", color: "A_2axis" },
-    { g: "M", title: "Modul (A, B, A-izləmə)", color: "A_fixed" },
-  ];
+  const STATUS = { tau_b: "fərziyyə", tau_d: "fərziyyə", gap_beam: "fərziyyə", gap_diff: "fərziyyə", nonunif: "fərziyyə", heat: "fərziyyə", tau_c: "fərziyyə", intercept: "fərziyyə", accept: "fərziyyə", track_sigma: "fərziyyə", eta: "fərziyyə", gamma_c: "fərziyyə", R: "fərziyyə", fan: "fərziyyə", trk: "fərziyyə", ctrl: "fərziyyə", f_act: "fərziyyə", gamma_pdc: "pasport" };
+  const GROUPS = [{ g: "B", t: "B · Optik qat", c: "B_fixed" }, { g: "C", t: "C · CPV", c: "C_2axis" }, { g: "T", t: "İzləmə (A-izləmə və C)", c: "A_2axis" }, { g: "M", t: "Modul", c: "A_fixed" }];
 
-  let P = { ...M.PRESETS.base };
-  try { const s = JSON.parse(localStorage.getItem("baku-solar-params") || "null"); if (s && typeof s === "object") P = { ...P, ...s }; } catch (e) {}
-  const BASE = M.summarize(D, M.simulate(D, M.PRESETS.base));
+  let D = null, P = { ...M.PRESETS.base }, BASE = null, R = null, S = null;
+  try { const s = JSON.parse(localStorage.getItem("solarsim-sim-params") || "null"); if (s) P = { ...P, ...s }; } catch (e) {}
 
   // ---------- controls ----------
-  const host = document.getElementById("controls");
-  host.style.display = "grid"; host.style.gap = "12px";
+  const host = $("controls");
   for (const G of GROUPS) {
     const fs = document.createElement("fieldset");
-    fs.innerHTML = `<div class="grp-head"><span class="swatch" style="background:var(--s-${G.color})"></span><h3>${G.title}</h3></div>`;
-    if (G.g === "B") {
-      fs.insertAdjacentHTML("beforeend", `<label class="toggle"><input type="checkbox" id="optics"> Əlavə optika aktivdir (söndürüləndə B = A, əgər qızma 0-dır)</label>`);
-    }
-    for (const c of CTRL.filter(c => c.g === G.g)) {
-      const cls = c.st === "ölçülməlidir" ? "tag meas" : c.st === "texniki pasport" ? "tag ds" : "tag";
-      fs.insertAdjacentHTML("beforeend", `<div class="ctl">
-        <div class="ctl-top"><label for="${c.id}">${c.label}</label><output id="${c.id}-v" for="${c.id}"></output></div>
-        <input type="range" id="${c.id}" min="${c.min}" max="${c.max}" step="${c.step}">
-        <div class="ctl-meta"><span class="num">${c.f(c.min)} … ${c.f(c.max)}</span><span class="${cls}">${c.st}</span></div></div>`);
-    }
+    fs.innerHTML = `<div class="grp-head"><span class="swatch" style="background:var(--s-${G.c})"></span><h3>${G.t}</h3></div>`;
+    if (G.g === "B") fs.insertAdjacentHTML("beforeend", `<label class="toggle"><input type="checkbox" id="optics"> Əlavə optika aktivdir</label>`);
+    if (G.g === "C") fs.insertAdjacentHTML("beforeend", `<label class="toggle"><input type="checkbox" id="diff_accept"> Qəbul konusundakı səpələnmiş işığı say (DHI·sin²θ)</label>`);
+    for (const c of CTRL.filter(c => c.g === G.g)) fs.insertAdjacentHTML("beforeend", `<div class="ctl"><div class="ctl-top"><label for="${c.id}">${c.label}</label><output id="${c.id}-v"></output></div>
+      <input type="range" id="${c.id}" min="${c.min}" max="${c.max}" step="${c.step}"><div class="ctl-meta"><span class="num">${c.f(c.min)} … ${c.f(c.max)}</span><span class="tag">${STATUS[c.id]}</span></div></div>`);
     host.appendChild(fs);
   }
-  const syncControls = () => {
-    for (const c of CTRL) { const el = document.getElementById(c.id); el.value = P[c.id]; document.getElementById(c.id + "-v").textContent = c.f(P[c.id]); }
-    document.getElementById("optics").checked = !!P.optics;
-    for (const k of ["base", "pess", "opt"]) {
-      const same = Object.keys(M.PRESETS[k]).every(key => Math.abs((+P[key]) - (+M.PRESETS[k][key])) < 1e-9);
-      document.getElementById("p-" + k).setAttribute("aria-pressed", same ? "true" : "false");
-    }
+  const sync = () => {
+    for (const c of CTRL) { $(c.id).value = P[c.id]; $(c.id + "-v").textContent = c.f(P[c.id]); }
+    $("optics").checked = !!P.optics; $("diff_accept").checked = !!P.diff_accept;
+    for (const k of ["base", "pess", "opt"]) $("p-" + k).setAttribute("aria-pressed", Object.keys(M.PRESETS[k]).every(x => String(P[x]) === String(M.PRESETS[k][x])) ? "true" : "false");
   };
   host.addEventListener("input", e => {
     const t = e.target;
-    if (t.id === "optics") P.optics = t.checked;
-    else if (t.type === "range") P[t.id] = parseFloat(t.value);
-    else return;
-    syncControls(); schedule();
+    if (t.id === "optics") P.optics = t.checked; else if (t.id === "diff_accept") P.diff_accept = t.checked;
+    else if (t.type === "range") P[t.id] = parseFloat(t.value); else return;
+    sync(); schedule();
   });
-  document.querySelectorAll("[data-preset]").forEach(b => b.addEventListener("click", () => { P = { ...M.PRESETS[b.dataset.preset] }; syncControls(); schedule(); }));
-
-  const pyText = () => `# solar_simulation.ipynb: paste after the parameters cell (section 1), then run all cells below it
-RETROFIT.update(optics_enabled=${P.optics ? "True" : "False"}, tau_beam_normal=${P.tau_b}, tau_diffuse=${P.tau_d},
-                gap_recovery_beam=${P.gap_beam}, gap_recovery_diffuse=${P.gap_diff},
-                nonuniformity_loss=${P.nonunif}, extra_heating_K_per_kWm2=${P.heat})
-MODULE.update(active_area_fraction=${P.f_act}, gamma_pdc_per_C=${P.gamma_pdc})
-CPV.update(tau_optical=${P.tau_c}, intercept_factor=${P.intercept}, eta_cell_ref=${P.eta},
-           gamma_cell_per_C=${P.gamma_c}, r_th_K_per_W=${P.R}, fan_aux_W=${P.fan})
-TRACKER.update(tracker_aux_W=${P.trk}, controller_aux_W=${P.ctrl})`;
-  document.getElementById("copy-py").addEventListener("click", () => {
-    const pre = document.getElementById("pycode");
-    pre.textContent = pyText(); pre.hidden = false;
-    const btn = document.getElementById("copy-py");
-    const done = msg => { btn.textContent = msg; setTimeout(() => (btn.textContent = "Notebook üçün kopyala"), 1800); };
-    const selectPre = () => { const r = document.createRange(); r.selectNodeContents(pre); const s = getSelection(); s.removeAllRanges(); s.addRange(r); };
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(pre.textContent).then(() => done("Kopyalandı"), () => { selectPre(); done("Mətn seçildi: Ctrl+C"); });
-    } else { selectPre(); done("Mətn seçildi: Ctrl+C"); }
+  document.querySelectorAll("[data-preset]").forEach(b => b.addEventListener("click", () => { P = { ...M.PRESETS[b.dataset.preset] }; sync(); schedule(); }));
+  const pyText = () => `# solar_simulation.ipynb (bölmə 1-dən sonra): solarsim parametrlərini dəyişin
+p = S.override(S.default_params(), {
+    ("retrofit", "optics_enabled"): ${P.optics ? "True" : "False"}, ("retrofit", "tau_beam_normal"): ${P.tau_b}, ("retrofit", "tau_diffuse"): ${P.tau_d},
+    ("retrofit", "gap_recovery_beam"): ${P.gap_beam}, ("retrofit", "gap_recovery_diffuse"): ${P.gap_diff},
+    ("retrofit", "nonuniformity_loss"): ${P.nonunif}, ("retrofit", "extra_heating_K_per_kWm2"): ${P.heat},
+    ("cpv", "tau_optical"): ${P.tau_c}, ("cpv", "intercept_optical"): ${P.intercept}, ("cpv", "acceptance_half_angle_deg"): ${P.accept},
+    ("cpv", "tracking_error_sigma_deg"): ${P.track_sigma}, ("cpv", "diffuse_in_acceptance"): ${P.diff_accept ? "True" : "False"},
+    ("cpv", "eta_cell_ref"): ${P.eta}, ("cpv", "gamma_cell"): ${P.gamma_c}, ("cpv", "r_th_K_per_W"): ${P.R}, ("cpv", "fan_W"): ${P.fan},
+    ("tracker", "drive_W"): ${P.trk}, ("tracker", "controller_W"): ${P.ctrl}})
+# modul: PV.Module().p["active_fraction"].value = ${P.f_act}; PV.Module().p["gamma_pdc"].value = ${P.gamma_pdc}
+res = S.run(ds, p)`;
+  $("copy-py").addEventListener("click", () => {
+    const pre = $("pycode"); pre.textContent = pyText(); pre.hidden = false;
+    const r = document.createRange(); r.selectNodeContents(pre); const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+    if (navigator.clipboard) navigator.clipboard.writeText(pre.textContent).catch(() => {});
   });
 
   // ---------- helpers ----------
   const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
   const col = s => css("--s-" + s);
-  const el = (tag, attrs = {}, text) => { const e = document.createElementNS("http://www.w3.org/2000/svg", tag); for (const k in attrs) { if (k === "font-family") e.style.fontFamily = attrs[k]; else e.setAttribute(k, attrs[k]); } if (text != null) e.textContent = text; return e; };
-  const niceMax = v => { const p = Math.pow(10, Math.floor(Math.log10(v))); const m = v / p; return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * p; };
-  const tip = document.getElementById("tip");
-  const showTip = (ev, html) => {
-    tip.innerHTML = html; tip.hidden = false;
-    const pad = 14, w = tip.offsetWidth, h = tip.offsetHeight;
-    let x = ev.clientX + pad, y = ev.clientY + pad;
-    if (x + w > innerWidth - 8) x = ev.clientX - w - pad;
-    if (y + h > innerHeight - 8) y = ev.clientY - h - pad;
-    tip.style.left = Math.max(8, x) + "px"; tip.style.top = Math.max(8, y) + "px";
-  };
+  const el = (tag, a = {}, text) => { const e = document.createElementNS("http://www.w3.org/2000/svg", tag); for (const k in a) { if (k === "font-family") e.style.fontFamily = a[k]; else e.setAttribute(k, a[k]); } if (text != null) e.textContent = text; return e; };
+  const niceMax = v => { const p = Math.pow(10, Math.floor(Math.log10(Math.max(v, 1e-9)))), m = v / p; return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * p; };
+  const tip = $("tip");
+  const showTip = (ev, html) => { tip.innerHTML = html; tip.hidden = false; let x = ev.clientX + 14, y = ev.clientY + 14; if (x + tip.offsetWidth > innerWidth - 8) x = ev.clientX - tip.offsetWidth - 14; if (y + tip.offsetHeight > innerHeight - 8) y = ev.clientY - tip.offsetHeight - 14; tip.style.left = Math.max(8, x) + "px"; tip.style.top = Math.max(8, y) + "px"; };
   const hideTip = () => { tip.hidden = true; };
-  const legend = (id, dashed) => {
-    document.getElementById(id).innerHTML = SC.map(s => `<span><i class="${dashed && DASH[s] ? "dash" : ""}" style="background:${col(s)};border-color:${col(s)}"></i>${NAMES[s]}</span>`).join("");
-  };
 
   // ---------- render ----------
-  let R, S;
   function renderCards() {
-    const pair = { A_fixed: null, B_fixed: "A_fixed", A_2axis: "A_fixed", C_2axis: "A_2axis" };
-    document.getElementById("cards").innerHTML = SC.map(s => {
-      const v = S[s].net_kWh_m2, b = BASE[s].net_kWh_m2, d = v - b;
-      const dcls = Math.abs(d) < 0.05 ? "same" : d > 0 ? "up" : "down";
-      const dtxt = Math.abs(d) < 0.05 ? "bazaya bərabər" : `${d > 0 ? "+" : "−"}${nf(Math.abs(d), 1)} bazaya görə`;
-      const rel = pair[s] ? `${SHORT[pair[s]]}-ya nisbət <span class="num">${nf(v / S[pair[s]].net_kWh_m2, 2)}</span>` : "müqayisə bazası";
+    $("cards").innerHTML = SC.map(s => {
+      const r = S[s], b = BASE[s], d = r.net_kWh_m2_ap - b.net_kWh_m2_ap, pr = PAIR[s];
+      const rel = pr ? `${SHORT[pr]}-ya nisbət <b class="num">${nf(r.net_kWh_m2_ap / S[pr].net_kWh_m2_ap, 3)}</b>` : "cütün bazası";
       return `<div class="card"><div class="name"><span class="swatch" style="background:${col(s)}"></span>${NAMES[s]}</div>
-        <div class="big">${nf(v, 1)}<small>kWh/m²</small></div>
-        <div class="sub"><span class="num">${nf(S[s].net_kWh, 0)}</span> kWh/qurğu · ${rel}</div>
-        <span class="delta ${dcls}">${dtxt}</span></div>`;
+        <div class="big">${nf(r.net_kWh_m2_ap, 1)}<small> kWh/m² xalis</small></div>
+        <dl><dt>brüt DC</dt><dd>${nf(r.gross_kWh_m2_ap, 1)} kWh/m²</dd>
+        <dt>izləmə</dt><dd>${nf(r.drive_kWh_unit, 2)} kWh/qurğu</dd><dt>idarəetmə</dt><dd>${nf(r.controller_kWh_unit, 2)} kWh/qurğu</dd>
+        <dt>soyutma</dt><dd>${nf(r.cooling_kWh_unit, 2)} kWh/qurğu</dd><dt>xalis</dt><dd>${nf(r.net_kWh_unit, 1)} kWh/qurğu</dd></dl>
+        <div class="unit">${rel} · bazaya görə ${Math.abs(d) < 0.05 ? "dəyişməyib" : (d > 0 ? "+" : "−") + nf(Math.abs(d), 1)}</div></div>`;
     }).join("");
+    $("cards-note").textContent = `1 qurğu = ${nf(D.areas.aperture_m2, 3)} m² apertura (modul səthi ${nf(D.areas.module_surface_m2, 3)} m²; sabit modulda hüceyrə sahəsi ${nf(D.areas.cell_area_flat_m2, 3)} m², CPV-də ${nf(D.areas.cell_area_cpv_m2, 4)} m²). Torpaq sahəsi sıra məsafəsindən asılıdır (GCR fərziyyə: sabit ${nf(D.areas.aperture_m2 / D.areas.ground_fixed_m2, 2)}, 2 oxlu ${nf(D.areas.aperture_m2 / D.areas.ground_2axis_m2, 2)}).`;
   }
 
   function renderAnnual() {
-    const box = document.getElementById("annual");
-    const W = 760, rowH = 34, top = 8, left = 170, right = 70, gapPair = 16;
-    const order = ["A_fixed", "B_fixed", "A_2axis", "C_2axis"];
-    const H = top + order.length * rowH + gapPair + 28;
-    const vmax = niceMax(Math.max(...order.map(s => Math.max(S[s].net_kWh_m2, BASE[s].net_kWh_m2))) * 1.05);
-    const x = v => left + (v / vmax) * (W - left - right);
-    const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "İllik xalis enerji" });
-    const ink2 = css("--ink-2"), line = css("--line"), muted = css("--muted"), ink = css("--ink");
-    for (let t = 0; t <= vmax + 1e-9; t += vmax / 5) {
-      svg.appendChild(el("line", { x1: x(t), x2: x(t), y1: top, y2: H - 22, stroke: line, "stroke-width": 1 }));
-      svg.appendChild(el("text", { x: x(t), y: H - 6, "text-anchor": "middle", "font-size": 11, fill: muted, "font-family": "var(--font-data)" }, nf(t, 0)));
-    }
+    const W = 760, rowH = 40, top = 8, left = 200, right = 120, gap = 16, order = SC;
+    const H = top + order.length * rowH + gap + 28;
+    const vmax = niceMax(Math.max(...order.map(s => S[s].gross_kWh_m2_ap)) * 1.05), x = v => left + v / vmax * (W - left - right);
+    const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "İllik enerji" });
+    for (let t = 0; t <= vmax + 1e-9; t += vmax / 5) { svg.appendChild(el("line", { x1: x(t), x2: x(t), y1: top, y2: H - 22, stroke: css("--line") })); svg.appendChild(el("text", { x: x(t), y: H - 6, "text-anchor": "middle", "font-size": 11, fill: css("--muted"), "font-family": "var(--font-data)" }, nf(t, 0))); }
     order.forEach((s, i) => {
-      const y = top + i * rowH + (i >= 2 ? gapPair : 0);
-      const v = S[s].net_kWh_m2;
-      svg.appendChild(el("text", { x: left - 10, y: y + rowH / 2 + 4, "text-anchor": "end", "font-size": 12, fill: ink2 }, NAMES[s]));
-      const r = el("rect", { x: left, y: y + 6, width: Math.max(0, x(v) - left), height: rowH - 12, rx: 4, fill: col(s) });
-      r.addEventListener("mousemove", ev => showTip(ev, `<b>${NAMES[s]}</b><div class="row"><span>xalis</span><span>${nf(v, 1)} kWh/m²</span></div><div class="row"><span>DC</span><span>${nf(S[s].dc_kWh, 1)} kWh</span></div><div class="row"><span>sərf</span><span>${nf(S[s].aux_kWh, 1)} kWh</span></div><div class="row"><span>baza</span><span>${nf(BASE[s].net_kWh_m2, 1)} kWh/m²</span></div>`));
-      r.addEventListener("mouseleave", hideTip);
-      svg.appendChild(r);
-      const bx = x(BASE[s].net_kWh_m2);
-      svg.appendChild(el("line", { x1: bx, x2: bx, y1: y + 2, y2: y + rowH - 2, stroke: muted, "stroke-width": 2 }));
-      svg.appendChild(el("text", { x: x(v) + 6, y: y + rowH / 2 + 4, "font-size": 12, fill: ink, "font-family": "var(--font-data)" }, nf(v, 1)));
+      const y = top + i * rowH + (i >= 2 ? gap : 0), r = S[s];
+      svg.appendChild(el("text", { x: left - 10, y: y + rowH / 2 + 4, "text-anchor": "end", "font-size": 12, fill: css("--ink-2") }, NAMES[s]));
+      svg.appendChild(el("rect", { x: left, y: y + 6, width: Math.max(0, x(r.gross_kWh_m2_ap) - left), height: rowH - 12, rx: 4, fill: "none", stroke: col(s), "stroke-width": 1.5 }));
+      const bar = el("rect", { x: left, y: y + 6, width: Math.max(0, x(r.net_kWh_m2_ap) - left), height: rowH - 12, rx: 4, fill: col(s) });
+      bar.addEventListener("mousemove", ev => showTip(ev, `<b>${NAMES[s]}</b><div class="row"><span>brüt</span><span>${nf(r.gross_kWh_m2_ap, 2)} kWh/m²</span></div><div class="row"><span>köməkçi sərf</span><span>${nf(r.aux_kWh_unit, 2)} kWh/qurğu</span></div><div class="row"><span>xalis</span><span>${nf(r.net_kWh_m2_ap, 2)} kWh/m²</span></div>`));
+      bar.addEventListener("mouseleave", hideTip);
+      svg.appendChild(bar);
+      svg.appendChild(el("text", { x: x(r.gross_kWh_m2_ap) + 6, y: y + rowH / 2 + 4, "font-size": 12, fill: css("--ink"), "font-family": "var(--font-data)" }, `${nf(r.net_kWh_m2_ap, 1)} / ${nf(r.gross_kWh_m2_ap, 1)}`));
     });
-    box.replaceChildren(svg);
+    $("annual").replaceChildren(svg);
   }
 
   function renderMonthly() {
-    legend("leg-month", false);
-    const box = document.getElementById("monthly");
-    const W = 560, H = 260, l = 40, r = 8, t = 10, b = 26;
-    const vmax = niceMax(Math.max(...SC.flatMap(s => S[s].monthly_kWh_m2)) * 1.05);
+    $("leg-month").innerHTML = SC.map(s => `<span><span class="swatch" style="background:${col(s)}"></span>${SHORT[s]}</span>`).join("");
+    const W = 560, H = 250, l = 40, r = 8, t = 10, b = 26;
+    const vmax = niceMax(Math.max(...SC.flatMap(s => S[s].monthly_net_kWh_m2)) * 1.05), y = v => t + (1 - Math.max(v, 0) / vmax) * (H - t - b);
     const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Aylıq xalis enerji" });
-    const y = v => t + (1 - v / vmax) * (H - t - b);
-    const line = css("--line"), muted = css("--muted");
-    for (let k = 0; k <= 5; k++) { const v = vmax * k / 5;
-      svg.appendChild(el("line", { x1: l, x2: W - r, y1: y(v), y2: y(v), stroke: line }));
-      svg.appendChild(el("text", { x: l - 6, y: y(v) + 4, "text-anchor": "end", "font-size": 10, fill: muted, "font-family": "var(--font-data)" }, nf(v, 0))); }
+    for (let k = 0; k <= 5; k++) { const v = vmax * k / 5; svg.appendChild(el("line", { x1: l, x2: W - r, y1: y(v), y2: y(v), stroke: css("--line") })); svg.appendChild(el("text", { x: l - 6, y: y(v) + 4, "text-anchor": "end", "font-size": 10, fill: css("--muted"), "font-family": "var(--font-data)" }, nf(v, 0))); }
     const gw = (W - l - r) / 12, bw = (gw - 6) / 4;
     for (let m = 0; m < 12; m++) {
-      svg.appendChild(el("text", { x: l + gw * m + gw / 2, y: H - 8, "text-anchor": "middle", "font-size": 10, fill: muted }, MONTHS[m]));
-      SC.forEach((s, k) => {
-        const v = S[s].monthly_kWh_m2[m];
-        const rect = el("rect", { x: l + gw * m + 3 + k * bw, y: y(v), width: Math.max(1, bw - 1), height: Math.max(0, y(0) - y(v)), rx: 2, fill: col(s) });
-        rect.addEventListener("mousemove", ev => showTip(ev, `<b>${MONTHS[m]}</b>` + SC.map(q => `<div class="row"><span style="color:${col(q)}">■</span><span>${SHORT[q]}</span><span>${nf(S[q].monthly_kWh_m2[m], 2)} kWh/m²</span></div>`).join("")));
-        rect.addEventListener("mouseleave", hideTip);
-        svg.appendChild(rect);
-      });
+      svg.appendChild(el("text", { x: l + gw * m + gw / 2, y: H - 8, "text-anchor": "middle", "font-size": 10, fill: css("--muted") }, MONTHS[m]));
+      SC.forEach((s, k) => { const v = S[s].monthly_net_kWh_m2[m]; const rc = el("rect", { x: l + gw * m + 3 + k * bw, y: y(v), width: Math.max(1, bw - 1), height: Math.max(0, y(0) - y(v)), rx: 2, fill: col(s) });
+        rc.addEventListener("mousemove", ev => showTip(ev, `<b>${MONTHS[m]}</b>` + SC.map(q => `<div class="row"><span>${SHORT[q]}</span><span>${nf(S[q].monthly_net_kWh_m2[m], 2)} kWh/m²</span></div>`).join(""))); rc.addEventListener("mouseleave", hideTip); svg.appendChild(rc); });
     }
-    box.replaceChildren(svg);
+    $("monthly").replaceChildren(svg);
   }
 
   function renderSky() {
-    const rows = M.bySky(D, R);
-    const labels = ["0–0,3 (ən aydın)", "0,3–0,5", "0,5–0,7", "0,7–0,9", "0,9–1 (tam buludlu)"];
-    const ratio = (a, b) => (b > 0 ? a / b : NaN);
-    const cell = v => `<td class="${v < 1 ? "bad" : "good"}">${nf(v, 2)}</td>`;
-    document.getElementById("sky").innerHTML = `<table><thead><tr><th>DHI/GHI</th><th>saat</th><th>B / A</th><th>C / A-izləmə</th><th>C / A</th></tr></thead><tbody>${
-      rows.map((r, k) => `<tr><td style="font-family:var(--font-body)">${labels[k]}</td><td>${r.hours}</td>${cell(ratio(r.B_fixed, r.A_fixed))}${cell(ratio(r.C_2axis, r.A_2axis))}${cell(ratio(r.C_2axis, r.A_fixed))}</tr>`).join("")
-    }</tbody></table><p class="panel-note" style="margin-top:8px">1-dən kiçik nisbət linzalı variantın həmin şəraitdə geri qaldığını göstərir.</p>`;
+    const rows = M.bySky(D, R), A = D.areas.aperture_m2;
+    const LBL = { clear: "Açıq, günəşli (DHI/GHI < 0,3)", hazy: "Dumanlı (0,3–0,5)", partly: "Qismən buludlu (0,5–0,9)", overcast: "Tam buludlu (≥ 0,9)", low_light: "Zəif işıq, GHI ≤ 10 W/m²", kd_above_1: "DHI > GHI (məlumat uyğunsuzluğu)" };
+    const keys = Object.keys(LBL).filter(k => rows[k].hours > 0 || k !== "kd_above_1");
+    const sum = s => keys.reduce((a, k) => a + rows[k][s], 0);
+    $("sky").innerHTML = `<table><thead><tr><th>Sinif</th><th>saat</th>${SC.map(s => `<th>${SHORT[s]}</th>`).join("")}<th>B/A</th><th>C/A-izləmə</th></tr></thead><tbody>${
+      keys.map(k => { const r = rows[k]; const q = (a, b) => (b > 0 ? nf(a / b, 2) : "—");
+        return `<tr><td class="txt">${LBL[k]}</td><td>${nf(r.hours, 0)}</td>${SC.map(s => `<td>${nf(r[s] / A, 1)}</td>`).join("")}<td>${q(r.B_fixed, r.A_fixed)}</td><td>${q(r.C_2axis, r.A_2axis)}</td></tr>`; }).join("")
+    }<tr class="total"><td>Cəm = illik brüt</td><td>${nf(keys.reduce((a, k) => a + rows[k].hours, 0), 0)}</td>${SC.map(s => `<td>${nf(sum(s) / A, 1)}</td>`).join("")}<td></td><td></td></tr></tbody></table>`;
   }
-
-  const dayInput = document.getElementById("day");
-  function dayIdx(d) { const a = []; for (let i = 0; i < D.doy.length; i++) if (D.doy[i] === d && D.year_ok[i]) a.push(i); return a; }
-  function renderDay() {
-    legend("leg-day", true);
-    const d = +dayInput.value, idx = dayIdx(d);
-    const date = new Date(Date.UTC(2001, 0, d));
-    let ghi = 0, dni = 0; idx.forEach(i => { ghi += D.ghi[i]; dni += D.dni[i]; });
-    document.getElementById("day-label").textContent = `${date.getUTCDate()} ${MONTHS[date.getUTCMonth()]} (TMY) · gündəlik GHI ${nf(ghi / 1000, 1)} kWh/m², DNI ${nf(dni / 1000, 1)} kWh/m²`;
-    const line = css("--line"), muted = css("--muted"), ink = css("--ink");
-    const draw = (boxId, series, yLabel, H) => {
-      const W = 900, l = 52, r = 10, t = 10, b = 26;
-      const vmax = niceMax(Math.max(10, ...series.flatMap(s => s.v)) * 1.05);
-      const x = h => l + (h / 23) * (W - l - r), y = v => t + (1 - v / vmax) * (H - t - b);
-      const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": yLabel });
-      for (let k = 0; k <= 4; k++) { const v = vmax * k / 4;
-        svg.appendChild(el("line", { x1: l, x2: W - r, y1: y(v), y2: y(v), stroke: line }));
-        svg.appendChild(el("text", { x: l - 6, y: y(v) + 4, "text-anchor": "end", "font-size": 11, fill: muted, "font-family": "var(--font-data)" }, nf(v, 0))); }
-      for (let h = 0; h < 24; h += 2) svg.appendChild(el("text", { x: x(h), y: H - 8, "text-anchor": "middle", "font-size": 11, fill: muted, "font-family": "var(--font-data)" }, String(h).padStart(2, "0")));
-      svg.appendChild(el("text", { x: 4, y: t + 4, "font-size": 11, fill: muted, "dominant-baseline": "hanging", transform: `rotate(-90 4 ${t + 4})`, "text-anchor": "end" }, yLabel));
-      for (const s of series) {
-        const pts = s.v.map((v, h) => `${x(h)},${y(v)}`).join(" ");
-        svg.appendChild(el("polyline", { points: pts, fill: "none", stroke: s.c, "stroke-width": 2, "stroke-dasharray": s.dash || "", "stroke-linejoin": "round" }));
-      }
-      const cross = el("line", { y1: t, y2: H - b, stroke: muted, "stroke-width": 1, visibility: "hidden" });
-      svg.appendChild(cross);
-      const hit = el("rect", { x: l, y: t, width: W - l - r, height: H - t - b, fill: "transparent" });
-      hit.addEventListener("mousemove", ev => {
-        const bb = svg.getBoundingClientRect(), px = (ev.clientX - bb.left) * (W / bb.width);
-        const h = Math.max(0, Math.min(23, Math.round(((px - l) / (W - l - r)) * 23)));
-        cross.setAttribute("x1", x(h)); cross.setAttribute("x2", x(h)); cross.setAttribute("visibility", "visible");
-        showTip(ev, `<b>${String(h).padStart(2, "0")}:00 Bakı vaxtı</b>` + series.map(s => `<div class="row"><span style="color:${s.c}">■</span><span>${s.n}</span><span>${nf(s.v[h] || 0, 0)} ${s.u}</span></div>`).join(""));
-      });
-      hit.addEventListener("mouseleave", () => { cross.setAttribute("visibility", "hidden"); hideTip(); });
-      svg.appendChild(hit);
-      document.getElementById(boxId).replaceChildren(svg);
-    };
-    const byHour = arr => { const o = new Array(24).fill(0); idx.forEach(i => (o[D.hour[i]] = arr[i])); return o; };
-    draw("daychart", SC.map(s => ({ n: SHORT[s], v: byHour(R.dc[s]), c: col(s), dash: DASH[s], u: "W" })), "DC güc, W", 300);
-    draw("irrchart", [
-      { n: "GHI", v: byHour(D.ghi), c: ink, u: "W/m²" },
-      { n: "DNI", v: byHour(D.dni), c: muted, dash: "6 4", u: "W/m²" },
-      { n: "DHI", v: byHour(D.dhi), c: muted, dash: "2 3", u: "W/m²" },
-    ], "Şüalanma, W/m²", 170);
-  }
-  dayInput.addEventListener("input", renderDay);
-  document.getElementById("d-clear").addEventListener("click", () => { dayInput.value = 156; renderDay(); });
-  document.getElementById("d-cloud").addEventListener("click", () => { dayInput.value = 181; renderDay(); });
 
   // ---------- CPV map ----------
   const taus = Array.from({ length: 41 }, (_, i) => +(0.6 + i * 0.01).toFixed(4));
@@ -466,98 +351,132 @@ TRACKER.update(tracker_aux_W=${P.trk}, controller_aux_W=${P.ctrl})`;
   const hex = h => { h = h.replace("#", ""); return [0, 2, 4].map(k => parseInt(h.slice(k, k + 2), 16)); };
   const mix = (a, b, t) => a.map((v, k) => Math.round(v + (b[k] - v) * t));
   function contour(ctx, Z, level, X, Y, dash) {
-    // marching squares on the τ×η grid, linear interpolation along cell edges
-    const nx = taus.length, ny = etas.length;
-    ctx.setLineDash(dash); ctx.beginPath();
-    const v = (i, j) => Z[j * nx + i] - level;
-    const lerp = (a, b, va, vb) => a + (b - a) * (va / (va - vb));
+    const nx = taus.length, ny = etas.length; ctx.setLineDash(dash); ctx.beginPath();
+    const v = (i, j) => Z[j * nx + i] - level, lerp = (a, b, va, vb) => a + (b - a) * (va / (va - vb));
     for (let j = 0; j < ny - 1; j++) for (let i = 0; i < nx - 1; i++) {
-      const c = [[i, j], [i + 1, j], [i + 1, j + 1], [i, j + 1]];
-      const pts = [];
-      for (let e = 0; e < 4; e++) {
-        const [ia, ja] = c[e], [ib, jb] = c[(e + 1) % 4], va = v(ia, ja), vb = v(ib, jb);
-        if ((va < 0) !== (vb < 0)) pts.push([X(lerp(taus[ia], taus[ib], va, vb)), Y(lerp(etas[ja], etas[jb], va, vb))]);
-      }
-      if (pts.length >= 2) { ctx.moveTo(pts[0][0], pts[0][1]); ctx.lineTo(pts[1][0], pts[1][1]);
-        if (pts.length === 4) { ctx.moveTo(pts[2][0], pts[2][1]); ctx.lineTo(pts[3][0], pts[3][1]); } }
+      const c = [[i, j], [i + 1, j], [i + 1, j + 1], [i, j + 1]], pts = [];
+      for (let e = 0; e < 4; e++) { const [ia, ja] = c[e], [ib, jb] = c[(e + 1) % 4], va = v(ia, ja), vb = v(ib, jb); if ((va < 0) !== (vb < 0)) pts.push([X(lerp(taus[ia], taus[ib], va, vb)), Y(lerp(etas[ja], etas[jb], va, vb))]); }
+      if (pts.length >= 2) { ctx.moveTo(...pts[0]); ctx.lineTo(...pts[1]); if (pts.length === 4) { ctx.moveTo(...pts[2]); ctx.lineTo(...pts[3]); } }
     }
     ctx.stroke(); ctx.setLineDash([]);
   }
   function renderMap() {
-    const cv = document.getElementById("map"), ctx = cv.getContext("2d");
-    const W = cv.width, H = cv.height, l = 62, r = 110, t = 12, b = 44;
-    const Z = M.cpvGrid(D, P, taus, etas);
-    const refT = S.A_2axis.net_kWh_m2, refF = S.A_fixed.net_kWh_m2;
-    const ratio = Z.map(z => z / refT);
-    const lo = hex(css("--div-lo")), mid = hex(css("--div-mid")), hi = hex(css("--div-hi"));
-    const rMin = 0.3, rMax = 1.4;
-    const color = q => { const c = q < 1 ? mix(lo, mid, Math.max(0, (q - rMin) / (1 - rMin))) : mix(mid, hi, Math.min(1, (q - 1) / (rMax - 1))); return `rgb(${c[0]},${c[1]},${c[2]})`; };
-    ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = css("--surface"); ctx.fillRect(0, 0, W, H);
-    const X = tv => l + ((tv - 0.6) / 0.4) * (W - l - r), Y = ev => t + (1 - (ev - 0.15) / 0.30) * (H - t - b);
+    const cv = $("map"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height, l = 62, r = 110, t = 12, b = 44;
+    const { Z, bad } = M.cpvGrid(D, P, taus, etas);
+    const refT = S.A_2axis.net_kWh_m2_ap, refF = S.A_fixed.net_kWh_m2_ap, ratio = Z.map(z => z / refT);
+    const lo = hex(css("--div-lo")), mid = hex(css("--div-mid")), hi = hex(css("--div-hi")), rMin = 0.3, rMax = 1.4;
+    const color = q => { const c = q < 1 ? mix(lo, mid, Math.max(0, (q - rMin) / (1 - rMin))) : mix(mid, hi, Math.min(1, (q - 1) / (rMax - 1))); return `rgb(${c})`; };
+    ctx.clearRect(0, 0, W, H); ctx.fillStyle = css("--surface"); ctx.fillRect(0, 0, W, H);
+    const X = tv => l + (tv - 0.6) / 0.4 * (W - l - r), Y = ev => t + (1 - (ev - 0.15) / 0.30) * (H - t - b);
     const cw = (W - l - r) / (taus.length - 1), ch = (H - t - b) / (etas.length - 1);
     for (let j = 0; j < etas.length; j++) for (let i = 0; i < taus.length; i++) {
-      ctx.fillStyle = color(ratio[j * taus.length + i]);
-      ctx.fillRect(X(taus[i]) - cw / 2, Y(etas[j]) - ch / 2, cw + 0.6, ch + 0.6);
+      const k = j * taus.length + i; ctx.fillStyle = color(ratio[k]); ctx.fillRect(X(taus[i]) - cw / 2, Y(etas[j]) - ch / 2, cw + 0.6, ch + 0.6);
+      if (bad[k]) { ctx.strokeStyle = "rgba(0,0,0,0.35)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(X(taus[i]) - cw / 2, Y(etas[j]) + ch / 2); ctx.lineTo(X(taus[i]) + cw / 2, Y(etas[j]) - ch / 2); ctx.stroke(); }
     }
     ctx.save(); ctx.beginPath(); ctx.rect(l, t, W - l - r, H - t - b); ctx.clip();
     ctx.strokeStyle = css("--ink"); ctx.lineWidth = 2.4; contour(ctx, ratio, 1, X, Y, []);
-    ctx.lineWidth = 1.8; contour(ctx, Z.map(z => z / refF), 1, X, Y, [7, 5]);
-    ctx.restore();
-    // axes
+    ctx.lineWidth = 1.8; contour(ctx, Z.map(z => z / refF), 1, X, Y, [7, 5]); ctx.restore();
     ctx.fillStyle = css("--muted"); ctx.font = "12px " + css("--font-data"); ctx.textAlign = "center";
     for (let tv = 0.6; tv <= 1.0001; tv += 0.05) ctx.fillText(nf(tv, 2), X(tv), H - b + 18);
-    ctx.textAlign = "right";
-    for (let ev = 0.15; ev <= 0.4501; ev += 0.05) ctx.fillText(nf(ev * 100, 0) + "%", l - 8, Y(ev) + 4);
+    ctx.textAlign = "right"; for (let ev = 0.15; ev <= 0.4501; ev += 0.05) ctx.fillText(nf(ev * 100, 0) + "%", l - 8, Y(ev) + 4);
     ctx.textAlign = "center"; ctx.font = "13px " + css("--font-body"); ctx.fillStyle = css("--ink-2");
-    ctx.fillText(`Linzanın optik ötürməsi τ (düşmə payı ${nf(P.intercept, 2)} ayrıca)`, l + (W - l - r) / 2, H - 6);
+    ctx.fillText(`Linzanın optik ötürməsi τ (düşmə payı ${nf(P.intercept, 2)}, qəbul ±${nf(P.accept, 2)}°, izləmə σ ${nf(P.track_sigma, 2)}°)`, l + (W - l - r) / 2, H - 6);
     ctx.save(); ctx.translate(16, t + (H - t - b) / 2); ctx.rotate(-Math.PI / 2); ctx.fillText("Fotoelementin səmərəliliyi η (25 °C)", 0, 0); ctx.restore();
-    // current point
     const cx = X(Math.min(1, Math.max(0.6, P.tau_c))), cy = Y(Math.min(0.45, Math.max(0.15, P.eta)));
     ctx.beginPath(); ctx.arc(cx, cy, 7, 0, 2 * Math.PI); ctx.fillStyle = css("--surface"); ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = css("--ink"); ctx.stroke();
-    // colour scale
     const sx = W - r + 30, sw = 16;
     for (let k = 0; k <= 100; k++) { const q = rMax - (rMax - rMin) * k / 100; ctx.fillStyle = color(q); ctx.fillRect(sx, t + (H - t - b) * k / 100, sw, (H - t - b) / 100 + 1); }
     ctx.fillStyle = css("--muted"); ctx.font = "11px " + css("--font-data"); ctx.textAlign = "left";
     for (const q of [0.4, 0.6, 0.8, 1.0, 1.2, 1.4]) ctx.fillText(nf(q, 1), sx + sw + 6, t + (H - t - b) * (rMax - q) / (rMax - rMin) + 4);
-    ctx.save(); ctx.translate(W - 6, t + (H - t - b) / 2); ctx.rotate(-Math.PI / 2); ctx.textAlign = "center"; ctx.fillText("CPV / A-izləmə", 0, 0); ctx.restore();
-    // break-even η at current τ
     const it = taus.reduce((bi, tv, i) => (Math.abs(tv - P.tau_c) < Math.abs(taus[bi] - P.tau_c) ? i : bi), 0);
-    const be = ref => { for (let j = 0; j < etas.length; j++) if (Z[j * taus.length + it] >= ref) return etas[j]; return NaN; };
-    const bT = be(refT), bF = be(refF);
-    document.getElementById("map-note").textContent =
-      `Hazırkı nöqtə: τ = ${nf(P.tau_c, 3)}, η = ${pct(P.eta, 1)} → CPV ${nf(S.C_2axis.net_kWh_m2, 1)} kWh/m². ` +
-      `τ ≈ ${nf(taus[it], 2)} üçün bərabərləşmə: A-izləmə ilə η ≈ ${isNaN(bT) ? "> 45%" : pct(bT, 1)}, sabit A ilə η ≈ ${isNaN(bF) ? "> 45%" : pct(bF, 1)}.`;
-    cv._grid = { Z, ratio, X, Y, l, r, t, b };
+    const be = ref => { for (let j = 0; j < etas.length; j++) if (Z[j * taus.length + it] >= ref) return etas[j]; return null; };
+    const bT = be(refT), bF = be(refF), rng = `η ${pct(etas[0], 0)}…${pct(etas[etas.length - 1], 0)}`;
+    $("map-note").textContent = `Seçilmiş nöqtə: τ = ${nf(P.tau_c, 3)}, η = ${pct(P.eta, 1)} → C ${nf(S.C_2axis.net_kWh_m2_ap, 1)} kWh/m² xalis. τ ≈ ${nf(taus[it], 2)} üçün başabaş: ` +
+      `A-izləmə ilə ${bT === null ? `bu diapazonda başabaş nöqtəsi tapılmadı (${rng})` : "η ≈ " + pct(bT, 1)}; sabit A ilə ${bF === null ? `bu diapazonda başabaş nöqtəsi tapılmadı (${rng})` : "η ≈ " + pct(bF, 1)}. ` +
+      `Ştrixli xanalarda istilik həlli və ya səmərəlilik modelin etibarlı diapazonundan çıxır.`;
   }
-  document.getElementById("map").addEventListener("mousemove", ev => {
-    const cv = ev.currentTarget, g = cv._grid; if (!g) return;
-    const bb = cv.getBoundingClientRect(), px = (ev.clientX - bb.left) * (cv.width / bb.width), py = (ev.clientY - bb.top) * (cv.height / bb.height);
-    const tv = 0.6 + ((px - g.l) / (cv.width - g.l - g.r)) * 0.4, evv = 0.15 + (1 - (py - g.t) / (cv.height - g.t - g.b)) * 0.30;
-    if (tv < 0.595 || tv > 1.005 || evv < 0.1475 || evv > 0.4525) { hideTip(); return; }
-    const i = Math.round((tv - 0.6) / 0.01), j = Math.round((evv - 0.15) / 0.005), k = j * taus.length + i;
-    showTip(ev, `<div class="row"><span>τ</span><span>${nf(taus[i], 2)}</span></div><div class="row"><span>η</span><span>${pct(etas[j], 1)}</span></div><div class="row"><span>CPV xalis</span><span>${nf(g.Z[k], 1)} kWh/m²</span></div><div class="row"><span>/ A-izləmə</span><span>${nf(g.ratio[k], 2)}</span></div><div class="row"><span>/ A sabit</span><span>${nf(g.Z[k] / S.A_fixed.net_kWh_m2, 2)}</span></div>`);
-  });
-  document.getElementById("map").addEventListener("mouseleave", hideTip);
+
+  // ---------- static panels from the dataset ----------
+  function renderStatic() {
+    const reg = D.regression_v1;
+    $("reg-panel").hidden = !reg;
+    if (reg) {
+      const row = (s, k) => `<td>${nf(reg.baseline[s][k === "g" ? "gross_kWh_m2" : "net_kWh_m2"], 4)}</td><td>${nf(reg.v2_compat[s][k === "g" ? "gross_kWh_m2_ap" : "net_kWh_m2_ap"], 4)}</td><td>${nf(reg.v2_default[s][k === "g" ? "gross_kWh_m2_ap" : "net_kWh_m2_ap"], 4)}</td>`;
+      $("reg").innerHTML = `<table><thead><tr><th>Ssenari</th><th>v1 brüt</th><th>v2 (v1 rejimi) brüt</th><th>v2 brüt</th><th>v1 xalis</th><th>v2 (v1 rejimi) xalis</th><th>v2 xalis</th></tr></thead><tbody>${
+        SC.map(s => `<tr><td class="txt">${NAMES[s]}</td>${row(s, "g")}${row(s, "n")}</tr>`).join("")}</tbody></table>`;
+      $("reg-note").innerHTML = `Bütün rəqəmlər kWh/m² apertura/il. “v1 rejimi” = v2 kodu v1 fərziyyələri ilə (bütün ssenarilər v1-i 0,0001 dəqiqliklə təkrarlayır). v2 standartında yalnız C dəyişir: CPV qəbul konusundakı səpələnmiş işıq (DHI·sin²1°) əlavə olunur və izləmə xətası (σ = 0,1°) nəzərə alınır. ` +
+        `A-izləmənin 448,01 dəyəri brüt, 436,92 isə xalisdir (fərq 22,164 kWh/qurğu izləmə + idarəetmə sərfidir). Köhnə açıq hava nümunəsi: A ${nf(reg.clear_sample_W_v1.A, 2)} W, B ${nf(reg.clear_sample_W_v1.B, 2)} W.`;
+    }
+    const ia = D.interannual;
+    $("ia-panel").hidden = !ia;
+    if (ia) {
+      const yrs = Object.keys(ia.table).sort();
+      $("ia-src").textContent = `${ia.source}; xalis kWh/m² apertura. TMY bu illərdən seçilmiş aylardan qurulur.`;
+      const st = ia.stats;
+      $("ia").innerHTML = `<table><thead><tr><th>İl</th><th>GHI, kWh/m²</th>${SC.map(s => `<th>${SHORT[s]}</th>`).join("")}</tr></thead><tbody>${
+        yrs.map(y => `<tr><td>${y}</td><td>${nf(ia.table[y].ghi_kWh_m2, 0)}</td>${SC.map(s => `<td>${nf(ia.table[y][s], 1)}</td>`).join("")}</tr>`).join("")}
+        <tr class="total"><td>orta ± std</td><td>${nf(st.ghi_kWh_m2.mean, 0)} ± ${nf(st.ghi_kWh_m2.std, 0)}</td>${SC.map(s => `<td>${nf(st[s].mean, 1)} ± ${nf(st[s].std, 1)}</td>`).join("")}</tr>
+        <tr><td>min…maks</td><td>${nf(st.ghi_kWh_m2.min, 0)}…${nf(st.ghi_kWh_m2.max, 0)}</td>${SC.map(s => `<td>${nf(st[s].min, 0)}…${nf(st[s].max, 0)}</td>`).join("")}</tr></tbody></table>`;
+    }
+    const w = D.warnings, c = w.C_2axis, comp = w.dataset_completeness || {};
+    const WL = { den_small: "istilik həllinin məxrəci sıfıra yaxın", t_out_of_range: "hüceyrə temperaturu η(T) diapazonundan kənar", suns_out_of_range: "konsentrasiya η-nın etibarlı diapazonundan kənar", eta_nonphysical: "fiziki mənasız η" };
+    $("warn").innerHTML = `<ul style="margin:0; padding-left:18px; display:grid; gap:4px">
+      <li>Məlumat dəsti: ${comp.n_rows ?? D.hourly.n} sətir, çatışmayan ${comp.n_missing ?? 0} sətir (${nf(comp.missing_hours ?? 0, 1)} saat).</li>
+      ${(D.dataset.cleaning || []).map(t => `<li>Təmizləmə: ${t}</li>`).join("")}
+      ${Object.entries(c).map(([k, v]) => `<li>C, ${WL[k]}: ${v.hours} saat, C enerjisinin ${nf(v.energy_share * 100, 2)}%-i.</li>`).join("")}
+    </ul>`;
+    const n = D.noct;
+    $("noct").innerHTML = `<table><tbody>
+      <tr><td class="txt">SAPM hüceyrə temperaturu (800 W/m², 20 °C, 1 m/s)</td><td>${nf(n.t_cell_model_C, 2)} °C</td></tr>
+      <tr><td class="txt">Pasportdakı NOCT</td><td>${nf(n.t_noct_datasheet_C, 0)} ± 2 °C</td></tr>
+      <tr><td class="txt">Fərq</td><td>${nf(n.dT_C, 2)} K</td></tr>
+      <tr><td class="txt">Model gücü / pasport gücü (NOCT)</td><td>${nf(n.p_model_W, 1)} / ${nf(n.p_noct_datasheet_W, 0)} W</td></tr>
+      <tr><td class="txt">NOCT-a kalibrə olunmuş SAPM a</td><td>${nf(D.noct_calibrated_a, 4)} (hazırda −3,47)</td></tr></tbody></table>
+      <p class="note">Kalibrasiya üsulu: b və ΔT saxlanılır, a elə seçilir ki, NOCT şəraitində model 43 °C versin. Bu pasporta uyğunlaşmadır, ölçü deyil: status ölçü aparılana qədər “fərziyyə” qalır. Əsas hesab montaj tipinə görə King və b. (2004) əmsalları ilə aparılır.</p>`;
+    $("params").innerHTML = `<table><thead><tr><th>Qrup</th><th>Parametr</th><th>Dəyər</th><th>Vahid</th><th>Status</th><th>Qeyd</th></tr></thead><tbody>${
+      D.params.map(p => `<tr><td class="txt">${p.group}</td><td class="txt">${p.name}</td><td>${DataStore.fmtValue(p.value)}</td><td class="txt">${p.unit}</td><td class="txt">${p.status}</td><td class="txt">${p.note || ""}</td></tr>`).join("")}</tbody></table>`;
+    const m = D.dataset;
+    $("prov").innerHTML = [
+      `Məlumat: ${DataStore.label(D)}. Sorğu: <span class="num">${m.request_url || "—"}</span>, ${m.requested_utc || "—"} UTC.`,
+      `Radiasiya bazası: ${m.radiation_db || "—"}; meteo: ${m.meteo_db || "—"}; illər ${m.years ? m.years.join("–") : "—"}; tip: ${m.kind}; nominal il ${m.nominal_year ?? "—"}.`,
+      `Vaxt: hesab UTC-də, qrafiklər yerli standart vaxtla (${D.site.tz}). Günəş mövqeyi (pvlib SPA): ${m.offset_rule}. Ofset: ${DataStore.fmtSmart(m.solpos_offset_h)} saat, bir dəfə tətbiq olunur.`,
+      `Üfüq: ${m.use_horizon === true ? "PVGIS-in DEM üfüqü mənbədə tətbiq olunub" : m.use_horizon || "—"}; maililik ${nf(D.inputs.tilt, 1)}°, azimut ${nf(D.inputs.azimuth, 0)}°, albedo ${nf(D.inputs.albedo, 2)}.`,
+      `Anlayışlar: W — ani güc; W/m² — şüalanma; kWh/qurğu/il — qurğunun enerjisi; kWh/m² apertura/il — işıqtoplama sahəsinə normallaşdırılmış enerji. Modul səthi, hüceyrə sahəsi, apertura və torpaq sahəsi ayrı anlayışlardır.`,
+      `Model v${D.version.model}, məlumat dəsti ${D.version.built_utc} tarixində yaradılıb.`,
+    ].map(x => `<li>${x}</li>`).join("");
+  }
 
   // ---------- update loop ----------
-  let fastPending = false, mapTimer = null;
+  let pending = false, mapTimer = null;
   function renderFast() {
     R = M.simulate(D, P); S = M.summarize(D, R);
-    renderCards(); renderAnnual(); renderMonthly(); renderSky(); renderDay();
-    try { localStorage.setItem("baku-solar-params", JSON.stringify(P)); } catch (e) {}
+    renderCards(); renderAnnual(); renderMonthly(); renderSky();
+    try { localStorage.setItem("solarsim-sim-params", JSON.stringify(P)); } catch (e) {}
   }
   function schedule() {
-    if (!fastPending) { fastPending = true; requestAnimationFrame(() => { fastPending = false; renderFast(); }); }
-    clearTimeout(mapTimer); mapTimer = setTimeout(() => requestAnimationFrame(renderMap), 140);
+    if (!D) return;
+    if (!pending) { pending = true; requestAnimationFrame(() => { pending = false; renderFast(); }); }
+    clearTimeout(mapTimer); mapTimer = setTimeout(() => requestAnimationFrame(renderMap), 160);
   }
-  const rerenderAll = () => { if (S) { renderFast(); renderMap(); } };
+  const rerenderAll = () => { if (D) { renderFast(); renderMap(); } };
   window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", rerenderAll);
   new MutationObserver(rerenderAll).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 
-  // coordinates in Azerbaijani decimal format (40,41° N); version numbers such as "PVGIS 5.3" stay unchanged
-  document.getElementById("src").textContent = D.meta.source.replace(/(\d+)\.(\d+)°/g, "$1,$2°") + (D.meta.is_sample ? " — NÜMUNƏ MƏLUMAT" : "");
-  syncControls(); renderFast(); renderMap();
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => renderMap());
+  sync();
+  DataStore.mount($("ds"), {
+    onLoading: name => {   // never show the previous location's numbers
+      D = null; $("root").classList.add("loading");
+      for (const id of ["cards", "annual", "monthly", "sky", "reg", "ia", "warn", "noct", "params", "map-note", "cards-note"]) $(id).innerHTML = "";
+      $("map").getContext("2d").clearRect(0, 0, 900, 440);
+      $("eyebrow").textContent = `${name} yüklənir…`;
+    },
+    onLoad: data => {
+      D = data; BASE = M.summarize(D, M.simulate(D, M.PRESETS.base));
+      $("eyebrow").textContent = DataStore.provenance(D);
+      $("root").classList.remove("loading");
+      renderStatic(); renderFast(); renderMap();
+    },
+    onError: msg => { $("eyebrow").textContent = `Məlumat yoxdur: ${msg}`; },
+  });
 })();
 </script>

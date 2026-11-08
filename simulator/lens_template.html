@@ -52,6 +52,16 @@ h2 { font-size: 1.3rem; font-weight: 800; }
 h3 { font-size: 1rem; font-weight: 600; }
 p { margin: 0; }
 .lead { color: var(--ink-2); max-width: 68ch; font-size: 1.05rem; }
+.ds { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; display: grid; gap: 6px; }
+.ds-row { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+.ds-lbl { font-size: 0.8rem; font-weight: 600; color: var(--ink-2); }
+.ds-select { font: inherit; padding: 5px 8px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); max-width: 100%; }
+.ds-file { font-size: 0.82rem; color: var(--accent); cursor: pointer; }
+.ds-file input { display: block; font-size: 0.8rem; max-width: 260px; }
+.ds-msg { font-size: 0.82rem; color: var(--ink-2); }
+.eyebrow { font-size: 0.8rem; color: var(--muted); }
+.chip:disabled { opacity: 0.4; cursor: not-allowed; }
+.loading .scenes, .loading .year, .loading .verdict, .loading .why { opacity: 0.3; }
 .answer { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; max-width: 80ch; }
 .answer b { font-variant-numeric: tabular-nums; }
 .pickers { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px; }
@@ -121,15 +131,17 @@ footer a { color: var(--accent); }
 
 <div class="wrap">
   <header style="display:grid; gap:10px">
+    <div class="eyebrow" id="eyebrow">məlumat yüklənir…</div>
     <h1>Linza günəş panelini gücləndirirmi?</h1>
     <p class="lead">Solda adi panel, sağda eyni panel üstünə linza qatı ilə. Havanı və linzanın keyfiyyətini seçin. İşığın hər paneldə hara getdiyinə və nə qədər elektrik alındığına baxın.</p>
     <p class="answer" id="answer"></p>
     <p><a class="lablink" href="lab.html">Linzanın gücünü (dioptriya), məsafəsini və düzülüşünü özünüz dəyişin: Linza laboratoriyası →</a></p>
   </header>
+  <section class="ds" id="ds"></section>
 
   <div class="pickers">
     <div class="picker">
-      <span class="label" id="lbl-wx">Hava</span>
+      <span class="label" id="lbl-wx">Hava (nümunə ssenarisi)</span>
       <div class="chips" role="group" aria-labelledby="lbl-wx" id="wx"></div>
     </div>
     <div class="picker">
@@ -162,7 +174,7 @@ footer a { color: var(--accent); }
     <span><i style="background:#ffc93c"></i>Birbaşa günəş işığı</span>
     <span><i style="background:#cfe3f5"></i>Səpələnmiş işıq (buluddan, səmadan)</span>
     <span><i style="background:#9aa4ae"></i>Əks olunan və ya boşluqdan keçib itən işıq</span>
-    <span class="caption">Hüceyrələr arasındakı boşluq görünsün deyə şəkildə böyüdülüb.</span>
+    <span class="caption">Animasiya illüstrativdir: şüaların sayı və yolu sxematikdir, boşluqlar böyüdülüb. Rəqəmlər modeldən gəlir. Hava düymələri seçilmiş məkanda aprel–sentyabr, 11–14 yerli saat üçün həmin DHI/GHI sinfinin ortalamasıdır.</span>
   </div>
 
   <section style="display:grid; gap:12px">
@@ -171,28 +183,43 @@ footer a { color: var(--accent); }
   </section>
 
   <section class="year">
-    <h2>Bakıda bütün il ərzində</h2>
-    <p class="caption">1 m² panel səthindən bir ildə alınan elektrik, kWh/m². Qara xətt adi paneldir.</p>
+    <h2 id="year-h">Bütün il ərzində</h2>
+    <p class="caption">1 m² apertura (panel səthi) üzrə bir ildə alınan DC elektrik, kWh/m². Qara xətt adi paneldir. Bu səhifədə linza üçün sadə optik qat modeli işlədilir. Həndəsi model linza laboratoriyasındadır.</p>
     <div class="yearbars" id="yearbars"></div>
-    <h3 style="margin-top:6px">Hava tipinə görə (seçilmiş linza)</h3>
+    <h3 style="margin-top:6px">Hava sinfinə görə (seçilmiş linza): DHI/GHI payı üzrə, yalnız GHI &gt; 10 W/m² saatları; qalan saatlar ayrıca sətirdədir</h3>
     <div class="wx"><table id="wxtable"></table></div>
   </section>
 
   <footer>
-    <p><b>Necə hesablanıb.</b> Hava məlumatı Avropa Komissiyasının PVGIS 5.3 sistemindəki Bakı üçün tipik meteoroloji ildən götürülüb (40,41° N, 49,87° E). Hər hava tipi üçün aprel–sentyabr aylarında saat 11–14 arasındakı orta göstəricilər işlədilib.
-      Panel Trina Vertex S+ 450 W-dır, 35° maili və cənuba baxır. Model pvlib əsasındadır və ətraflı notebook-dakı modelin eynisidir.</p>
+    <p id="foot-prov"><b>Necə hesablanıb.</b></p>
     <p><b>Diqqət.</b> Linzanın ötürməsi, işığı hüceyrələrə yönəltməsi, qeyri-bərabər işıq itkisi və əlavə qızma hələ fərziyyədir. Konkret linza seçilib prototipdə ölçülməlidir.
-      “Mükəmməl linza” fiziki olaraq mümkün olan yuxarı həddir, real məhsul deyil.</p>
-    <p>Linzanın işığı kiçik xüsusi fotoelementə topladığı CPV sistemi ayrı texnologiyadır. Onu <a href="https://claude.ai/artifact/S3NXogBuvnbRhZyb6kdH6g" target="_blank" rel="noopener">ətraflı simulyatorda</a> görə bilərsiniz.</p>
+      “Sadə modelin ideal ssenarisi” bu şərtlərdən çıxır: aktiv sahə 92%, hüceyrələr arası boşluğa düşən işıq tam qaytarılır, ötürmə 100%, əlavə istilik və qeyri-bərabərlik itkisi sıfırdır. Bu, real məhsul deyil.</p>
+    <p>Linzanın işığı kiçik xüsusi fotoelementə topladığı CPV sistemi ayrı texnologiyadır. Onu <a href="simulator.html">ətraflı simulyatorda</a> görə bilərsiniz.</p>
   </footer>
 </div>
 
-<script type="application/json" id="cases">__CASES__</script>
+<script>
+__DATASTORE__
+</script>
 <script>
 (() => {
-  const C = JSON.parse(document.getElementById("cases").textContent);
-  const A_M2 = C.meta.area_m2, PDC0 = C.meta.module.pdc0_W, F_ACT = C.meta.module.active_area_fraction;
-  const { sapm_a: SA, sapm_b: SB, sapm_dT: SDT } = C.meta.sapm;
+  let C = null;
+  let A_M2 = 1.998108;
+  const PDC0 = 450, F_ACT = 0.92;
+  const SA = -3.47, SB = -0.0594, SDT = 3;      // SAPM open_rack_glass_glass (same as the Python model)
+  const KEYS = ["clear", "hazy", "partly", "overcast"];
+  // the page's view of a dataset: representative hours per sky class, lens levels, annual and per-class energy
+  function fromDataset(D) {
+    const L = D.b_levels, map = q => ({ tau_b: q.tau_beam_normal, tau_d: q.tau_diffuse, gap_beam: q.gap_recovery_beam,
+      gap_diff: q.gap_recovery_diffuse, nonunif: q.nonuniformity_loss, heat: q.extra_heating_K_per_kWm2, gamma_pdc: -0.0030 });
+    return {
+      rep: D.index_cases.rep, levels: Object.fromEntries(Object.entries(L).map(([k, v]) => [k, map(v.params)])),
+      annual: Object.fromEntries(Object.entries(L).map(([k, v]) => [k, { A: v.A_kWh_m2, B: v.B_kWh_m2 }])),
+      perClass: Object.fromEntries(Object.entries(L).map(([k, v]) => [k, [...KEYS, "low_light", "kd_above_1"].map(c => ({
+        key: c, A_kWh_m2: v.by_class_kWh_m2.A[c] || 0, B_kWh_m2: v.by_class_kWh_m2.B[c] || 0, hours: v.hours[c] || 0 }))])),
+      site: D.site, area: D.areas.aperture_m2,
+    };
+  }
   // Azerbaijani number format: decimal comma, (non-breaking) space as thousands separator, true minus sign
   const nf = (v, d = 0) => { if (!isFinite(v)) return "—"; const s = Math.abs(v).toFixed(d); const [i, f] = s.split("."); const neg = v < 0 && Number(s) !== 0; return (neg ? "−" : "") + i.replace(/\B(?=(\d{3})+(?!\d))/g, "\u00a0") + (f ? "," + f : ""); };
 
@@ -203,7 +230,7 @@ footer a { color: var(--accent); }
     { id: "overcast", name: "Tam buludlu", icon: '<path d="M6 18h12a4.5 4.5 0 0 0 0-9 6 6 0 0 0-11.5 1.8A3.6 3.6 0 0 0 6 18z" fill="#8f9ba6"/>' },
   ];
   const QL = [
-    { id: "weak", name: "Zəif" }, { id: "base", name: "Orta" }, { id: "good", name: "Yaxşı" }, { id: "ideal", name: "Mükəmməl (nəzəri)" },
+    { id: "weak", name: "Zəif" }, { id: "base", name: "Orta" }, { id: "good", name: "Yaxşı" }, { id: "ideal", name: "Sadə modelin ideal ssenarisi" },
   ];
   let state = { wx: "clear", ql: "base" };
   try { const s = JSON.parse(localStorage.getItem("lens-explainer") || "null"); if (s && s.wx && s.ql) state = s; } catch (e) {}
@@ -217,7 +244,7 @@ footer a { color: var(--accent); }
 
   // ---------- physics (same formulas as the notebook model) ----------
   function compute(wxIdx, p) {
-    const r = C.rep[wxIdx];
+    const r = C.rep.find(x => x.key === WX[wxIdx].id);
     const tcA = r.f_glob * Math.exp(SA + SB * r.ws) + r.ta + (r.f_glob / 1000) * SDT;
     const eA = r.f_beam + r.f_diff;
     const pA = Math.max(0, PDC0 * eA / 1000 * (1 + p.gamma_pdc * (tcA - 25)));
@@ -285,6 +312,7 @@ footer a { color: var(--accent); }
   }
 
   function step(S, dt, cur) {
+    if (!cur) return;
     const r = cur.r, pr = S.probs;
     S.acc.b += r.f_beam * RATE * dt; S.acc.d += r.f_diff * RATE * dt;
     while (S.acc.b >= 1) { spawn(S, "b"); S.acc.b -= 1; }
@@ -337,6 +365,7 @@ footer a { color: var(--accent); }
   }
 
   function draw(S, cur) {
+    if (!cur) return;
     const ctx = S.ctx, sky = SKY[state.wx];
     const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, sky.top); g.addColorStop(1, sky.bot);
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
@@ -391,8 +420,9 @@ footer a { color: var(--accent); }
   }
 
   // ---------- page text ----------
-  const pctTxt = v => `${v >= 0 ? "+" : "−"}${nf(Math.abs(v), 0)}%`;
+  const pctTxt = (v, d = 1) => `${v >= 0 ? "+" : "−"}${nf(Math.abs(v), d)}%`;
   function update() {
+    if (!C) return;
     try { localStorage.setItem("lens-explainer", JSON.stringify(state)); } catch (e) {}
     document.querySelectorAll("#wx .chip").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === state.wx ? "true" : "false"));
     document.querySelectorAll("#ql .chip").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === state.ql ? "true" : "false"));
@@ -426,21 +456,34 @@ footer a { color: var(--accent); }
     document.getElementById("yearbars").innerHTML = row("Adi panel", A, "var(--panel-a)", false) +
       QL.map(q => row(`Linza: ${q.name.toLowerCase()}`, C.annual[q.id].B, "var(--panel-b)", q.id === state.ql)).join("");
     const pc = C.perClass[state.ql];
-    document.getElementById("wxtable").innerHTML = `<thead><tr><th>Hava</th><th>Bakıda ildə, saat</th><th>Adi panel, kWh/m²</th><th>Linzalı, kWh/m²</th><th>Fərq</th></tr></thead><tbody>${
-      WX.map((w, i) => { const dd = (pc[i].B_kWh_m2 / pc[i].A_kWh_m2 - 1) * 100;
-        return `<tr${w.id === state.wx ? ' style="font-weight:700"' : ""}><td>${w.name}</td><td>${nf(C.hours[i])}</td><td>${nf(pc[i].A_kWh_m2, 1)}</td><td>${nf(pc[i].B_kWh_m2, 1)}</td><td class="${dd >= 0 ? "good" : "bad"}">${pctTxt(dd)}</td></tr>`; }).join("")
-    }</tbody>`;
+    const names = { clear: "Açıq, günəşli (DHI/GHI < 0,3)", hazy: "Dumanlı, tozlu (0,3–0,5)", partly: "Qismən buludlu (0,5–0,9)", overcast: "Tam buludlu (≥ 0,9)",
+                    low_light: "Zəif işıq: GHI ≤ 10 W/m² (gecə, alaqaranlıq)", kd_above_1: "DHI > GHI (məlumat uyğunsuzluğu)" };
+    const rows = pc.filter(r => r.key !== "kd_above_1" || r.hours > 0);
+    const tot = k => rows.reduce((a, r) => a + r[k], 0);
+    document.getElementById("wxtable").innerHTML = `<thead><tr><th>Hava sinfi</th><th>ildə, saat</th><th>Adi panel, kWh/m²</th><th>Linzalı, kWh/m²</th><th>Fərq</th></tr></thead><tbody>${
+      rows.map(r => { const dd = r.A_kWh_m2 > 0 ? (r.B_kWh_m2 / r.A_kWh_m2 - 1) * 100 : 0;
+        return `<tr${r.key === state.wx ? ' style="font-weight:700"' : ""}><td>${names[r.key]}</td><td>${nf(r.hours)}</td><td>${nf(r.A_kWh_m2, 1)}</td><td>${nf(r.B_kWh_m2, 1)}</td><td class="${dd >= 0 ? "good" : "bad"}">${r.A_kWh_m2 > 0.05 ? pctTxt(dd) : "—"}</td></tr>`; }).join("")
+    }<tr style="border-top:2px solid var(--line)"><td><b>Cəm = illik enerji</b></td><td>${nf(tot("hours"))}</td><td><b>${nf(tot("A_kWh_m2"), 1)}</b></td><td><b>${nf(tot("B_kWh_m2"), 1)}</b></td><td></td></tr></tbody>`;
   }
 
-  const an = C.annual;
-  document.getElementById("answer").innerHTML =
-    `<b>Qısa cavab:</b> Bakıda il ərzində adi panel <b>${nf(an.base.A)} kWh/m²</b> elektrik verir. Orta keyfiyyətli linza qatı ilə bu <b>${nf(an.base.B)} kWh/m²</b> olur (<b>${pctTxt((an.base.B / an.base.A - 1) * 100)}</b>).
-     Mükəmməl linza belə nəzəri olaraq ən çoxu <b>${pctTxt((an.ideal.B / an.ideal.A - 1) * 100)}</b> qazandıra bilər. Linzanın zərəri günəşli havada ən az, buludlu havada isə ən çoxdur.`;
-
+  function answer() {
+    const an = C.annual;
+    document.getElementById("answer").innerHTML =
+      `<b>Qısa cavab (${C.site.name}):</b> il ərzində adi panel <b>${nf(an.base.A, 1)} kWh/m²</b> DC elektrik verir. Orta keyfiyyətli optik qatla bu <b>${nf(an.base.B, 1)} kWh/m²</b> olur (<b>${pctTxt((an.base.B / an.base.A - 1) * 100)}</b>).
+       Sadə modelin ideal ssenarisi (aktiv sahə 92%, boşluq işığı tam qaytarılır, ötürmə 100%, əlavə istilik və qeyri-bərabərlik itkisi yoxdur) <b>${pctTxt((an.ideal.B / an.ideal.A - 1) * 100, 2)}</b> verir. Bu, sadə modelin yuxarı həddidir. Həndəsi linza modeli laboratoriyadadır.`;
+    document.getElementById("year-h").textContent = `${C.site.name}: bütün il ərzində`;
+  }
+  function selectAvailableWeather() {
+    document.querySelectorAll("#wx .chip").forEach(b => { const r = C.rep.find(x => x.key === b.dataset.v); b.disabled = !r || !r.n;
+      b.title = r && r.n ? `${r.n} saatın ortası` : "bu məkanda nümunə saatı yoxdur"; });
+    if (!C.rep.find(x => x.key === state.wx && x.n)) { const f = C.rep.find(x => x.n); if (f) state.wx = f.key; }
+  }
   let current = null;
-  update();
   // ---------- animation loop ----------
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let started = false;
+  function startAnimation() {
+  if (started) return; started = true;
   // warm up so the first still frame already shows light on the panels
   for (let i = 0; i < 90; i++) { step(scA, 1 / 60, current); step(scB, 1 / 60, current); }
   draw(scA, current); draw(scB, current);
@@ -459,5 +502,24 @@ footer a { color: var(--accent); }
       draw(scA, current); draw(scB, current);
     }));
   }
+  }
+
+  DataStore.mount(document.getElementById("ds"), {
+    onLoading: name => {
+      C = null; current = null; document.body.classList.add("loading");
+      document.getElementById("eyebrow").textContent = `${name} yüklənir…`;
+      for (const id of ["answer", "yearbars", "wxtable", "why"]) document.getElementById(id).innerHTML = "";
+      document.getElementById("pw-a").textContent = "—"; document.getElementById("pw-b").textContent = "—";
+    },
+    onLoad: D => {
+      C = fromDataset(D); A_M2 = C.area;
+      document.getElementById("eyebrow").textContent = DataStore.provenance(D);
+      document.getElementById("foot-prov").innerHTML = `<b>Necə hesablanıb.</b> Məlumat: ${DataStore.label(D)}. Panel Trina Vertex S+ 450 W, ${DataStore.fmt(D.inputs.tilt, 0)}° maili, azimut ${DataStore.fmt(D.inputs.azimuth, 0)}°. Günəş mövqeyi pvlib SPA ilə hesablanır, ofset ${DataStore.fmtSmart(D.dataset.solpos_offset_h)} saat (${D.dataset.offset_rule}). Model v${D.version.model}, nəticələr Python modeli ilə yaradılıb.`;
+      selectAvailableWeather(); answer(); update();
+      document.body.classList.remove("loading");
+      startAnimation();
+    },
+    onError: msg => { document.getElementById("eyebrow").textContent = `Məlumat yoxdur: ${msg}`; },
+  });
 })();
 </script>

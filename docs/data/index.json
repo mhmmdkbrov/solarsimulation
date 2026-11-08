@@ -1,0 +1,65 @@
+{
+ "model": "2.0.0",
+ "datasets": [
+  {
+   "id": "baku_pvgis53_tmy",
+   "file": "data/baku_pvgis53_tmy.json",
+   "site": "baku",
+   "name": "Bakı",
+   "label": "PVGIS 5.3 TMY (PVGIS-SARAH3 + ERA5, 2005–2023) · Bakı (40.41° N, 49.87° E)",
+   "kind": "TMY",
+   "api_version": "5.3",
+   "size_kB": 1272
+  },
+  {
+   "id": "baku_pvgis6_tmy",
+   "file": "data/baku_pvgis6_tmy.json",
+   "site": "baku",
+   "name": "Bakı",
+   "label": "PVGIS 6 TMY (beta API, 2015–2024, təmizlənib) · Bakı (40.41° N, 49.87° E)",
+   "kind": "TMY",
+   "api_version": "6 (v6; sənədlərə görə aktiv inkişaf mərhələsində)",
+   "size_kB": 1263
+  },
+  {
+   "id": "naxcivan_pvgis53_tmy",
+   "file": "data/naxcivan_pvgis53_tmy.json",
+   "site": "naxcivan",
+   "name": "Naxçıvan",
+   "label": "PVGIS 5.3 TMY (PVGIS-SARAH3 + ERA5, 2005–2023) · Naxçıvan (39.21° N, 45.41° E)",
+   "kind": "TMY",
+   "api_version": "5.3",
+   "size_kB": 1266
+  },
+  {
+   "id": "naxcivan_pvgis6_tmy",
+   "file": "data/naxcivan_pvgis6_tmy.json",
+   "site": "naxcivan",
+   "name": "Naxçıvan",
+   "label": "PVGIS 6 TMY (beta API, 2014–2024, təmizlənib) · Naxçıvan (39.21° N, 45.41° E)",
+   "kind": "TMY",
+   "api_version": "6 (v6; sənədlərə görə aktiv inkişaf mərhələsində)",
+   "size_kB": 1272
+  },
+  {
+   "id": "almeria_pvgis53_tmy",
+   "file": "data/almeria_pvgis53_tmy.json",
+   "site": "almeria",
+   "name": "Almería",
+   "label": "PVGIS 5.3 TMY (PVGIS-SARAH3 + ERA5, 2005–2023) · Almería (36.84° N, -2.46° E)",
+   "kind": "TMY",
+   "api_version": "5.3",
+   "size_kB": 1278
+  },
+  {
+   "id": "almeria_pvgis6_tmy",
+   "file": "data/almeria_pvgis6_tmy.json",
+   "site": "almeria",
+   "name": "Almería",
+   "label": "PVGIS 6 TMY (beta API, 2014–2024, təmizlənib) · Almería (36.84° N, -2.46° E)",
+   "kind": "TMY",
+   "api_version": "6 (v6; sənədlərə görə aktiv inkişaf mərhələsində)",
+   "size_kB": 1285
+  }
+ ]
+}

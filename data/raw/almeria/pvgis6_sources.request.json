@@ -1,0 +1,10 @@
+{
+ "url": "https://photovoltaic-geographic-information-system.ec.europa.eu/api/v6/coverage/available-sources-in-selected-location?longitude=-2.4597&latitude=36.8381",
+ "endpoint": "https://photovoltaic-geographic-information-system.ec.europa.eu/api/v6/coverage/available-sources-in-selected-location",
+ "params": {
+  "longitude": -2.4597,
+  "latitude": 36.8381
+ },
+ "http_status": 200,
+ "requested_utc": "2026-11-08T15:19:43+00:00"
+}

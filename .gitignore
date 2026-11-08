@@ -14,3 +14,6 @@ sources/*.pdf
 .DS_Store
 Thumbs.db
 .vscode/
+
+# test cache
+.pytest_cache/

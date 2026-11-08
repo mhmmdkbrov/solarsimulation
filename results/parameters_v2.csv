@@ -1,0 +1,58 @@
+﻿group,name,value,unit,status,source,note
+modul,pdc0_W,450.0,W,pasport,"Trina Solar Vertex S+ TSM-NEG9R.28, TSM_EN_2023_B (MEA) — https://pages.trinasolar.com/rs/567-KJK-096/images/NEG9R.28_EN_2023_MEA%20region.pdf","STC: 1000 W/m², 25 °C, AM1,5; tolerans 0…+5 W"
+modul,length_mm,1762.0,mm,pasport,"Trina Solar Vertex S+ TSM-NEG9R.28, TSM_EN_2023_B (MEA) — https://pages.trinasolar.com/rs/567-KJK-096/images/NEG9R.28_EN_2023_MEA%20region.pdf",
+modul,width_mm,1134.0,mm,pasport,"Trina Solar Vertex S+ TSM-NEG9R.28, TSM_EN_2023_B (MEA) — https://pages.trinasolar.com/rs/567-KJK-096/images/NEG9R.28_EN_2023_MEA%20region.pdf",
+modul,n_cells,144,-,pasport,"Trina Solar Vertex S+ TSM-NEG9R.28, TSM_EN_2023_B (MEA) — https://pages.trinasolar.com/rs/567-KJK-096/images/NEG9R.28_EN_2023_MEA%20region.pdf",
+modul,gamma_pdc,-0.003,1/°C,pasport,"Trina Solar Vertex S+ TSM-NEG9R.28, TSM_EN_2023_B (MEA) — https://pages.trinasolar.com/rs/567-KJK-096/images/NEG9R.28_EN_2023_MEA%20region.pdf",−0.30 %/°C
+modul,beta_voc,-0.0024,1/°C,pasport,"Trina Solar Vertex S+ TSM-NEG9R.28, TSM_EN_2023_B (MEA) — https://pages.trinasolar.com/rs/567-KJK-096/images/NEG9R.28_EN_2023_MEA%20region.pdf",
+modul,alpha_isc,0.0004,1/°C,pasport,"Trina Solar Vertex S+ TSM-NEG9R.28, TSM_EN_2023_B (MEA) — https://pages.trinasolar.com/rs/567-KJK-096/images/NEG9R.28_EN_2023_MEA%20region.pdf",
+modul,vmpp_V,44.6,V,pasport,"Trina Solar Vertex S+ TSM-NEG9R.28, TSM_EN_2023_B (MEA) — https://pages.trinasolar.com/rs/567-KJK-096/images/NEG9R.28_EN_2023_MEA%20region.pdf",
+modul,impp_A,10.09,A,pasport,"Trina Solar Vertex S+ TSM-NEG9R.28, TSM_EN_2023_B (MEA) — https://pages.trinasolar.com/rs/567-KJK-096/images/NEG9R.28_EN_2023_MEA%20region.pdf",
+modul,voc_V,52.9,V,pasport,"Trina Solar Vertex S+ TSM-NEG9R.28, TSM_EN_2023_B (MEA) — https://pages.trinasolar.com/rs/567-KJK-096/images/NEG9R.28_EN_2023_MEA%20region.pdf",
+modul,isc_A,10.74,A,pasport,"Trina Solar Vertex S+ TSM-NEG9R.28, TSM_EN_2023_B (MEA) — https://pages.trinasolar.com/rs/567-KJK-096/images/NEG9R.28_EN_2023_MEA%20region.pdf",
+modul,noct_C,43.0,°C,pasport,"Trina Solar Vertex S+ TSM-NEG9R.28, TSM_EN_2023_B (MEA) — https://pages.trinasolar.com/rs/567-KJK-096/images/NEG9R.28_EN_2023_MEA%20region.pdf","±2 °C; 800 W/m², 20 °C hava, 1 m/s külək"
+modul,p_noct_W,343.0,W,pasport,"Trina Solar Vertex S+ TSM-NEG9R.28, TSM_EN_2023_B (MEA) — https://pages.trinasolar.com/rs/567-KJK-096/images/NEG9R.28_EN_2023_MEA%20region.pdf",
+modul,t_max_C,85.0,°C,pasport,"Trina Solar Vertex S+ TSM-NEG9R.28, TSM_EN_2023_B (MEA) — https://pages.trinasolar.com/rs/567-KJK-096/images/NEG9R.28_EN_2023_MEA%20region.pdf",işçi temperatur −40…+85 °C
+modul,front_glass,"1,6 mm, yüksək ötürməli, AR örtüklü, termik bərkidilmiş",-,pasport,"Trina Solar Vertex S+ TSM-NEG9R.28, TSM_EN_2023_B (MEA) — https://pages.trinasolar.com/rs/567-KJK-096/images/NEG9R.28_EN_2023_MEA%20region.pdf",
+modul,glass_n,1.526,-,fərziyyə,De Soto və b. 2006 / pvlib standartı,AR örtüyü ayrıca modelləşdirilmir
+modul,glass_K,4.0,1/m,fərziyyə,pvlib standartı,
+modul,glass_L,0.002,m,fərziyyə,pvlib standartı,
+modul,active_fraction,0.92,-,fərziyyə,,modul səthinin hüceyrələrlə örtülü payı; ölçülməlidir
+modul,cell_w_mm,182.0,mm,fərziyyə,,üçə kəsilmiş 210R tipli hüceyrə; pasportda yoxdur
+modul,layout,6 sütun × 24 sıra (portret),-,fərziyyə,,1762 × 1134 mm və 144 hüceyrə ilə uyğundur
+system,albedo,,-,fərziyyə,,"məkan seçimindən (0,20)"
+system,tilt_deg,,°,fərziyyə,,məkan seçimindən
+system,azimuth_deg,,°,fərziyyə,,məkan seçimindən (180 = cənub)
+system,sky_model,perez,-,elmi mənbə,,Perez və b. 1990
+system,mount,open_rack_glass_glass,-,elmi mənbə,,"SAPM, King və b. 2004"
+system,spectral,1.0,-,fərziyyə,,
+system,soiling,0.0,-,fərziyyə,,
+system,ground_coverage_ratio_fixed,0.4,-,fərziyyə,,yalnız torpaq sahəsi göstəriciləri üçün sıra məsafəsi
+system,ground_coverage_ratio_2axis,0.25,-,fərziyyə,,2 oxlu izləyicilər daha geniş məsafə tələb edir
+retrofit,optics_enabled,True,-,fərziyyə,,
+retrofit,coupling,air_gap,-,fərziyyə,,air_gap: qatın IAM-ı × modul şüşəsinin IAM-ı; bonded: qat modulun ön səthini əvəz edir
+retrofit,tau_beam_normal,0.92,-,fərziyyə,,
+retrofit,tau_diffuse,0.84,-,fərziyyə,,
+retrofit,n_layer,1.49,-,elmi mənbə,,PMMA
+retrofit,K_layer,4.0,1/m,fərziyyə,,
+retrofit,L_layer,0.003,m,fərziyyə,,
+retrofit,gap_recovery_beam,0.3,-,fərziyyə,,
+retrofit,gap_recovery_diffuse,0.1,-,fərziyyə,,
+retrofit,nonuniformity_loss,0.02,-,fərziyyə,,
+retrofit,extra_heating_K_per_kWm2,2.0,K/(kW/m²),fərziyyə,,
+retrofit,aux_W,0.0,W,fərziyyə,,
+cpv,aperture_unit_m2,0.01,m²,fərziyyə,,10 × 10 sm linza
+cpv,cell_area_m2,0.0001,m²,fərziyyə,,1 × 1 sm fotoelement
+cpv,tau_optical,0.85,-,fərziyyə,,
+cpv,intercept_optical,0.95,-,fərziyyə,,ideal izləmədə fokuslanan işığın fotoelementə düşən payı
+cpv,acceptance_half_angle_deg,1.0,°,fərziyyə,,optikanın qəbul bucağı (90% nöqtəsi)
+cpv,tracking_error_sigma_deg,0.1,°,fərziyyə,,hər ox üzrə 1σ yönəltmə xətası
+cpv,diffuse_in_acceptance,True,-,fərziyyə,,qəbul konusunun içindəki izotrop səma işığı: DHI·sin²θa (v1-də 0)
+cpv,eta_cell_ref,0.3,-,fərziyyə,,25 °C-də; kommersiya məhsulu deyil
+cpv,gamma_cell,-0.0015,1/°C,fərziyyə,,
+cpv,eta_valid_T_C,"[-20.0, 110.0]",°C,fərziyyə,,η(T) modelinin etibarlı temperatur diapazonu
+cpv,eta_valid_suns,"[1.0, 1000.0]",suns,fərziyyə,,η_ref-in etibarlı konsentrasiya diapazonu
+cpv,r_th_K_per_W,4.0,K/W,fərziyyə,,"hər linza üçün hüceyrə → ətraf, passiv radiator"
+cpv,fan_W,0.0,W,fərziyyə,,"aktiv soyutma, gündüz"
+tracker,drive_W,4.0,W,fərziyyə,,gündüz
+tracker,controller_W,0.5,W,fərziyyə,,24 saat
