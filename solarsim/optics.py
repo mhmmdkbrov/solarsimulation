@@ -15,7 +15,11 @@ Model level 1 (this module, used for annual results)
   sky / ground part of the module's hemisphere).
 
 Validity labels (``validity``) state where this level is a low-reliability approximation (large aperture, short
-focus, large incidence angle). Level 2 (``trace2d``) checks level 1 with exact Snell/Fresnel ray tracing.
+focus, large incidence angle). f-number N = |f| / a and the edge-ray angle to the optical axis θ = atan((a/2) / |f|)
+are computed on the focusing axis that has the larger aperture a (cylindrical lenslets: the slope axis y only); for a
+rectangular spherical lens the corner-ray angle atan((d/2) / |f|), d = diagonal, is reported separately. The 30° limit
+is the simulator's warning criterion for the paraxial model; it is not a statement about whether such a lens can be
+manufactured. Level 2 (``trace2d``) checks level 1 with exact Snell/Fresnel ray tracing.
 """
 from __future__ import annotations
 
@@ -30,7 +34,10 @@ SUN_HALF = np.radians(0.2665)   # angular radius of the sun
 T_GLASS = 2.1                   # mm: 1.6 mm front glass (datasheet) + ~0.5 mm encapsulant (assumption)
 N_GLASS = 1.5
 RS_K = 0.035                    # assumption: extra series-resistance loss per extra sun of local intensity
-FRESNEL_MAX_DEFLECTION = np.radians(30.0)   # practical limit of a PMMA (n≈1.49) Fresnel facet
+# Warning criteria of the thin paraxial model (simulator conventions, not manufacturability limits):
+# edge-ray angle to the optical axis ≤ 10° 'yaxşı', ≤ 20° 'orta', above 'aşağı'; above 30° an extra warning is shown.
+PARAXIAL_GOOD_DEG, PARAXIAL_FAIR_DEG = 10.0, 20.0
+PARAXIAL_WARN_DEG = 30.0
 
 
 @dataclass
@@ -232,29 +239,54 @@ def light_balance(cfg: LensConfig, geom: Geometry, beam, sky, ground, tx, ty, th
 
 
 # --------------------------------------------------------------------------------------------------------- validity
-def validity(cfg: LensConfig, geom: Geometry, theta_beam=None, weights=None) -> dict:
-    """Where the thin, paraxial level-1 model is trustworthy."""
-    tcx, awx, tcy, awy = _tiles(geom, cfg.mode)
-    a_focus = awy[0] if cfg.mode == "array_cyl" else max(awx[0], awy[0])
-    out = {"aperture_mm": float(a_focus), "f_mm": float(cfg.f) if np.isfinite(cfg.f) else None}
-    if cfg.kind == "flat":
-        out.update(f_number=None, edge_deflection_deg=0.0, realizable=True, paraxial="yaxşı")
+def paraxial_label(edge_angle_deg: float) -> str:
+    return "yaxşı" if edge_angle_deg <= PARAXIAL_GOOD_DEG else ("orta" if edge_angle_deg <= PARAXIAL_FAIR_DEG else "aşağı")
+
+
+def lens_geometry(f_mm: float, ax_mm: float, ay_mm: float, cylindrical: bool = False) -> dict:
+    """f-number and ray angles of one lens tile (ax × ay mm), unrounded.
+
+    Focusing axis: the larger of x, y for a spherical tile; y only for a cylindrical one.
+    N = |f| / a,  edge-ray angle to the optical axis = atan((a/2) / |f|);
+    corner-ray angle = atan((√(ax² + ay²)/2) / |f|) for a spherical rectangular tile (None otherwise)."""
+    if cylindrical:
+        axis, a = "y", ay_mm
     else:
-        fnum = abs(cfg.f) / a_focus
-        defl = np.degrees(np.arctan(a_focus / 2 / abs(cfg.f)))
-        out.update(f_number=float(fnum), edge_deflection_deg=float(defl),
-                   realizable=bool(np.radians(defl) <= FRESNEL_MAX_DEFLECTION),
-                   paraxial="yaxşı" if defl <= 10 else ("orta" if defl <= 20 else "aşağı"))
+        axis, a = ("y", ay_mm) if ay_mm >= ax_mm else ("x", ax_mm)
+    out = {"axis": axis, "aperture_mm": float(a), "aperture_x_mm": float(ax_mm), "aperture_y_mm": float(ay_mm),
+           "cylindrical": bool(cylindrical), "f_mm": None, "f_number": None, "edge_angle_deg": 0.0,
+           "corner_angle_deg": None, "diagonal_mm": None}
+    if not np.isfinite(f_mm):
+        return out
+    F = abs(f_mm)
+    out.update(f_mm=float(f_mm), f_number=float(F / a), edge_angle_deg=float(np.degrees(np.arctan(a / 2 / F))))
+    if not cylindrical:
+        d = float(np.hypot(ax_mm, ay_mm))
+        out.update(diagonal_mm=d, corner_angle_deg=float(np.degrees(np.arctan(d / 2 / F))))
+    return out
+
+
+def reliability(v: dict) -> str:
+    if v["paraxial"] == "aşağı":
+        return "aşağı"
+    if v["paraxial"] == "orta" or v.get("beam_share_aoi_gt_30", 0) > 0.5:
+        return "orta"
+    return "yüksək"
+
+
+def validity(cfg: LensConfig, geom: Geometry, theta_beam=None, weights=None) -> dict:
+    """Where the thin, paraxial level-1 model is trustworthy (see the module docstring for the definitions)."""
+    tcx, awx, tcy, awy = _tiles(geom, cfg.mode)
+    out = lens_geometry(cfg.f if cfg.kind != "flat" else np.inf, float(awx[0]), float(awy[0]), cfg.mode == "array_cyl")
+    out["paraxial"] = paraxial_label(out["edge_angle_deg"])
+    out["above_warn_limit"] = bool(out["edge_angle_deg"] > PARAXIAL_WARN_DEG)
+    out["warn_limit_deg"] = PARAXIAL_WARN_DEG
     if theta_beam is not None:
         th = np.degrees(np.asarray(theta_beam, float))
         w = np.ones_like(th) if weights is None else np.asarray(weights, float)
         out["beam_share_aoi_gt_30"] = float(w[th > 30].sum() / max(w.sum(), 1e-12))
-    rel = "yüksək"
-    if not out["realizable"] or out["paraxial"] == "aşağı":
-        rel = "aşağı"
-    elif out["paraxial"] == "orta" or out.get("beam_share_aoi_gt_30", 0) > 0.5:
-        rel = "orta"
-    out["reliability"] = rel
+    out["reliability"] = reliability(out)
+    out["coarse"] = out["reliability"] == "aşağı"      # results shown with the label "kobud yaxınlaşdırma"
     return out
 
 
@@ -266,11 +298,11 @@ def trace2d(cfg: LensConfig, geom: Geometry, theta_y_deg: float, n_rays=4001, n_
     sun disk sampled. Returns the share of transmitted power on cells / in gaps / outside the module."""
     a = geom.PY if cfg.mode in ("array", "array_cyl") else geom.LY
     if cfg.kind == "flat":
-        return {"realizable": True, "note": "flat sheet: identical to the paraxial model"}
+        return {"traced": True, "note": "düz təbəqə: paraksial modellə eynidir"}
     R = (cfg.n - 1) * abs(cfg.f)
     if R < a / 2:
-        return {"realizable": False,
-                "note": f"spherical lens impossible: R = {R:.1f} mm < half-aperture {a / 2:.1f} mm"}
+        return {"traced": False, "R_mm": float(R), "half_aperture_mm": float(a / 2),
+                "note": "fərz olunan sferik profil bu aperturaya sığmır (R < a/2); izləmə aparılmadı"}
     sag = R - np.sqrt(R ** 2 - (a / 2) ** 2)
     zb = cfg.h                                            # flat bottom of the lens
     y0 = np.linspace(-a / 2, a / 2, n_rays)
@@ -312,5 +344,5 @@ def trace2d(cfg: LensConfig, geom: Geometry, theta_y_deg: float, n_rays=4001, n_
         hit = inside & (local <= geom.CY / 2)
         on += float((w * hit).sum()); gap += float((w * (inside & ~hit)).sum()); off += float((w * ~inside).sum())
         tot += float(w.sum())
-    return {"realizable": True, "on_cells": on / tot, "gap": gap / tot, "off": off / tot,
+    return {"traced": True, "on_cells": on / tot, "gap": gap / tot, "off": off / tot,
             "sag_mm": float(sag), "R_mm": float(R)}

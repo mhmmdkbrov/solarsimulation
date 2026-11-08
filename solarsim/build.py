@@ -116,31 +116,52 @@ def lens_tables(prep, iv=False, log=print):
     return out
 
 
+P_SEARCH = [float(P) for P in np.arange(-20, 20.01, 0.5)]
+SEARCH_NOTE = "sınanmış diapazonda ən yaxşı; axtarış hər 3-cü gündüz saatı ilə, nəticə bütün saatlarla"
+
+
+def _search_best(prep, mode, P_values):
+    """Grid search (every 3rd daytime hour) then the exact annual result at 92 / 96 / 100 % and break-even τ."""
+    best = None
+    for P in P_values:
+        for h in LL.H_GRID:
+            r = LL.annual(prep, O.LensConfig(float(P), h, mode, 0.92), every=3)
+            if best is None or r["ratio_to_null_lens"] > best[2]:
+                best = (float(P), h, r["ratio_to_null_lens"])
+    P, h, _ = best
+    exact = {tau: LL.annual(prep, O.LensConfig(P, h, mode, tau)) for tau in (0.92, 0.96, 1.0)}
+    lo, hi = 0.80, 1.0
+    if exact[1.0]["ratio_to_null_lens"] < 1:
+        tau_be = None
+    else:
+        for _ in range(20):
+            mid = 0.5 * (lo + hi)
+            (lo, hi) = (mid, hi) if LL.annual(prep, O.LensConfig(P, h, mode, mid))["ratio_to_null_lens"] < 1 else (lo, mid)
+        tau_be = 0.5 * (lo + hi)
+    return {"P": P, "h": h, "delta_pct": {str(t): exact[t]["delta_pct"] for t in exact},
+            "tau_breakeven": tau_be, "validity": exact[0.92]["validity"]}
+
+
+def best_reliable(prep, mode, geom=None):
+    """Best configuration restricted to dioptres whose paraxial label is not 'aşağı' (edge-ray angle ≤ 20°).
+    The label depends on D and the tile only, not on h."""
+    geom = geom or O.Geometry()
+    ok = [P for P in P_SEARCH if O.validity(O.LensConfig(P, 10.0, mode), geom)["paraxial"] != "aşağı"]
+    r = _search_best(prep, mode, ok)
+    r["search"] = {"P_range": [min(ok), max(ok)], "P_step": 0.5, "h_grid_mm": LL.H_GRID, "tau": 0.92,
+                   "rule": "yalnız paraksial etiketi “aşağı” olmayan dioptriyalar (kənar şüa bucağı ≤ 20°)", "note": SEARCH_NOTE}
+    return r
+
+
 def lens_best_and_iv(prep):
-    """Best lenslet geometry within physical limits (h ≥ 2.6 mm) for array and array_cyl; break-even transmittance."""
+    """Best lenslet geometry within physical limits (h ≥ 2.6 mm) for array and array_cyl; break-even transmittance.
+    If the overall maximum lies in the low-reliability zone, the best configuration outside it is stored as well."""
     out = {}
     for mode in ("array", "array_cyl"):
-        best = None
-        for P in np.arange(-20, 20.01, 0.5):
-            for h in LL.H_GRID:
-                r = LL.annual(prep, O.LensConfig(float(P), h, mode, 0.92), every=3)
-                if best is None or r["ratio_to_null_lens"] > best[2]:
-                    best = (float(P), h, r["ratio_to_null_lens"])
-        P, h, _ = best
-        exact = {tau: LL.annual(prep, O.LensConfig(P, h, mode, tau)) for tau in (0.92, 0.96, 1.0)}
-        # break-even transmittance by bisection on the full annual function
-        lo, hi = 0.80, 1.0
-        if exact[1.0]["ratio_to_null_lens"] < 1:
-            tau_be = None
-        else:
-            for _ in range(20):
-                mid = 0.5 * (lo + hi)
-                (lo, hi) = (mid, hi) if LL.annual(prep, O.LensConfig(P, h, mode, mid))["ratio_to_null_lens"] < 1 else (lo, mid)
-            tau_be = 0.5 * (lo + hi)
-        out[mode] = {"P": P, "h": h, "delta_pct": {str(t): exact[t]["delta_pct"] for t in exact},
-                     "tau_breakeven": tau_be, "validity": exact[0.92]["validity"],
-                     "search": {"P_range": [-20, 20], "P_step": 0.5, "h_grid_mm": LL.H_GRID, "tau": 0.92,
-                                "note": "sınanmış diapazonda ən yaxşı; axtarış hər 3-cü gündüz saatı ilə, nəticə bütün saatlarla"}}
+        out[mode] = _search_best(prep, mode, P_SEARCH)
+        out[mode]["search"] = {"P_range": [-20, 20], "P_step": 0.5, "h_grid_mm": LL.H_GRID, "tau": 0.92, "note": SEARCH_NOTE}
+        if out[mode]["validity"]["coarse"]:
+            out[mode]["best_reliable"] = best_reliable(prep, mode)
     # previous-model point (+13.5 D / 8 mm) recomputed with the new geometry
     v1pt = {}
     for mode in ("array", "array_cyl"):
@@ -273,12 +294,75 @@ def build_dataset(ds, quick=False, series=None, log=print):
     return _clean(out)
 
 
+def refresh_validity(data, geom=None):
+    """Recompute every stored validity dict from its (D, mode) with the current ``optics.validity`` definitions.
+    Energies are not touched; the per-dataset share of beam light with AOI > 30° is kept."""
+    geom = geom or O.Geometry()
+
+    def fresh(old, P, mode):
+        v = O.validity(O.LensConfig(float(P), 10.0, mode), geom)
+        if old and "beam_share_aoi_gt_30" in old:
+            v["beam_share_aoi_gt_30"] = old["beam_share_aoi_gt_30"]
+        v["reliability"] = O.reliability(v)
+        v["coarse"] = v["reliability"] == "aşağı"
+        return v
+
+    L = data.get("lens")
+    if not L:
+        return data
+    for t in L.get("tests", []):
+        t["validity_best"] = fresh(t["validity_best"], t["P"], t["mode"])
+    for mode in ("array", "array_cyl"):
+        x = L.get(mode)
+        if x:
+            x["validity"] = fresh(x["validity"], x["P"], mode)
+            if x.get("best_reliable"):
+                x["best_reliable"]["validity"] = fresh(x["best_reliable"]["validity"], x["best_reliable"]["P"], mode)
+    v1 = L.get("v1_point_13p5D_8mm", {}).get("v2", {})
+    for mode, x in v1.items():
+        x["validity"] = fresh(x["validity"], 13.5, mode)
+    for r in L.get("trace2d") or []:
+        tr = r["trace"]
+        if "realizable" in tr:
+            tr["traced"] = tr.pop("realizable")
+        if not tr["traced"]:
+            tr["note"] = "fərz olunan sferik profil bu aperturaya sığmır (R < a/2); izləmə aparılmadı"
+        elif tr.get("on_cells") is None:
+            tr["note"] = "düz təbəqə: paraksial modellə eynidir"
+    return data
+
+
+def refresh_main(argv=None):
+    """python -m solarsim.build --refresh-validity: update validity fields (and, for the Baku dataset, add the best
+    configuration outside the low-reliability zone when the stored maximum lies inside it) without a full rebuild."""
+    for f in sorted(OUT.glob("*.json")):
+        if f.name == "index.json":
+            continue
+        data = json.loads(f.read_text(encoding="utf-8"))
+        refresh_validity(data)
+        L = data.get("lens") or {}
+        need = [m for m in ("array", "array_cyl") if L.get(m) and L[m]["validity"]["coarse"] and not L[m].get("best_reliable")]
+        if need:
+            site, src = data["dataset"]["id"].split("_", 1)
+            ds = {"pvgis53_tmy": W.pvgis53_tmy, "pvgis6_tmy": W.pvgis6_tmy}[src](site)
+            prep = LL.prepare(ds, PV.Module())
+            for m in need:
+                t0 = time.time()
+                L[m]["best_reliable"] = best_reliable(prep, m)
+                print(f"{f.name}: {m} best outside the low-reliability zone {time.time() - t0:.0f} s")
+        f.write_text(json.dumps(_clean(data), ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+        print(f"{f.name}: validity refreshed")
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--quick", action="store_true")
+    ap.add_argument("--refresh-validity", action="store_true", help="only re-derive validity fields of stored lens results")
     ap.add_argument("--sites", nargs="*", default=list(PRESETS))
     ap.add_argument("--sources", nargs="*", default=["pvgis53", "pvgis6"])
     a = ap.parse_args(argv)
+    if a.refresh_validity:
+        return refresh_main()
     OUT.mkdir(parents=True, exist_ok=True)
     index = []
     for key in a.sites:

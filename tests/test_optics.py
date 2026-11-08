@@ -122,16 +122,66 @@ def test_best_distance_beats_every_test_point(prep):
 # -------------------------------------------------------------------------------------------- level 2 ray tracing
 @pytest.mark.parametrize("P,h,theta", [(3, 3, 0.0), (3, 3, 20.0), (3, 20, 0.0), (5, 30, 10.0)])
 def test_trace2d_agrees_with_paraxial_for_weak_lens(geom, P, h, theta):
-    """Level 2 (Snell/Fresnel, sun disk) vs. level 1 (paraxial) along the slope y, for a lens that is realizable."""
+    """Level 2 (Snell/Fresnel, sun disk) vs. level 1 (paraxial) along the slope y, where the spherical profile fits."""
     t = O.trace2d(O.LensConfig(P, h, "array"), geom, theta)
     cyl = O.LensConfig(P, h, "array_cyl", tau=1.0, n=1.0, K=0.0)     # focusing only along y, no x effect
     s = O.spot_split(cyl, geom, np.array([0.0]), np.array([np.tan(np.radians(theta))]))
     y_capture = (s["own"][0] + s["neighbours"][0]) / (1 - s["off"][0]) / (geom.CX / geom.PX)
-    assert t["realizable"]
-    # tolerance follows the validity label: 'yaxşı' (edge deflection ≤ 10°) 1 point, 'orta' (≤ 20°) 2 points
+    assert t["traced"]
+    # tolerance follows the validity label: 'yaxşı' (edge-ray angle ≤ 10°) 1 point, 'orta' (≤ 20°) 2 points
     tol = {"yaxşı": 0.01, "orta": 0.02}[O.validity(O.LensConfig(P, h, "array_cyl"), geom)["paraxial"]]
     assert abs(t["on_cells"] - y_capture) < tol
 
 
-def test_trace2d_reports_impossible_lens(geom):
-    assert O.trace2d(O.LensConfig(13.5, 8, "array"), geom, 0.0)["realizable"] is False   # R = 36.3 mm < 36.7 mm
+def test_trace2d_reports_profile_that_does_not_fit(geom):
+    t = O.trace2d(O.LensConfig(13.5, 8, "array"), geom, 0.0)                 # R = 36.3 mm < 36.7 mm
+    assert t["traced"] is False and t["R_mm"] < t["half_aperture_mm"]
+
+
+# ------------------------------------------------------------------------------------- validity: f-number, angles
+def test_validity_176cm_aperture_20cm_focus(geom):
+    """One big lens over the module: a = 1762 mm on the long side (y), f = 200 mm → f/0,11 and 77,2°."""
+    v = O.validity(O.LensConfig(5.0, 200.0, "big"), geom)
+    assert v["axis"] == "y" and v["aperture_mm"] == 1762.0 and v["f_mm"] == 200.0
+    assert v["f_number"] == 200.0 / 1762.0                                   # N = f / aperture, unrounded
+    assert v["edge_angle_deg"] == np.degrees(np.arctan((1762.0 / 2) / 200.0))  # atan((a/2)/f), unrounded
+    assert f"{v['f_number']:.2f}" == "0.11" and f"{v['edge_angle_deg']:.1f}" == "77.2"
+    assert v["corner_angle_deg"] == np.degrees(np.arctan(np.hypot(1134.0, 1762.0) / 2 / 200.0))
+    assert v["corner_angle_deg"] > v["edge_angle_deg"]
+    assert v["above_warn_limit"] and v["paraxial"] == "aşağı" and v["reliability"] == "aşağı" and v["coarse"]
+    g = O.lens_geometry(200.0, 1760.0, 1760.0)                                # 176 cm square aperture
+    assert f"{g['f_number']:.2f}" == "0.11" and f"{g['edge_angle_deg']:.1f}" == "77.2"
+
+
+def test_validity_axis_and_cylinder(geom):
+    v = O.validity(O.LensConfig(3.0, 10.0, "array"), geom)                    # tile 189 × 73,4 mm: larger side x
+    assert v["axis"] == "x" and v["aperture_mm"] == geom.PX and v["corner_angle_deg"] is not None
+    c = O.validity(O.LensConfig(3.0, 10.0, "array_cyl"), geom)                # cylinder: y only, no corner ray
+    assert c["axis"] == "y" and c["aperture_mm"] == geom.PY and c["corner_angle_deg"] is None
+    f = O.validity(O.LensConfig(0.0, 10.0, "array"), geom)
+    assert f["f_number"] is None and f["edge_angle_deg"] == 0.0 and f["reliability"] == "yüksək"
+
+
+@pytest.mark.parametrize("angle,label", [(10.0, "yaxşı"), (10.01, "orta"), (20.0, "orta"), (20.01, "aşağı")],
+                         ids=["10.00deg", "10.01deg", "20.00deg", "20.01deg"])
+def test_paraxial_label_limits(angle, label):
+    assert O.paraxial_label(angle) == label
+
+
+def test_validity_js_matches_python(geom):
+    import json
+    import subprocess
+    from pathlib import Path
+    root = Path(__file__).resolve().parent.parent
+    cases = [(5.0, "big"), (3.0, "array"), (-10.0, "array"), (10.0, "array_cyl"), (0.0, "big"), (20.0, "array_cyl")]
+    js = "const L=require(process.argv[1]); const D=require(process.argv[2]);"          "const c=JSON.parse(process.argv[3]); console.log(JSON.stringify({v:c.map(([P,m])=>L.validity({P,h:10,mode:m})),"          "fmt:[D.fmt(200/1762,2),D.fmt(Math.atan(881/200)*180/Math.PI,1)]}))"
+    r = subprocess.run(["node", "-e", js, str(root / "simulator" / "lensoptics.js"), str(root / "simulator" / "datastore.js"),
+                        json.dumps(cases)], capture_output=True, text=True, encoding="utf-8", check=True)
+    out = json.loads(r.stdout)
+    assert out["fmt"] == ["0,11", "77,2"]                                     # what the page shows
+    for (P, mode), j in zip(cases, out["v"]):
+        py = O.validity(O.LensConfig(P, 10.0, mode), geom)
+        for k in ("axis", "paraxial", "above_warn_limit", "reliability", "coarse", "cylindrical"):
+            assert j[k] == py[k], (P, mode, k)
+        for k in ("aperture_mm", "f_number", "edge_angle_deg", "corner_angle_deg"):
+            assert (j[k] is None and py[k] is None) or j[k] == pytest.approx(py[k], rel=1e-12), (P, mode, k)

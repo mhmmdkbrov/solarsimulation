@@ -88,6 +88,26 @@ node tests\parity_model.js docs\data\baku_pvgis53_tmy.json  # brauzer ↔ Python
 python tests\parity_lens.py docs\data\baku_pvgis53_tmy.json # brauzer ↔ Python: linza (tolerans 0,1 faiz bəndi)
 ```
 
+## Linza modelinin etibarlılığı
+
+Linza laboratoriyası nazik paraksial linza modelindən istifadə edir. Etibarlılıq `solarsim/optics.py` və `simulator/lensoptics.js` faylındakı `validity` funksiyası ilə hesablanır:
+
+* f-ədədi N = |f| / a, burada a fokuslayan aperturadır.
+* Kənar şüanın optik oxla bucağı θ = atan((a/2) / |f|). Dəyərlər tam dəqiqliklə saxlanılır, yalnız ekranda yuvarlaqlaşdırılır.
+* Hesab oxu: sferik linzada aperturası böyük olan ox, silindrik linzada yalnız maililik oxu y. Düzbucaqlı sferik linzanın künc şüasının bucağı atan((diaqonal/2) / |f|) ayrıca hesablanır və ayrıca göstərilir.
+* Kənar şüa bucağı ≤ 10° olduqda etibarlılıq yüksək, ≤ 20° orta, daha böyük olduqda aşağıdır.
+* 30° simulyatorun paraksial model üçün **xəbərdarlıq meyarıdır**. Bu, linzanın düzəldilə bilib-bilməməsi haqqında hökm deyil.
+* Aşağı etibarlılıqda fokus və enerji nəticəsinin yanında “kobud yaxınlaşdırma” yazılır.
+* Axtarışın maksimumu aşağı etibarlılıq zonasına düşərsə, ayrıca göstərilir və prototip seçimi kimi təqdim olunmur. Onun yanında etibarlı zonada (θ ≤ 20°) tapılan ən yaxşı nəticə verilir.
+
+Misal: 176 sm apertura və 20 sm fokus üçün f/0,11 və 77,2° alınır (`tests/test_optics.py`).
+
+Saxlanmış məlumat dəstlərindəki etibarlılıq sahələrini enerjini yenidən hesablamadan yeniləmək üçün:
+
+```powershell
+python -m solarsim.build --refresh-validity
+```
+
 ## Vaxt və məlumat qaydaları
 
 * Hesab UTC-də aparılır. Qrafiklər və aylar məkanın yerli **standart** vaxtı ilə verilir (TMY nominal ildir, yay saatı tətbiq olunmur).

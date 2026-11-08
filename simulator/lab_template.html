@@ -52,6 +52,8 @@ input[type=range] { width: 100%; accent-color: var(--accent); }
 .chip:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .hint { font-size: 0.8rem; color: var(--muted); }
 .validity { border-radius: 10px; padding: 10px 14px; font-size: 0.9rem; }
+.coarse { display: inline-block; font-size: 0.72rem; font-weight: 600; line-height: 1.5; padding: 0 7px; border-radius: 999px; background: var(--warn-bg); color: var(--warn-ink); margin-left: 6px; white-space: nowrap; vertical-align: middle; }
+.apart { border: 1px dashed var(--warn-ink); border-radius: 10px; padding: 8px 12px; margin-top: 8px; }
 .validity.hi { background: var(--good-bg); } .validity.mid { background: var(--warn-bg); color: var(--warn-ink); } .validity.lo { background: var(--bad-bg); }
 .views { display: grid; grid-template-columns: minmax(0, 2.1fr) minmax(0, 1fr); gap: 16px; }
 @media (max-width: 860px) { .views { grid-template-columns: minmax(0, 1fr); } }
@@ -67,6 +69,7 @@ input[type=range] { width: 100%; accent-color: var(--accent); }
 .num { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 2px; }
 .num .k { font-size: 0.8rem; color: var(--ink-2); } .num .v { font-family: var(--mono); font-size: 1.5rem; font-weight: 500; } .num .s { font-size: 0.78rem; color: var(--muted); }
 .tablewrap { overflow-x: auto; }
+.tables > *, .card > * { min-width: 0; }
 table { border-collapse: collapse; width: 100%; font-size: 0.86rem; font-variant-numeric: tabular-nums; }
 th, td { padding: 7px 9px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
 th:first-child, td:first-child, td.txt, th.txt { text-align: left; }
@@ -164,10 +167,10 @@ footer { font-size: 0.82rem; color: var(--ink-2); display: grid; gap: 6px; max-w
   <p class="hint">Hesab üsulu: linza və “boş linza” (n = 1, ötürmə 100%, D = 0) eyni optik zəncirdən keçirilir. Onların nisbəti pvlib baza ssenarisi A-ya tətbiq olunur. Elektrik: hüceyrə xəritəsindən sürətli “ən zəif hüceyrə” qaydası (T1 topologiyası). Hüceyrə I–V modeli ilə yoxlama aşağıdakı cədvəldədir.</p>
 
   <div class="tables" style="display:grid; gap:18px">
-    <section class="card"><h2>Tələb olunan sınaqlar: +3, −3, +10, −10 D</h2><p class="hint" id="tests-note"></p><div class="tablewrap" id="tests"></div></section>
+    <section class="card"><h2>Tələb olunan sınaqlar: +3, −3, +10, −10 D</h2><p class="hint" id="tests-note"></p><div class="tablewrap"><table id="tests"></table></div></section>
     <section class="card" id="best-card"><h2>Sınanmış diapazonda ən yaxşı linza massivi</h2><div id="best"></div></section>
-    <section class="card" id="iv-card"><h2>Elektrik modeli: sürətli qayda ↔ hüceyrə I–V modeli</h2><div class="tablewrap" id="iv"></div><p class="hint" id="iv-note"></p></section>
-    <section class="card" id="tr-card"><h2>Növbəti dəqiqlik səviyyəsi: Snell/Fresnel şüa izləməsi ↔ paraksial model</h2><div class="tablewrap" id="tr"></div><p class="hint">2D izləmə maililik istiqamətindədir. Sferik plan-qabarıq (D &gt; 0) və ya plan-çökük (D &lt; 0) linza götürülür, əyri tərəfi Günəşə baxır, R = (n − 1)·|f|. Günəş diski ±0,27° ilə nümunələnir. Real linza profili məlum olmadığı üçün bu profil fərziyyədir.</p></section>
+    <section class="card" id="iv-card"><h2>Elektrik modeli: sürətli qayda ↔ hüceyrə I–V modeli</h2><div class="tablewrap"><table id="iv"></table></div><p class="hint" id="iv-note"></p></section>
+    <section class="card" id="tr-card"><h2>Növbəti dəqiqlik səviyyəsi: Snell/Fresnel şüa izləməsi ↔ paraksial model</h2><div class="tablewrap"><table id="tr"></table></div><p class="hint">2D izləmə maililik istiqamətindədir. Sferik plan-qabarıq (D &gt; 0) və ya plan-çökük (D &lt; 0) linza götürülür, əyri tərəfi Günəşə baxır, R = (n − 1)·|f|. Günəş diski ±0,27° ilə nümunələnir. Real linza profili məlum olmadığı üçün bu profil fərziyyədir.</p></section>
     <section class="card" id="c5-card"><h2>C = 5 sınağı: eyni ümumi apertura</h2><div id="c5"></div></section>
   </div>
 
@@ -188,6 +191,22 @@ __LENSOPTICS__
   const MODE = { big: "bir böyük linza", array: "hər hüceyrəyə sferik linza", array_cyl: "hər sıraya silindrik linza" };
   const H_MIN = 2.6, H_MAX = 1000, h2s = h => Math.round(1000 * Math.log(h / H_MIN) / Math.log(H_MAX / H_MIN)), s2h = s => H_MIN * Math.pow(H_MAX / H_MIN, s / 1000);
   const fmtLen = mm => (mm >= 100 ? `${nf(mm / 10, mm >= 1000 ? 0 : 1)} sm` : `${nf(mm, mm < 10 ? 1 : 0)} mm`);
+  const COARSE = '<span class="coarse">kobud yaxınlaşdırma</span>';
+  const fnum = N => `f/${nf(N, N < 10 ? 2 : 1)}`;
+  const AXIS = { x: "x oxu (panelin eni)", y: "y oxu (panelin uzunluğu, maililik istiqaməti)" };
+  // validity banner: one reliability label; the 30° limit is the simulator's warning criterion for the paraxial model
+  function validityHTML(v, kind) {
+    if (kind === "flat") return "<b>Paraksial model etibarlılığı: yüksək.</b> Düz təbəqənin fokusu yoxdur, paraksial yaxınlaşmaya ehtiyac yoxdur.";
+    const tile = v.cylindrical ? `silindrik linza yalnız ${AXIS.y} üzrə fokuslayır, apertura a = ${fmtLen(v.aperture_mm)}`
+      : `linza ${fmtLen(v.aperture_x_mm)} × ${fmtLen(v.aperture_y_mm)}, hesab böyük tərəf üzrə: ${AXIS[v.axis]}, a = ${fmtLen(v.aperture_mm)}`;
+    const corner = v.corner_angle_deg == null ? "" : ` Künc şüasının optik oxla bucağı (diaqonal ${fmtLen(v.diagonal_mm)}, ayrıca hesab): ${nf(v.corner_angle_deg, 1)}°.`;
+    const warn = v.above_warn_limit ? ` Bucaq ${nf(v.warn_limit_deg, 0)}°-dən böyükdür. Bu, simulyatorun paraksial model üçün xəbərdarlıq həddidir: nazik linza düsturları burada kobud yaxınlaşdırma verir. Hədd linzanın düzəldilə bilib-bilməməsi haqqında hökm deyil.` : "";
+    return `<b>Paraksial model etibarlılığı: ${v.reliability}.</b>${v.coarse ? COARSE : ""} ` +
+      `Hesabın oxu: ${tile}. f-ədədi N = |f| / a = ${fmtLen(Math.abs(v.f_mm))} / ${fmtLen(v.aperture_mm)} = ${fnum(v.f_number)}. ` +
+      `Kənar şüanın optik oxla bucağı atan((a/2) / |f|) = ${nf(v.edge_angle_deg, 1)}°.${corner}${warn}` +
+      ` <span style="opacity:.8">Meyar (kənar şüa bucağı): ≤ 10° yüksək, ≤ 20° orta, daha böyük aşağı; ${nf(v.warn_limit_deg, 0)}°-dən yuxarı əlavə xəbərdarlıq.</span>`;
+  }
+  const isCoarse = v => !!v && (v.coarse ?? v.reliability === "aşağı");
   const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
   let D = null, S = { P: 3, h: 3, mode: "big", tau: 0.92, day: 172, hour: 13 };
   try { const s = JSON.parse(localStorage.getItem("solarsim-lab") || "null"); if (s && typeof s.P === "number") S = { ...S, ...s }; } catch (e) {}
@@ -320,7 +339,7 @@ __LENSOPTICS__
       if (!D) return;
       const r = L.annual(D, c); annKey = key;
       $("y-a").textContent = nf(r.A_kWh_m2, 1); $("y-l").textContent = nf(r.L_kWh_m2, 1);
-      $("y-s").innerHTML = `kWh/m² apertura · <b style="color:var(${r.delta_pct >= 0 ? "--good" : "--bad"})">${pct(r.delta_pct)}</b>`;
+      $("y-s").innerHTML = `kWh/m² apertura · <b style="color:var(${r.delta_pct >= 0 ? "--good" : "--bad"})">${pct(r.delta_pct)}</b>` + (L.validity(c).coarse ? COARSE : "");
     }, 120);
   }
 
@@ -330,7 +349,8 @@ __LENSOPTICS__
     $("power").value = S.P; $("hlog").value = h2s(S.h); $("day").value = S.day; $("hour").value = S.hour;
     const f = L.focal(S.P), kind = L.kind(S.P);
     $("p-read").textContent = sgnD(S.P);
-    $("p-type").innerHTML = kind === "flat" ? "<b>düz təbəqə</b>, fokus yoxdur" : kind === "converging" ? `<b>toplayıcı</b>, f = ${fmtLen(f)}` : `<b>səpələyici</b>, xəyali fokus f = −${fmtLen(-f)}`;
+    const v = L.validity(cfg()), tag = v.coarse ? COARSE : "";
+    $("p-type").innerHTML = kind === "flat" ? "<b>düz təbəqə</b>, fokus yoxdur" : (kind === "converging" ? `<b>toplayıcı</b>, f = ${fmtLen(f)}` : `<b>səpələyici</b>, xəyali fokus f = −${fmtLen(-f)}`) + tag;
     $("h-read").textContent = fmtLen(S.h);
     $("h-f").disabled = !(S.P > 0);
     document.querySelectorAll("#p-chips .chip").forEach(b => b.setAttribute("aria-pressed", Math.abs(parseFloat(b.dataset.p) - S.P) < 1e-9 ? "true" : "false"));
@@ -339,19 +359,15 @@ __LENSOPTICS__
     $("h-3").setAttribute("aria-pressed", Math.abs(S.h - 3) < 0.05 ? "true" : "false");
     $("h-100").setAttribute("aria-pressed", Math.abs(S.h - 100) < 0.05 ? "true" : "false");
     $("h-f").setAttribute("aria-pressed", S.P > 0 && Math.abs(S.h - 1000 / S.P) < 0.5 ? "true" : "false");
-    const v = L.validity(cfg());
     $("validity").className = "validity " + (v.reliability === "yüksək" ? "hi" : v.reliability === "orta" ? "mid" : "lo");
-    $("validity").innerHTML = `<b>Model etibarlılığı: ${v.reliability}.</b> ` + (kind === "flat" ? "Düz təbəqə üçün paraksial yaxınlaşmaya ehtiyac yoxdur." :
-      `Fokuslanan apertura ${fmtLen(v.aperture_mm)}, f-ədədi ${nf(v.f_number, 2)}, kənarda şüanın meyli ${nf(v.edge_deflection_deg, 1)}°. ` +
-      (v.realizable ? "Fresnel və ya nazik linza kimi düzəldilə bilər (meyl ≤ 30°)." : "<b>Bu ölçüdə belə linza praktikada düzəldilə bilməz</b>: kənarda meyl 30°-dən böyükdür. Nəticə aşağı etibarlı yaxınlaşmadır.") +
-      ` Paraksial model: ${v.paraxial}.`);
+    $("validity").innerHTML = validityHTML(v, kind);
     const n = now(), h = D.hourly;
     const dd = new Date(Date.UTC(2001, 0, S.day));
     $("t-read").textContent = `${String(dd.getUTCDate()).padStart(2, "0")}.${String(dd.getUTCMonth() + 1).padStart(2, "0")} ${String(S.hour).padStart(2, "0")}:00`;
     $("sun-read").textContent = n ? `${D.site.name}, ${nf(D.site.latitude, 4)}° N ${nf(D.site.longitude, 4)}° E. Günəşin hündürlüyü ${nf(h.elev[n.i], 1)}°, azimutu ${nf(h.azim[n.i], 1)}°, panelə düşmə bucağı ${nf(h.aoi[n.i], 1)}°. Panel müstəvisində birbaşa ${nf(h.beam[n.i], 0)}, səma ${nf(h.sky[n.i], 0)}, yer ${nf(h.ground[n.i], 0)} W/m². Bu, faktiki TMY saatıdır, nümunə ssenarisi deyil.` : "Bu gün və saat məlumat dəstində tapılmadı.";
     const live = n && !n.dark;
     $("n-a").textContent = live ? nf(n.pA, 0) : "0"; $("n-l").textContent = live ? nf(n.pL, 0) : "0";
-    $("n-ls").innerHTML = live && n.pA > 1 ? `W · <b style="color:var(${n.pL >= n.pA ? "--good" : "--bad"})">${pct((n.pL / n.pA - 1) * 100)}</b>` : "W";
+    $("n-ls").innerHTML = (live && n.pA > 1 ? `W · <b style="color:var(${n.pL >= n.pA ? "--good" : "--bad"})">${pct((n.pL / n.pA - 1) * 100)}</b>` : "W") + (live ? tag : "");
     drawSide(n); drawTop(n); drawBalance(n);
     scheduleAnnual();
   }
@@ -369,14 +385,20 @@ __LENSOPTICS__
       const both = (fast, ivv) => (fast == null ? "<td>—</td>" : ivv == null ? cell(fast) : `<td class="${ivv >= 0 ? "good" : "bad"}">${pct(fast)} <span style="font-weight:400">(${pct(ivv)})</span></td>`);
       $("tests").innerHTML = `<thead><tr><th>Linza</th><th class="txt">Düzülüş</th><th>şüşənin üstündə 3 mm</th><th>10 sm sınaq məsafəsi</th><th>fokusda h = f</th><th>ən yaxşı h</th><th>ən yaxşı nəticə</th><th class="txt">etibarlılıq</th></tr></thead><tbody>${
         Ls.tests.map(t => { const p = t.points, pi = t.points_iv || {};
-          return `<tr class="click" data-p="${t.P}" data-m="${t.mode}" data-h="${t.best_h}"><td>${sgnD(t.P)} ${t.P > 0 ? "toplayıcı" : "səpələyici"}</td><td class="txt">${MODE[t.mode]}</td>${both(p["şüşənin üstündə 3 mm"], pi["şüşənin üstündə 3 mm"])}${both(p["10 sm sınaq məsafəsi"], pi["10 sm sınaq məsafəsi"])}${t.P > 0 ? both(p["fokusda h = f"], pi["fokusda h = f"]) : "<td>—</td>"}<td>${fmtLen(t.best_h)}</td>${both(t.best_pct, t.best_iv)}<td class="txt">${t.validity_best.reliability}</td></tr>`; }).join("")}</tbody>`;
+          return `<tr class="click" data-p="${t.P}" data-m="${t.mode}" data-h="${t.best_h}"><td>${sgnD(t.P)} ${t.P > 0 ? "toplayıcı" : "səpələyici"}</td><td class="txt">${MODE[t.mode]}</td>${both(p["şüşənin üstündə 3 mm"], pi["şüşənin üstündə 3 mm"])}${both(p["10 sm sınaq məsafəsi"], pi["10 sm sınaq məsafəsi"])}${t.P > 0 ? both(p["fokusda h = f"], pi["fokusda h = f"]) : "<td>—</td>"}<td>${fmtLen(t.best_h)}</td>${both(t.best_pct, t.best_iv).replace(/<\/td>$/, isCoarse(t.validity_best) ? COARSE + "</td>" : "</td>")}<td class="txt">${t.validity_best.reliability}</td></tr>`; }).join("")}</tbody>`;
       $("tests").onclick = e => { const tr = e.target.closest("tr[data-p]"); if (!tr) return; S.P = +tr.dataset.p; S.mode = tr.dataset.m; S.h = +tr.dataset.h; S.tau = 0.92; update(); window.scrollTo({ top: 0, behavior: "smooth" }); };
       $("best-card").hidden = !Ls.array;
       if (Ls.array) {
         const v1 = Ls.v1_point_13p5D_8mm;
-        const line = (m, x) => `<li><b>${MODE[m]}</b>: ${sgnD(x.P)}, h = ${fmtLen(x.h)} → adi material ${pct(x.delta_pct["0.92"])}, örtüklü ${pct(x.delta_pct["0.96"])}, itkisiz ${pct(x.delta_pct["1.0"])}. Başabaş ötürmə: ${x.tau_breakeven == null ? "itkisiz materialla belə yoxdur" : nf(x.tau_breakeven * 100, 1) + "%"}. Etibarlılıq ${x.validity.reliability} (kənarda meyl ${nf(x.validity.edge_deflection_deg, 1)}°${x.validity.realizable ? "" : ", praktikada düzəldilə bilməz"}).</li>`;
-        $("best").innerHTML = `<ul style="margin:0; padding-left:18px; display:grid; gap:6px">${line("array", Ls.array)}${line("array_cyl", Ls.array_cyl)}</ul>
-          <p class="hint">Axtarış: D ${Ls.array.search.P_range.join("…")} dioptriya, addım ${nf(Ls.array.search.P_step, 1)}; h ${nf(Ls.array.search.h_grid_mm[0], 1)} mm – 1 m (${Ls.array.search.h_grid_mm.length} nöqtə); ${Ls.array.search.note}.</p>
+        const facts = x => `${sgnD(x.P)}, h = ${fmtLen(x.h)} → adi material ${pct(x.delta_pct["0.92"])}, örtüklü ${pct(x.delta_pct["0.96"])}, itkisiz ${pct(x.delta_pct["1.0"])}. Başabaş ötürmə: ${x.tau_breakeven == null ? "itkisiz materialla belə yoxdur" : nf(x.tau_breakeven * 100, 1) + "%"}. Paraksial model etibarlılığı ${x.validity.reliability} (kənar şüanın optik oxla bucağı ${nf(x.validity.edge_angle_deg ?? x.validity.edge_deflection_deg, 1)}°${x.validity.f_number == null ? "" : ", " + fnum(x.validity.f_number)})`;
+        const line = (m, x) => {
+          if (!isCoarse(x.validity)) return `<li><b>${MODE[m]}</b>: ${facts(x)}.</li>`;
+          const r = x.best_reliable;
+          return `<li><b>${MODE[m]}</b>: ${r ? `etibarlı zonada ən yaxşı (${r.search.rule}, D ${r.search.P_range.map(sgnD).join(" … ")}): ${facts(r)}.` : "etibarlı zona üçün axtarış bu məlumat dəstində aparılmayıb."}
+            <div class="apart"><b>Axtarışın ümumi maksimumu aşağı etibarlılıq zonasındadır</b>${COARSE}<br>${facts(x)}.<br>Bu nəticə nazik paraksial modelin hüdudundan kənardadır. Təsdiqlənmiş prototip seçimi kimi götürülməməlidir: əvvəlcə real linza profili ilə şüa izləməsi və ölçmə lazımdır.</div></li>`;
+        };
+        $("best").innerHTML = `<ul style="margin:0; padding-left:18px; display:grid; gap:10px">${line("array", Ls.array)}${line("array_cyl", Ls.array_cyl)}</ul>
+          <p class="hint">Axtarış: D ${Ls.array.search.P_range.map(sgnD).join(" … ")}, addım ${nf(Ls.array.search.P_step, 1)}; h ${nf(Ls.array.search.h_grid_mm[0], 1)} mm – 1 m (${Ls.array.search.h_grid_mm.length} nöqtə); ${Ls.array.search.note}.</p>
           <p><b>Əvvəlki modelin nəticəsi (v1: sonsuz periodik hüceyrə, şüşədə sınma yoxdur).</b> +13,5 D / 8 mm: adi material ${pct(v1.v1["0.92"])}, örtüklü ${pct(v1.v1["0.96"])}, itkisiz ${pct(v1.v1["1.0"])}, başabaş ötürmə ≈ ${nf(v1.v1.tau_breakeven_v1 * 100, 1)}%.
           <b>Yeni həndəsə ilə (v2):</b> sferik massiv ${pct(v1.v2.array.delta_pct["0.92"])} / ${pct(v1.v2.array.delta_pct["0.96"])} / ${pct(v1.v2.array.delta_pct["1.0"])}; silindrik ${pct(v1.v2.array_cyl.delta_pct["0.92"])} / ${pct(v1.v2.array_cyl.delta_pct["0.96"])} / ${pct(v1.v2.array_cyl.delta_pct["1.0"])}. Hüceyrə müstəvisi fokusdan xeyli əvvəldədir: h_eff ≈ ${fmtLen(L.hEff(8))}, fokus məsafəsi ≈ ${fmtLen(1000 / 13.5)}.</p>`;
       }
@@ -390,7 +412,7 @@ __LENSOPTICS__
       const TR = Ls.trace2d;
       $("tr-card").hidden = !TR;
       if (TR) $("tr").innerHTML = `<thead><tr><th>Linza</th><th>bucaq</th><th>şüa izləməsi: hüceyrədə</th><th>boşluqda</th><th>kənarda</th><th>paraksial: hüceyrədə</th></tr></thead><tbody>${
-        TR.map(r => `<tr><td class="txt">${sgnD(r.P)}, ${fmtLen(r.h)}, ${MODE[r.mode]}</td><td>${nf(r.theta, 0)}°</td>${r.trace.realizable ? (r.trace.on_cells == null ? `<td class="txt" colspan="3">${r.trace.note}</td>` : `<td>${nf(r.trace.on_cells * 100, 1)}%</td><td>${nf(r.trace.gap * 100, 1)}%</td><td>${nf(r.trace.off * 100, 1)}%</td>`) : `<td class="txt" colspan="3">${r.trace.note}</td>`}<td>${r.paraxial_y_on_cells == null ? "—" : nf(r.paraxial_y_on_cells * 100, 1) + "%"}</td></tr>`).join("")}</tbody>`;
+        TR.map(r => `<tr><td class="txt">${sgnD(r.P)}, ${fmtLen(r.h)}, ${MODE[r.mode]}</td><td>${nf(r.theta, 0)}°</td>${(r.trace.traced ?? r.trace.realizable) ? (r.trace.on_cells == null ? `<td class="txt" colspan="3">${r.trace.note}</td>` : `<td>${nf(r.trace.on_cells * 100, 1)}%</td><td>${nf(r.trace.gap * 100, 1)}%</td><td>${nf(r.trace.off * 100, 1)}%</td>`) : `<td class="txt" colspan="3">Fərz olunan sferik profil bu aperturaya sığmır (R = (n − 1)·|f| &lt; a/2), izləmə aparılmadı. Bu, yalnız həmin profil fərziyyəsinə aiddir.</td>`}<td>${r.paraxial_y_on_cells == null ? "—" : nf(r.paraxial_y_on_cells * 100, 1) + "%"}</td></tr>`).join("")}</tbody>`;
     }
     const c5 = D.c5, a = c5.annual, ins = c5.instant;
     const row = (name, x, note) => `<tr><td class="txt">${name}</td><td>${nf(x.gross_kWh_m2_ap, 1)}</td><td>${nf((x.drive_kWh || 0) + (x.controller_kWh || 0), 1)}</td><td>${x.cooling_kWh == null ? "daxil edilməyib" : nf(x.cooling_kWh, 1)}</td><td>${nf(x.net_kWh_m2_ap, 1)}</td><td class="txt">${note}</td></tr>`;

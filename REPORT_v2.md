@@ -13,7 +13,7 @@ Bu fayl `python -m solarsim.report` ilə yaradılıb. Rəqəmlər `docs/data/*.j
 | Aktiv sahə payı iki modeldə fərqli (0,92 və 0,9195) | 0,92 giriş parametri; hüceyrə hündürlüyü ondan hesablanır | `pv.py`, `optics.py`, `lensoptics.js` |
 | Linza massivində sonsuz periodik hüceyrə; paneldən kənara çıxan işıq yox idi | Sonlu panel: öz hüceyrə, qonşu, boşluq, kənar; modul şüşəsində sınma; birbaşa, səma və yer işığı ayrıca; işıq balansı testi | `optics.py`, `lenslab.py`, `lensoptics.js` |
 | “Ən yaxşı məsafə” bəzi sınaq nöqtələrindən pis idi (−3 D, −10 D) | Axtarışa sınaq nöqtələri daxildir; bütün namizədlər eyni funksiya ilə; test: maksimum ≥ hər sınaq nöqtəsi | `lenslab.py`, `tests/test_optics.py` |
-| Nazik linzanın etibarlılıq sərhədi göstərilmirdi | f-ədədi, kənarda meyl, reallaşdırıla bilmə (Fresnel ≤ 30°), etibarlılıq yarlığı; Snell/Fresnel 2D şüa izləməsi ilə yoxlama | `optics.py` (`validity`, `trace2d`) |
+| Nazik linzanın etibarlılıq sərhədi göstərilmirdi | f-ədədi N = |f| / a və kənar şüanın optik oxla bucağı atan((a/2) / |f|) hesab oxu göstərilməklə, künc şüası ayrıca; ≤ 10° / ≤ 20° / daha böyük → yüksək / orta / aşağı, 30° simulyatorun paraksial model üçün xəbərdarlıq meyarıdır (istehsal hökmü deyil); aşağı etibarlılıqda “kobud yaxınlaşdırma” yarlığı; Snell/Fresnel 2D şüa izləməsi ilə yoxlama | `optics.py` (`validity`, `trace2d`) |
 | Böyük linzada yalnız “ən zəif hüceyrə” qaydası | Hüceyrə → sıra → bypass qrupu → modul I–V modeli (De Soto, pasportdan); T1/T3 topologiya həssaslığı; bərabər, kölgəli hüceyrə və qrup testləri | `electrical.py`, `tests/test_optics.py` |
 | CPV-də qəbul bucağı və izləmə xətası yox idi; istilik həllində xəbərdarlıq yox idi | Qəbul bucağı + Rayleigh izləmə xətası, konusdakı səpələnmiş işıq, η(T, C) etibarlılıq diapazonu, xəbərdarlıqlar və xəritədə ştrix | `scenarios.py`, `model.js` |
 | C = 5-də soyutma sərfi və ekstrapolyasiya statusu göstərilmirdi | Eyni apertura ilə müqayisə; “soyutma sərfi daxil edilməyib”; 170 °C və 1043 saat model proqnozu kimi; 29,4% həddinin şərtləri | `studies.py`, `lab_template.html` |
@@ -50,9 +50,13 @@ Vahid: kWh/m² apertura/il (apertura = 1,998 m²). A-izləmənin 448,01 dəyəri
 
 +13,5 D / 8 mm (v1 nəticəsi saxlanılıb): v1 adi material −4,9%, başabaş ötürmə ≈ 96,8%. v2 sferik massiv: −6,5% / −2,4% / +1,6% (92 / 96 / 100%). v2 silindrik: −10,3% / −6,4% / −2,5%.
 
-Sınanmış diapazonda ən yaxşı (array): +20 D (axtarış diapazonunun kənarı, ±20 D), h = 5,0 mm → −5,0% / −0,9% / +3,3%; başabaş ötürmə 96,8%; etibarlılıq aşağı.
+Etibarlı zonada ən yaxşı (array; yalnız paraksial etiketi “aşağı” olmayan dioptriyalar (kənar şüa bucağı ≤ 20°)): +3,5 D, h = 4,0 mm → −10,4% / −6,5% / −2,6%; başabaş ötürmə yoxdur; kənar şüanın optik oxla bucağı 18,3°, etibarlılıq orta.
 
-Sınanmış diapazonda ən yaxşı (array_cyl): +20 D (axtarış diapazonunun kənarı, ±20 D), h = 4,0 mm → −8,6% / −4,6% / −0,7%; başabaş ötürmə yoxdur; etibarlılıq aşağı.
+Axtarışın ümumi maksimumu (array) aşağı etibarlılıq zonasındadır, **kobud yaxınlaşdırma**: +20 D (axtarış diapazonunun kənarı, ±20 D), h = 5,0 mm → −5,0% / −0,9% / +3,3%; başabaş ötürmə 96,8%; kənar şüanın optik oxla bucağı 62,1°, etibarlılıq aşağı. Təsdiqlənmiş prototip seçimi deyil.
+
+Etibarlı zonada ən yaxşı (array_cyl; yalnız paraksial etiketi “aşağı” olmayan dioptriyalar (kənar şüa bucağı ≤ 20°)): +9,5 D, h = 4,0 mm → −10,1% / −6,2% / −2,3%; başabaş ötürmə yoxdur; kənar şüanın optik oxla bucağı 19,2°, etibarlılıq orta.
+
+Axtarışın ümumi maksimumu (array_cyl) aşağı etibarlılıq zonasındadır, **kobud yaxınlaşdırma**: +20 D (axtarış diapazonunun kənarı, ±20 D), h = 4,0 mm → −8,6% / −4,6% / −0,7%; başabaş ötürmə yoxdur; kənar şüanın optik oxla bucağı 36,3°, etibarlılıq aşağı. Təsdiqlənmiş prototip seçimi deyil.
 
 Sadə optik qat modelinin ideal ssenarisi: +7,84% (sadə modelin ideal ssenarisi: aktiv sahə 92 %, boşluq işığı tam qaytarılır, ötürmə 100 %, əlavə istilik və qeyri-bərabərlik itkisi sıfır).
 
@@ -67,10 +71,16 @@ Sadə optik qat modelinin ideal ssenarisi: +7,84% (sadə modelin ideal ssenarisi
 
 ## 3. İcra olunmuş testlər
 
-`pytest`: **50 passed in 159.32s (0:02:39)**
+`pytest`: **63 passed in 172.78s (0:02:52)**
 
 | Modul | Test | Nəticə |
 |---|---|---|
+| test_calculator | `test_original_reproduces_shared_results` | keçdi |
+| test_calculator | `test_diopter_does_not_change_original_output` | keçdi |
+| test_calculator | `test_energy_balance_closes` | keçdi |
+| test_calculator | `test_same_area_comparisons` | keçdi |
+| test_calculator | `test_focus_spot_and_local_concentration` | keçdi |
+| test_calculator | `test_js_matches_python` | keçdi |
 | test_cli | `test_cli_csv_dataset` | keçdi |
 | test_core | `test_stc_450W_and_efficiency` | keçdi |
 | test_core | `test_zero_irradiance_gives_zero_power` | keçdi |
@@ -120,7 +130,14 @@ Sadə optik qat modelinin ideal ssenarisi: +7,84% (sadə modelin ideal ssenarisi
 | test_optics | `test_trace2d_agrees_with_paraxial_for_weak_lens[3-3-20.0]` | keçdi |
 | test_optics | `test_trace2d_agrees_with_paraxial_for_weak_lens[3-20-0.0]` | keçdi |
 | test_optics | `test_trace2d_agrees_with_paraxial_for_weak_lens[5-30-10.0]` | keçdi |
-| test_optics | `test_trace2d_reports_impossible_lens` | keçdi |
+| test_optics | `test_trace2d_reports_profile_that_does_not_fit` | keçdi |
+| test_optics | `test_validity_176cm_aperture_20cm_focus` | keçdi |
+| test_optics | `test_validity_axis_and_cylinder` | keçdi |
+| test_optics | `test_paraxial_label_limits[10.00deg]` | keçdi |
+| test_optics | `test_paraxial_label_limits[10.01deg]` | keçdi |
+| test_optics | `test_paraxial_label_limits[20.00deg]` | keçdi |
+| test_optics | `test_paraxial_label_limits[20.01deg]` | keçdi |
+| test_optics | `test_validity_js_matches_python` | keçdi |
 
 Brauzer ↔ Python, ssenarilər (bütün TMY dəstləri, tolerans 0,05%): **PARITY OK**
 

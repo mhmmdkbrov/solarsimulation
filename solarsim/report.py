@@ -92,10 +92,21 @@ def main():
     w(f"\n+13,5 D / 8 mm (v1 nəticəsi saxlanılıb): v1 adi material {pct(v1p['v1']['0.92'])}, başabaş ötürmə ≈ {az(v1p['v1']['tau_breakeven_v1'] * 100, 1)}%. "
       f"v2 sferik massiv: {pct(v1p['v2']['array']['delta_pct']['0.92'])} / {pct(v1p['v2']['array']['delta_pct']['0.96'])} / {pct(v1p['v2']['array']['delta_pct']['1.0'])} "
       f"(92 / 96 / 100%). v2 silindrik: {pct(v1p['v2']['array_cyl']['delta_pct']['0.92'])} / {pct(v1p['v2']['array_cyl']['delta_pct']['0.96'])} / {pct(v1p['v2']['array_cyl']['delta_pct']['1.0'])}.")
+    def best_txt(x):
+        return (f"{sgn(x['P'])} D{' (axtarış diapazonunun kənarı, ±20 D)' if abs(x['P']) >= 20 else ''}, h = {az(x['h'], 1)} mm → {pct(x['delta_pct']['0.92'])} / {pct(x['delta_pct']['0.96'])} / {pct(x['delta_pct']['1.0'])}; "
+                f"başabaş ötürmə {('yoxdur' if x['tau_breakeven'] is None else az(x['tau_breakeven'] * 100, 1) + '%')}; "
+                f"kənar şüanın optik oxla bucağı {az(x['validity']['edge_angle_deg'], 1)}°, etibarlılıq {x['validity']['reliability']}")
+
     for m in ("array", "array_cyl"):
         x = b["lens"][m]
-        w(f"\nSınanmış diapazonda ən yaxşı ({m}): {sgn(x['P'])} D{' (axtarış diapazonunun kənarı, ±20 D)' if abs(x['P']) >= 20 else ''}, h = {az(x['h'], 1)} mm → {pct(x['delta_pct']['0.92'])} / {pct(x['delta_pct']['0.96'])} / {pct(x['delta_pct']['1.0'])}; "
-          f"başabaş ötürmə {('yoxdur' if x['tau_breakeven'] is None else az(x['tau_breakeven'] * 100, 1) + '%')}; etibarlılıq {x['validity']['reliability']}.")
+        if not x["validity"].get("coarse"):
+            w(f"\nSınanmış diapazonda ən yaxşı ({m}): {best_txt(x)}.")
+            continue
+        r = x.get("best_reliable")
+        if r:
+            w(f"\nEtibarlı zonada ən yaxşı ({m}; {r['search']['rule']}): {best_txt(r)}.")
+        w(f"\nAxtarışın ümumi maksimumu ({m}) aşağı etibarlılıq zonasındadır, **kobud yaxınlaşdırma**: {best_txt(x)}. "
+          f"Təsdiqlənmiş prototip seçimi deyil.")
     bl = b["b_levels"]["ideal"]
     w(f"\nSadə optik qat modelinin ideal ssenarisi: {pct(100 * (bl['B_kWh_m2'] / bl['A_kWh_m2'] - 1), 2)} ({bl['label']}).\n")
 
@@ -151,7 +162,7 @@ PROBLEMS = [
     ("Aktiv sahə payı iki modeldə fərqli (0,92 və 0,9195)", "0,92 giriş parametri; hüceyrə hündürlüyü ondan hesablanır", "`pv.py`, `optics.py`, `lensoptics.js`"),
     ("Linza massivində sonsuz periodik hüceyrə; paneldən kənara çıxan işıq yox idi", "Sonlu panel: öz hüceyrə, qonşu, boşluq, kənar; modul şüşəsində sınma; birbaşa, səma və yer işığı ayrıca; işıq balansı testi", "`optics.py`, `lenslab.py`, `lensoptics.js`"),
     ("“Ən yaxşı məsafə” bəzi sınaq nöqtələrindən pis idi (−3 D, −10 D)", "Axtarışa sınaq nöqtələri daxildir; bütün namizədlər eyni funksiya ilə; test: maksimum ≥ hər sınaq nöqtəsi", "`lenslab.py`, `tests/test_optics.py`"),
-    ("Nazik linzanın etibarlılıq sərhədi göstərilmirdi", "f-ədədi, kənarda meyl, reallaşdırıla bilmə (Fresnel ≤ 30°), etibarlılıq yarlığı; Snell/Fresnel 2D şüa izləməsi ilə yoxlama", "`optics.py` (`validity`, `trace2d`)"),
+    ("Nazik linzanın etibarlılıq sərhədi göstərilmirdi", "f-ədədi N = |f| / a və kənar şüanın optik oxla bucağı atan((a/2) / |f|) hesab oxu göstərilməklə, künc şüası ayrıca; ≤ 10° / ≤ 20° / daha böyük → yüksək / orta / aşağı, 30° simulyatorun paraksial model üçün xəbərdarlıq meyarıdır (istehsal hökmü deyil); aşağı etibarlılıqda “kobud yaxınlaşdırma” yarlığı; Snell/Fresnel 2D şüa izləməsi ilə yoxlama", "`optics.py` (`validity`, `trace2d`)"),
     ("Böyük linzada yalnız “ən zəif hüceyrə” qaydası", "Hüceyrə → sıra → bypass qrupu → modul I–V modeli (De Soto, pasportdan); T1/T3 topologiya həssaslığı; bərabər, kölgəli hüceyrə və qrup testləri", "`electrical.py`, `tests/test_optics.py`"),
     ("CPV-də qəbul bucağı və izləmə xətası yox idi; istilik həllində xəbərdarlıq yox idi", "Qəbul bucağı + Rayleigh izləmə xətası, konusdakı səpələnmiş işıq, η(T, C) etibarlılıq diapazonu, xəbərdarlıqlar və xəritədə ştrix", "`scenarios.py`, `model.js`"),
     ("C = 5-də soyutma sərfi və ekstrapolyasiya statusu göstərilmirdi", "Eyni apertura ilə müqayisə; “soyutma sərfi daxil edilməyib”; 170 °C və 1043 saat model proqnozu kimi; 29,4% həddinin şərtləri", "`studies.py`, `lab_template.html`"),

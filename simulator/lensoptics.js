@@ -4,7 +4,8 @@ const LensOptics = (() => {
   const LX = 1134, LY = 1762, NX = 6, NY = 24, PX = LX / NX, PY = LY / NY;
   const F_ACT = 0.92, CX = 182, CY = F_ACT * LX * LY / (144 * CX);
   const T_GLASS = 2.1, N_GLASS = 1.5, C_MAX = 46000, SUN_HALF_TAN = Math.tan(0.2665 * Math.PI / 180), RS_K = 0.035;
-  const FRESNEL_MAX_DEFL = 30;   // degrees
+  // paraxial-model warning criteria (simulator conventions, not manufacturability limits); = solarsim/optics.py
+  const PARAXIAL_GOOD_DEG = 10, PARAXIAL_FAIR_DEG = 20, PARAXIAL_WARN_DEG = 30;
   const cxs = Array.from({ length: NX }, (_, i) => -LX / 2 + (i + 0.5) * PX);
   const cys = Array.from({ length: NY }, (_, j) => -LY / 2 + (j + 0.5) * PY);
   const GLASS = { n: 1.526, K: 4, L: 0.002 };
@@ -173,16 +174,33 @@ const LensOptics = (() => {
     return { A_kWh_m2: A, L_kWh_m2: A * ratio, ratio, delta_pct: 100 * (ratio - 1), balance_kWh: bal };
   }
 
+  const paraxialLabel = t => (t <= PARAXIAL_GOOD_DEG ? "yaxşı" : t <= PARAXIAL_FAIR_DEG ? "orta" : "aşağı");
+
+  // f-number and ray angles of one lens tile (ax × ay mm), unrounded. Focusing axis: the larger of x, y for a
+  // spherical tile, y only for a cylindrical one. N = |f|/a, edge-ray angle to the optical axis = atan((a/2)/|f|),
+  // corner-ray angle = atan((diagonal/2)/|f|) for a spherical rectangular tile.
+  function lensGeometry(f, ax, ay, cylindrical = false) {
+    const [axis, a] = cylindrical ? ["y", ay] : ay >= ax ? ["y", ay] : ["x", ax];
+    const out = { axis, aperture_mm: a, aperture_x_mm: ax, aperture_y_mm: ay, cylindrical, f_mm: null, f_number: null,
+                  edge_angle_deg: 0, corner_angle_deg: null, diagonal_mm: null };
+    if (!isFinite(f)) return out;
+    const F = Math.abs(f);
+    out.f_mm = f; out.f_number = F / a; out.edge_angle_deg = Math.atan(a / 2 / F) * 180 / Math.PI;
+    if (!cylindrical) { const d = Math.hypot(ax, ay); out.diagonal_mm = d; out.corner_angle_deg = Math.atan(d / 2 / F) * 180 / Math.PI; }
+    return out;
+  }
+
   function validity(cfg) {
-    const T = tiles(cfg.mode), a = cfg.mode === "array_cyl" ? T.ay : Math.max(T.ax, T.ay), f = focal(cfg.P);
-    if (!isFinite(f)) return { aperture_mm: a, f_mm: null, f_number: null, edge_deflection_deg: 0, realizable: true, paraxial: "yaxşı", reliability: "yüksək" };
-    const defl = Math.atan(a / 2 / Math.abs(f)) * 180 / Math.PI;
-    const realizable = defl <= FRESNEL_MAX_DEFL, paraxial = defl <= 10 ? "yaxşı" : defl <= 20 ? "orta" : "aşağı";
-    return { aperture_mm: a, f_mm: f, f_number: Math.abs(f) / a, edge_deflection_deg: defl, realizable, paraxial,
-             reliability: !realizable || paraxial === "aşağı" ? "aşağı" : paraxial === "orta" ? "orta" : "yüksək" };
+    const T = tiles(cfg.mode);
+    const v = lensGeometry(focal(cfg.P), T.ax, T.ay, cfg.mode === "array_cyl");
+    v.paraxial = paraxialLabel(v.edge_angle_deg);
+    v.above_warn_limit = v.edge_angle_deg > PARAXIAL_WARN_DEG; v.warn_limit_deg = PARAXIAL_WARN_DEG;
+    v.reliability = v.paraxial === "aşağı" ? "aşağı" : v.paraxial === "orta" ? "orta" : "yüksək";
+    v.coarse = v.reliability === "aşağı";
+    return v;
   }
 
   return { LX, LY, NX, NY, PX, PY, CX, CY, F_ACT, T_GLASS, C_MAX, RS_K, focal, kind, hEff, shift, lensSplit, glassIam,
-           spotSplit, diffuseResponse, hour, fastFactor, annual, validity, strings: STR };
+           spotSplit, diffuseResponse, hour, fastFactor, annual, lensGeometry, validity, PARAXIAL_WARN_DEG, strings: STR };
 })();
 if (typeof module !== "undefined") module.exports = LensOptics;
