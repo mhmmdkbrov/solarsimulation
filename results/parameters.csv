@@ -1,0 +1,64 @@
+﻿qrup,parametr,dəyər,vahid,status,mənbə,qeyd
+yer,latitude,40.41,° N,fərziyyə,tapşırıq,dəyişdirilə bilən ilkin koordinat
+yer,longitude,49.87,° E,fərziyyə,tapşırıq,dəyişdirilə bilən ilkin koordinat
+yer,local_time_zone,UTC+4 (Etc/GMT-4),-,fərziyyə,Azərbaycan vaxtı,"hesab UTC-də aparılır, qrafiklər Bakı vaxtında göstərilir"
+modul,pdc0 (STC Pmax),450.0,W,texniki pasport,"Trina Solar, Vertex S+ TSM-NEG9R.28 datasheet, versiya TSM_EN_2023_B (MEA) — https://pages.trinasolar.com/rs/567-KJK-096/images/NEG9R.28_EN_2023_MEA%20region.pdf","STC: 1000 W/m², 25 °C, AM1.5; tolerans 0…+5 W"
+modul,length,1.762,m,texniki pasport,"Trina Solar, Vertex S+ TSM-NEG9R.28 datasheet, versiya TSM_EN_2023_B (MEA) — https://pages.trinasolar.com/rs/567-KJK-096/images/NEG9R.28_EN_2023_MEA%20region.pdf",
+modul,width,1.134,m,texniki pasport,"Trina Solar, Vertex S+ TSM-NEG9R.28 datasheet, versiya TSM_EN_2023_B (MEA) — https://pages.trinasolar.com/rs/567-KJK-096/images/NEG9R.28_EN_2023_MEA%20region.pdf",
+modul,module efficiency (STC),0.225,-,texniki pasport,"Trina Solar, Vertex S+ TSM-NEG9R.28 datasheet, versiya TSM_EN_2023_B (MEA) — https://pages.trinasolar.com/rs/567-KJK-096/images/NEG9R.28_EN_2023_MEA%20region.pdf","22,5%"
+modul,temp. coefficient of Pmax,-0.003,1/°C,texniki pasport,"Trina Solar, Vertex S+ TSM-NEG9R.28 datasheet, versiya TSM_EN_2023_B (MEA) — https://pages.trinasolar.com/rs/567-KJK-096/images/NEG9R.28_EN_2023_MEA%20region.pdf","−0,30%/°C (2023_B). Tapşırıqdakı −0,29%/°C (2024_C) yoxlanıla bilmədi → həssaslıq"
+modul,NOCT,43.0,°C,texniki pasport,"Trina Solar, Vertex S+ TSM-NEG9R.28 datasheet, versiya TSM_EN_2023_B (MEA) — https://pages.trinasolar.com/rs/567-KJK-096/images/NEG9R.28_EN_2023_MEA%20region.pdf","±2 °C; 800 W/m², 20 °C hava, 1 m/s külək"
+modul,Pmax at NOCT,343.0,W,texniki pasport,"Trina Solar, Vertex S+ TSM-NEG9R.28 datasheet, versiya TSM_EN_2023_B (MEA) — https://pages.trinasolar.com/rs/567-KJK-096/images/NEG9R.28_EN_2023_MEA%20region.pdf",
+modul,Vmpp (STC),44.6,V,texniki pasport,"Trina Solar, Vertex S+ TSM-NEG9R.28 datasheet, versiya TSM_EN_2023_B (MEA) — https://pages.trinasolar.com/rs/567-KJK-096/images/NEG9R.28_EN_2023_MEA%20region.pdf",
+modul,Impp (STC),10.09,A,texniki pasport,"Trina Solar, Vertex S+ TSM-NEG9R.28 datasheet, versiya TSM_EN_2023_B (MEA) — https://pages.trinasolar.com/rs/567-KJK-096/images/NEG9R.28_EN_2023_MEA%20region.pdf",
+modul,Voc (STC),52.9,V,texniki pasport,"Trina Solar, Vertex S+ TSM-NEG9R.28 datasheet, versiya TSM_EN_2023_B (MEA) — https://pages.trinasolar.com/rs/567-KJK-096/images/NEG9R.28_EN_2023_MEA%20region.pdf",
+modul,Isc (STC),10.74,A,texniki pasport,"Trina Solar, Vertex S+ TSM-NEG9R.28 datasheet, versiya TSM_EN_2023_B (MEA) — https://pages.trinasolar.com/rs/567-KJK-096/images/NEG9R.28_EN_2023_MEA%20region.pdf",
+modul,temp. coefficient of Voc,-0.0024,1/°C,texniki pasport,"Trina Solar, Vertex S+ TSM-NEG9R.28 datasheet, versiya TSM_EN_2023_B (MEA) — https://pages.trinasolar.com/rs/567-KJK-096/images/NEG9R.28_EN_2023_MEA%20region.pdf",
+modul,temp. coefficient of Isc,0.0004,1/°C,texniki pasport,"Trina Solar, Vertex S+ TSM-NEG9R.28 datasheet, versiya TSM_EN_2023_B (MEA) — https://pages.trinasolar.com/rs/567-KJK-096/images/NEG9R.28_EN_2023_MEA%20region.pdf",
+modul,number of cells,144,-,texniki pasport,"Trina Solar, Vertex S+ TSM-NEG9R.28 datasheet, versiya TSM_EN_2023_B (MEA) — https://pages.trinasolar.com/rs/567-KJK-096/images/NEG9R.28_EN_2023_MEA%20region.pdf",kəsilmiş (yarım/üçdəbir) hüceyrələr
+modul,active cell area fraction,0.92,-,ölçülməlidir,təxmin,pasportda yoxdur; ~144 × 182×70 mm hüceyrə fərziyyəsindən. Modulda ölçülməlidir
+modul,gross module area,1.9981079999999998,m²,texniki pasport,"Trina Solar, Vertex S+ TSM-NEG9R.28 datasheet, versiya TSM_EN_2023_B (MEA) — https://pages.trinasolar.com/rs/567-KJK-096/images/NEG9R.28_EN_2023_MEA%20region.pdf","1,762 × 1,134; bütün ssenarilər üçün xarici işıqtoplama sahəsi"
+sistem,fixed tilt,35.0,°,fərziyyə,,Bakı enliyinə yaxın illik optimum ətrafı; A və B üçün eyni
+sistem,fixed azimuth,180.0,"° (N=0, E=90)",fərziyyə,,cənub; A və B üçün eyni
+sistem,ground albedo,0.2,-,fərziyyə,,PVGIS albedo vermir
+sistem,sky diffuse transposition,perez,-,elmi mənbə,"Perez et al., Solar Energy 44 (1990); pvlib-python (Anderson et al., JOSS 2023)",
+sistem,factory glass IAM: refractive index n,1.526,-,elmi mənbə,De Soto et al. (2006); pvlib.iam.physical,zavod şüşəsinin AR örtüyü ayrıca modelləşdirilmir
+sistem,factory glass IAM: extinction K,4.0,1/m,elmi mənbə,De Soto et al. (2006),
+sistem,factory glass IAM: thickness L,0.002,m,elmi mənbə,De Soto et al. (2006),
+sistem,SAPM thermal a (open rack glass/glass),-3.47,-,elmi mənbə,"King et al., SAND2004-3535",
+sistem,SAPM thermal b,-0.0594,s/m,elmi mənbə,"King et al., SAND2004-3535",külək 10 m hündürlükdə (PVGIS WS10m ilə uyğun)
+sistem,SAPM thermal ΔT(cell-back),3.0,°C,elmi mənbə,"King et al., SAND2004-3535",
+sistem,spectral factor,1.0,-,fərziyyə,,spektral təsir ilk versiyada nəzərə alınmır
+sistem,soiling loss (all scenarios),0.0,-,ölçülməlidir,,çirklənmə ilk versiyada 0; CPV üçün xüsusilə vacibdir
+sistem,other DC losses at measurement point,0.0,-,fərziyyə,,ölçmə nöqtəsi = modulun DC çıxışı
+B retrofit,add-on layer beam transmittance at normal incidence,0.92,-,fərziyyə,,"zavod şüşəsinin ötürməsinə əlavə vurulur; diapazon 0,88…0,96"
+B retrofit,add-on layer refractive index (shape of angular loss),1.49,-,elmi mənbə,"PMMA-nın sındırma əmsalı (~1,49)",material seçilməyib; PMMA nümunə kimi
+B retrofit,add-on layer extinction K,4.0,1/m,fərziyyə,,
+B retrofit,add-on layer thickness L,0.003,m,fərziyyə,,
+B retrofit,add-on layer diffuse (hemispherical) transmittance,0.84,-,fərziyyə,,"birbaşa işıqdan ayrıca; diapazon 0,78…0,90"
+B retrofit,beam light redirected from inactive area onto cells,0.3,-,fərziyyə,,"hüceyrələr arası boşluğa düşən birbaşa işığın hüceyrəyə yönələn payı; 0…0,7"
+B retrofit,diffuse light redirected from inactive area onto cells,0.1,-,fərziyyə,,"0…0,3"
+B retrofit,series-mismatch loss from non-uniform illumination,0.02,-,fərziyyə,,"ilk versiyada sabit pay; hüceyrə işıq xəritəsi olduqda ayrıca modelləşdirilməlidir; 0…0,06"
+B retrofit,extra cell heating from add-on layer,2.0,K per 1000 W/m² POA,fərziyyə,,ön səthin istilik izolyasiyası və udma; 0…5
+B retrofit,auxiliary consumption,0.0,W,fərziyyə,,passiv qat
+C CPV,total lens aperture area,1.9981079999999998,m²,texniki pasport,"Trina Solar, Vertex S+ TSM-NEG9R.28 datasheet, versiya TSM_EN_2023_B (MEA) — https://pages.trinasolar.com/rs/567-KJK-096/images/NEG9R.28_EN_2023_MEA%20region.pdf",A ilə eyni xarici işıqtoplama sahəsi (modul ölçüsündən)
+C CPV,aperture area per lens,0.01,m²,fərziyyə,,10 × 10 cm linza
+C CPV,cell area per lens,0.0001,m²,fərziyyə,,1 × 1 cm fotoelement
+C CPV,lens optical transmittance,0.85,-,fərziyyə,,"diapazon 0,75…0,92"
+C CPV,focus intercept factor (share of focused light on cell),0.95,-,fərziyyə,,"izləmə xətası və aberrasiya daxil; 0,88…0,99"
+C CPV,cell efficiency at 25 °C (vs. optical power on cell),0.3,-,fərziyyə,,"kommersiya məhsulu deyil; 0,25…0,38. Səmərəliliyin intensivlikdən asılılığı ilk versiyada yoxdur"
+C CPV,relative temp. coefficient of cell efficiency,-0.0015,1/°C,fərziyyə,,"silikon modeli tətbiq olunmur; −0,30…−0,05%/°C"
+C CPV,thermal resistance cell→ambient per lens unit,4.0,K/W,fərziyyə,,"passiv radiator; 1,5…8"
+C CPV,fan consumption (daytime),0.0,W,fərziyyə,,passiv soyutma; 0…2
+C CPV,electric contribution of diffuse light,0.0,-,fərziyyə,,ilk CPV modelində səpələnmiş işıqdan elektrik töhfəsi SIFIR qəbul edilir
+C CPV,geometric concentration C = A_aperture/A_cell,100.0,-,fərziyyə,,yalnız fotoelementdəki W/m² intensivlik üçün; ümumi optik gücə vurulmur
+izləmə,2-axis tracker drive consumption (daytime),4.0,W,fərziyyə,,bir modul ölçülü qurğu üçün; 1…8
+izləmə,controller consumption (24 h),0.5,W,fərziyyə,,"0,2…1,5"
+izləmə,tracking geometry,"ideal 2-axis, no limits, no row shading",-,fərziyyə,,AOI ≈ 0 günəş üfüqdən yuxarı olanda
+yer,elevation,22.0,m,meteoroloji məlumat,PVGIS metadata,
+meteo,irradiance time offset vs. timestamp,0.1672,h,meteoroloji məlumat,PVGIS metadata,Günəş mövqeyi bu qədər sürüşdürülmüş vaxtda hesablanır
+meteo,radiation database,PVGIS-SARAH3,-,meteoroloji məlumat,PVGIS metadata,
+meteo,meteo database,ERA5,-,meteoroloji məlumat,PVGIS metadata,
+meteo,source years,2005–2023,-,meteoroloji məlumat,PVGIS metadata,
+meteo,horizon,"use_horizon=True, DEM-calculated",-,meteoroloji məlumat,PVGIS metadata,
+meteo,data label,PVGIS TMY (yerli keş),-,meteoroloji məlumat,load_tmy(),

@@ -1,0 +1,14 @@
+﻿yoxlama,gözlənilən,alınan,vahid,nəticə,qeyd
+A: STC gücü,450.0,450.0,W,KEÇDİ,
+NOCT: SAPM hüceyrə temperaturu,43.0 ± 2 (pasport),45.86,°C,MÜQAYİSƏ,külək 1 m/s
+NOCT: güc (SAPM temperaturu ilə),343.0,337.5,W,MÜQAYİSƏ,fərq -1.6%
+NOCT: güc (pasportdakı 43 °C ilə),343.0,340.6,W,MÜQAYİSƏ,fərq -0.7%
+"B (optika söndürülüb, qızma=0, sərf=0) = A, bütün il",0.0,0.0,W (maks. |fərq|),KEÇDİ,
+"C: P_hüceyrə,opt ≤ P_apertura (baza)",0,0.0,pozulan saat sayı,KEÇDİ,
+"C: P_el ≤ P_hüceyrə,opt (baza)",0,0.0,pozulan saat sayı,KEÇDİ,
+"C: P_hüceyrə,opt ≤ P_apertura (τ=1, f=1)",0,0.0,pozulan saat sayı,KEÇDİ,
+"C: P_el ≤ P_hüceyrə,opt (τ=1, f=1)",0,0.0,pozulan saat sayı,KEÇDİ,
+C: DNI=0 olan sintetik il → P_el,0.0,0.0,W,KEÇDİ,
+C: TMY-də DNI=0 olan saatlarda P_el,0.0,0.0,W,KEÇDİ,5553 saat
+"Nəzarət: adi panel 22,5%, 1 m²",225.0,225.0,W,KEÇDİ,"IAM=1, temperatur itkisi=0, sərf=0"
+"Nəzarət: CPV τ=85%, η=30%, 1 m²",204.0,204.0,W,KEÇDİ,səpələnmiş 200 W/m² CPV-də elektrik vermir

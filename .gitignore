@@ -1,0 +1,16 @@
+# Python / Jupyter
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Manufacturer datasheet: copyrighted, not redistributed. Link and version are in README.md / parameters.csv.
+sources/*.pdf
+
+# local tooling
+.claude/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
