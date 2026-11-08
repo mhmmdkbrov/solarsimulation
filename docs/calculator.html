@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="az">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;font:14px system-ui,-apple-system,"Segoe UI",sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Linza Enerji Kalkulyatoru</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;800&family=Noto+Sans+Mono:wght@500&display=swap">
+<style>
+/* Layout: inputs on the left, the original result and the corrected comparison side by side, then the error list and the year. */
+:root {
+  --bg: #f2f6f9; --surface: #ffffff; --surface-2: #eef3f7; --ink: #142231; --ink-2: #485868; --muted: #778594; --line: #d9e1e8;
+  --accent: #1d5fb8; --accent-ink: #ffffff; --good: #128a5e; --bad: #c2412b; --good-bg: #e2f5ec; --bad-bg: #fbe7e2;
+  --warn-bg: #fff4dc; --warn-ink: #6b4a00; --orig: #8e9aa6; --lens: #6250d6; --plain: #2a78d6;
+  --c-elec: #1baf7a; --c-heat: #eb6834; --c-loss: #eda100;
+  --font: "Noto Sans", system-ui, -apple-system, "Segoe UI", sans-serif; --mono: "Noto Sans Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0e151c; --surface: #16202a; --surface-2: #1c2834; --ink: #e5edf4; --ink-2: #aebccb; --muted: #7f8d9b; --line: #2a3846;
+  --accent: #5b9be8; --accent-ink: #08172a; --good: #4cc795; --bad: #ef7a63; --good-bg: #123327; --bad-bg: #3a1c16;
+  --warn-bg: #3a2d0c; --warn-ink: #f1d48f; --lens: #9085e9; --plain: #3987e5; --c-elec: #199e70; --c-heat: #d95926; --c-loss: #c98500; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0e151c; --surface: #16202a; --surface-2: #1c2834; --ink: #e5edf4; --ink-2: #aebccb; --muted: #7f8d9b; --line: #2a3846;
+  --accent: #5b9be8; --accent-ink: #08172a; --good: #4cc795; --bad: #ef7a63; --good-bg: #123327; --bad-bg: #3a1c16;
+  --warn-bg: #3a2d0c; --warn-ink: #f1d48f; --lens: #9085e9; --plain: #3987e5; --c-elec: #199e70; --c-heat: #d95926; --c-loss: #c98500; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-block: 24px 56px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 18px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(1.8rem, 4vw, 2.5rem); font-weight: 800; line-height: 1.1; }
+h2 { font-size: 1.2rem; font-weight: 800; }
+h3 { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-2); }
+p { margin: 0; } a { color: var(--accent); }
+.nav { display: flex; gap: 14px; flex-wrap: wrap; font-size: 0.9rem; }
+.lead { color: var(--ink-2); max-width: 78ch; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.layout { display: grid; grid-template-columns: 330px minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 900px) { .layout { grid-template-columns: minmax(0, 1fr); } }
+.inputs { display: grid; gap: 10px; }
+.field { display: grid; grid-template-columns: minmax(0, 1fr) 110px; gap: 8px; align-items: center; font-size: 0.88rem; }
+.field input, .field select { font: inherit; font-family: var(--mono); font-size: 0.9rem; padding: 4px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2); color: var(--ink); width: 100%; }
+.field input:focus-visible, .field select:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.grp { border-top: 1px solid var(--line); padding-top: 8px; display: grid; gap: 8px; }
+.added { background: var(--warn-bg); color: var(--warn-ink); border-radius: 8px; padding: 8px; display: grid; gap: 8px; }
+.btn { font: inherit; font-size: 0.85rem; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); border-radius: 6px; padding: 5px 10px; cursor: pointer; }
+.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+@media (max-width: 760px) { .two { grid-template-columns: minmax(0, 1fr); } }
+.box { border-radius: 12px; padding: 14px; display: grid; gap: 8px; }
+.box.orig { background: var(--surface-2); border: 1px dashed var(--orig); }
+.box.corr { background: var(--surface); border: 2px solid var(--accent); }
+.kv { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 12px; font-size: 0.88rem; font-variant-numeric: tabular-nums; }
+.kv b { font-family: var(--mono); font-weight: 500; text-align: right; white-space: nowrap; }
+.big { font-family: var(--mono); font-size: 2rem; font-weight: 500; line-height: 1.05; }
+.good { color: var(--good); } .bad { color: var(--bad); }
+.errors { display: grid; gap: 10px; margin: 0; padding-left: 22px; }
+.errors li { line-height: 1.5; }
+.errors b.num { font-family: var(--mono); font-weight: 500; }
+.bar { display: flex; height: 24px; border-radius: 6px; overflow: hidden; gap: 1px; background: var(--surface-2); }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 0.82rem; color: var(--ink-2); }
+.legend i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; margin-right: 5px; vertical-align: -1px; }
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 0.88rem; font-variant-numeric: tabular-nums; }
+th, td { padding: 7px 9px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; white-space: normal; }
+th { font-size: 0.76rem; color: var(--ink-2); font-weight: 600; }
+.hint { font-size: 0.8rem; color: var(--muted); }
+.ds { display: grid; gap: 6px; }
+.ds-row { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+.ds-lbl { font-size: 0.8rem; font-weight: 600; color: var(--ink-2); }
+.ds-select { font: inherit; padding: 5px 8px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); max-width: 100%; }
+.ds-file { font-size: 0.82rem; color: var(--accent); cursor: pointer; } .ds-file input { display: block; font-size: 0.8rem; max-width: 260px; }
+.ds-msg { font-size: 0.82rem; color: var(--ink-2); }
+footer { font-size: 0.82rem; color: var(--ink-2); display: grid; gap: 6px; max-width: 95ch; }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header style="display:grid; gap:10px">
+    <nav class="nav"><a href="index.html">Sadə izah</a><a href="lab.html">Linza laboratoriyası</a><a href="simulator.html">Ətraflı simulyator</a></nav>
+    <h1>Linza enerji kalkulyatoru: orijinal hesab və düzgün müqayisə</h1>
+    <p class="lead">Paylaşılan “Solar Lens Energy Calculator v1.0” (Streamlit kodu) burada dəyişmədən təkrarlanır: solda eyni girişlər, “Orijinal” bölməsində eyni düsturlar. Yanında eyni girişlərlə düzgün müqayisə verilir: eyni işıqtoplama sahəsi, eyni tutduğu sahə, dioptriyanın təsiri, hüceyrəyə düşən istilik və real hava məlumatı ilə illik enerji.</p>
+  </header>
+
+  <div class="layout">
+    <section class="card" aria-label="Girişlər">
+      <div class="inputs" id="inputs"></div>
+      <button class="btn" id="reset" type="button">Orijinal standart dəyərlərə qaytar</button>
+    </section>
+
+    <main style="display:grid; gap:18px; min-width:0">
+      <div class="two">
+        <section class="box orig">
+          <h3>Orijinal kalkulyator (kod olduğu kimi)</h3>
+          <div class="big" id="o-gain"></div>
+          <div class="kv" id="o-kv"></div>
+        </section>
+        <section class="box corr">
+          <h3>Düzgün müqayisə (eyni girişlər)</h3>
+          <div class="big" id="c-gain"></div>
+          <div class="kv" id="c-kv"></div>
+        </section>
+      </div>
+
+      <section class="card">
+        <h2>Səhv harada</h2>
+        <ol class="errors" id="errors"></ol>
+      </section>
+
+      <section class="card">
+        <h2>Eyni anda işığın balansı</h2>
+        <div class="bar" id="bal"></div>
+        <div class="legend" id="bal-leg"></div>
+        <p class="hint">Linzalara düşən işıq üç hissəyə ayrılır: optik itki (əks olunma, udulma, hədəfdən yayınma), hüceyrədə istiyə çevrilən hissə və elektrik. Kod yalnız birinci hissəni “unconverted optical/thermal” adlandırır. Hüceyrədəki istilik orada yoxdur.</p>
+      </section>
+
+      <section class="card">
+        <h2>Dioptriya nəyi dəyişir</h2>
+        <div class="tablewrap" id="diop"></div>
+        <p class="hint">Orijinal kodda fokus məsafəsi və ləkənin ölçüsü yalnız göstərilir, enerji hesabına daxil olmur. Ona görə istənilən dioptriyada nəticə eynidir. Əslində dioptriya işığın hüceyrəyə necə düşdüyünü dəyişir. Cədvəldə ləkə panel müstəvisində, linzadan h məsafədə hesablanır (nazik linza + Günəş diski).</p>
+      </section>
+
+      <section class="card">
+        <h2>Real hava məlumatı ilə illik enerji (eyni işıqtoplama sahəsi)</h2>
+        <div class="ds" id="ds"></div>
+        <div class="tablewrap" id="annual"></div>
+        <p class="hint" id="annual-note"></p>
+      </section>
+
+      <footer>
+        <p>Bu səhifə sadə enerji balansıdır. IAM, hüceyrə temperaturu və ardıcıl qoşulma burada ayrıca modelləşdirilmir. Həndəsi linza modeli (sonlu panel, işıq balansı, I–V) <a href="lab.html">linza laboratoriyasında</a>, tam illik model isə <a href="simulator.html">ətraflı simulyatordadır</a>.</p>
+        <p>Mənbə kodu: <a href="https://github.com/mhmmdkbrov/solarsimulation" target="_blank" rel="noopener">github.com/mhmmdkbrov/solarsimulation</a> (MIT). Hesab: <span style="font-family:var(--mono)">simulator/calculator.js</span> = <span style="font-family:var(--mono)">solarsim/calculator.py</span> (paritet testi).</p>
+      </footer>
+    </main>
+  </div>
+</div>
+
+<script>
+// Dataset selection shared by the three pages. Datasets are static JSON files built by `python -m solarsim.build`
+// (PVGIS does not allow browser calls: PVGIS 5.x forbids AJAX, PVGIS 6 has a strict CORS policy). A dataset for any
+// coordinate can be made with `python -m solarsim.cli dataset ...` and opened here from a local file.
+const DataStore = (() => {
+  const LAST_OK_KEY = "solarsim-last-ok-dataset";
+  const REQUIRED = ["version", "dataset", "site", "inputs", "areas", "annual", "hourly"];
+
+  function validate(D) {
+    const miss = REQUIRED.filter(k => !(k in D));
+    if (miss.length) throw new Error(`fayl tam deyil: ${miss.join(", ")} yoxdur`);
+    if (!D.hourly.n || D.hourly.ghi.length !== D.hourly.n) throw new Error("saatlıq məlumatın uzunluğu uyğun gəlmir");
+    if (!D.version.model || !String(D.version.model).startsWith("2.")) throw new Error(`model versiyası ${D.version.model} dəstəklənmir (2.x lazımdır)`);
+    return D;
+  }
+
+  async function fetchJSON(url) {
+    const r = await fetch(url, { cache: "no-cache" });
+    if (!r.ok) throw new Error(`${url}: HTTP ${r.status}`);
+    return r.json();
+  }
+
+  // Renders the selector into `host`, calls onLoading() immediately when the choice changes (pages must clear old
+  // results there) and onLoad(D) / onError(msg, retry) afterwards.
+  async function mount(host, { onLoading, onLoad, onError, initial }) {
+    host.innerHTML = `<div class="ds-row">
+        <label class="ds-lbl" for="ds-select">Məkan və məlumat dəsti</label>
+        <select id="ds-select" class="ds-select"><option>yüklənir…</option></select>
+        <label class="ds-file">Öz məlumat dəstini aç (JSON)<input type="file" id="ds-file" accept=".json,application/json"></label>
+      </div>
+      <p class="ds-msg" id="ds-msg" role="status"></p>`;
+    const sel = host.querySelector("#ds-select"), msg = host.querySelector("#ds-msg"), file = host.querySelector("#ds-file");
+    let index = [];
+    try { index = (await fetchJSON("data/index.json")).datasets; }
+    catch (e) { msg.textContent = `Məlumat siyahısı yüklənmədi: ${e.message}`; }
+    const label = d => `${d.name} — ${d.api_version.startsWith("6") ? "PVGIS 6 TMY (beta)" : "PVGIS 5.3 TMY"}`;
+    sel.innerHTML = index.map(d => `<option value="${d.id}">${label(d)}</option>`).join("") + `<option value="__file" disabled>yerli fayl</option>`;
+    let lastOk = null;
+    try { lastOk = localStorage.getItem(LAST_OK_KEY); } catch (e) {}
+    const want = initial || (location.hash.length > 1 ? location.hash.slice(1) : null) || lastOk || (index[0] && index[0].id);
+    if (want && index.some(d => d.id === want)) sel.value = want;
+
+    async function load(id) {
+      const d = index.find(x => x.id === id);
+      if (!d) return;
+      onLoading(label(d));
+      msg.textContent = `${label(d)} yüklənir…`;
+      try {
+        const D = validate(await fetchJSON(d.file));
+        msg.textContent = "";
+        try { localStorage.setItem(LAST_OK_KEY, id); } catch (e) {}
+        if (location.hash.slice(1) !== id) history.replaceState(null, "", `#${id}`);
+        onLoad(D);
+      } catch (e) {
+        const fallback = lastOk && lastOk !== id && index.some(x => x.id === lastOk) ? lastOk : null;
+        msg.innerHTML = `<b>Məlumat gəlmədi:</b> ${e.message}.` + (fallback
+          ? ` <button type="button" class="ds-fallback">Son yoxlanmış dəsti aç: ${label(index.find(x => x.id === fallback))}</button>` : "");
+        const b = msg.querySelector(".ds-fallback");
+        if (b) b.addEventListener("click", () => { sel.value = fallback; load(fallback); });
+        onError(e.message);
+      }
+    }
+    sel.addEventListener("change", () => load(sel.value));
+    file.addEventListener("change", async () => {
+      const f = file.files && file.files[0];
+      if (!f) return;
+      onLoading(f.name);
+      try {
+        const D = validate(JSON.parse(await f.text()));
+        D.dataset.label = `${D.dataset.label || f.name} (yerli fayl: ${f.name})`;
+        sel.value = "__file";
+        msg.textContent = `Yerli fayl açıldı: ${f.name}`;
+        onLoad(D);
+      } catch (e) {
+        msg.innerHTML = `<b>Fayl oxunmadı:</b> ${e.message}. Faylı <code>python -m solarsim.cli dataset</code> ilə yaradın.`;
+        onError(e.message);
+      }
+    });
+    if (sel.value && sel.value !== "__file") await load(sel.value);
+    return { reload: () => load(sel.value) };
+  }
+
+  // short provenance line for page headers
+  function provenance(D) {
+    const m = D.dataset, s = D.site;
+    const yrs = m.years ? `${m.years[0]}–${m.years[1]}` : "";
+    return `${s.name} (${fmt(s.latitude, 4)}° N, ${fmt(s.longitude, 4)}° E, ${fmt(s.elevation_m ?? 0, 0)} m) · ` +
+           `${m.api ? `PVGIS ${m.api_version.split(" ")[0]}` : m.source_label} ${m.kind === "TMY" ? "TMY" : m.kind} ${yrs} · ` +
+           `${m.radiation_db || ""} · addım ${fmt(D.hourly.step_h, 2)} saat · model v${D.version.model}`;
+  }
+  function fmt(v, d) {
+    if (!isFinite(v)) return "—";
+    const s = Math.abs(v).toFixed(d), [i, f] = s.split(".");
+    return (v < 0 && Number(s) !== 0 ? "−" : "") + i.replace(/\B(?=(\d{3})+(?!\d))/g, " ") + (f ? "," + f : "");
+  }
+  // up to `max` decimals, trailing zeros removed (keeps 1,526 as 1,526 and 450 as 450)
+  function fmtSmart(v, max = 4) {
+    const s = fmt(v, max);
+    return s.includes(",") ? s.replace(/,?0+$/, "") : s;
+  }
+  // parameter values of any type (numbers, ranges, booleans, text) in Azerbaijani notation
+  function fmtValue(v) {
+    if (v === null || v === undefined) return "məkan seçimi";
+    if (typeof v === "boolean") return v ? "bəli" : "xeyr";
+    if (typeof v === "number") return fmtSmart(v);
+    if (Array.isArray(v)) return v.map(fmtValue).join(" … ");
+    return String(v);
+  }
+  // dataset labels come from Python with decimal points in coordinates: convert those (not version numbers)
+  const label = D => String(D.dataset.label || "").replace(/(\d+)\.(\d+)°/g, "$1,$2°").replace(/(^|[\s(,])-(\d)/g, "$1−$2");
+  return { mount, validate, provenance, fmt, fmtSmart, fmtValue, label };
+})();
+if (typeof module !== "undefined") module.exports = DataStore;
+
+</script>
+<script>
+// Lens energy calculator: the original Streamlit formulas ("Solar Lens Energy Calculator v1.0", shared ChatGPT code),
+// reproduced exactly, and a corrected comparison. Pure functions, no DOM; mirrored in solarsim/calculator.py.
+const LensCalc = (() => {
+  const SUN_ANG = 0.0093;              // rad, angular diameter of the sun (same constant as the original code)
+
+  const DEFAULTS = {
+    diopter: 5.0, diameter_cm: 20.0, lens_count: 72, transmission: 0.95, optical_efficiency: 0.90,
+    receiver_area: 1.5, pv_efficiency: 0.20, irradiance: 1000, sun_hours: 5.0, thermal_derating: 0.05,
+    electricity_price: 0.10,
+    // inputs added for the corrected comparison
+    h_cm: null,                        // lens → cell distance; null = at the focal length (what the original implies)
+    packing: "square",                 // footprint of round lenses: "square" or "hex"
+  };
+
+  // Exact port of the original calculation (same names, same order, same formulas).
+  function original(p) {
+    const focal_length_m = 1 / p.diopter, focal_length_cm = focal_length_m * 100;
+    const diameter_m = p.diameter_cm / 100;
+    const single_lens_area = Math.PI * (diameter_m / 2) ** 2;
+    const total_aperture = single_lens_area * p.lens_count;
+    const concentration = total_aperture / p.receiver_area;
+    const focal_spot_mm = focal_length_m * SUN_ANG * 1000;
+    const incident_power = p.irradiance * total_aperture;
+    const transmitted_power = incident_power * p.transmission;
+    const receiver_optical_power = transmitted_power * p.optical_efficiency;
+    const raw_electrical_power = receiver_optical_power * p.pv_efficiency;
+    const lens_output_w = raw_electrical_power * (1 - p.thermal_derating);
+    const baseline_output_w = p.irradiance * p.receiver_area * p.pv_efficiency;
+    const baseline_daily_kwh = baseline_output_w * p.sun_hours / 1000, lens_daily_kwh = lens_output_w * p.sun_hours / 1000;
+    const baseline_annual_kwh = baseline_daily_kwh * 365, lens_annual_kwh = lens_daily_kwh * 365;
+    const gain_percent = baseline_output_w > 0 ? (lens_output_w / baseline_output_w - 1) * 100 : 0;
+    const unconverted_power = incident_power - receiver_optical_power;
+    const receiver_power_density = receiver_optical_power / p.receiver_area;
+    const baseline_value = baseline_annual_kwh * p.electricity_price, lens_value = lens_annual_kwh * p.electricity_price;
+    return { focal_length_m, focal_length_cm, single_lens_area, total_aperture, concentration, focal_spot_mm, incident_power,
+             transmitted_power, receiver_optical_power, raw_electrical_power, lens_output_w, baseline_output_w,
+             baseline_daily_kwh, lens_daily_kwh, baseline_annual_kwh, lens_annual_kwh, gain_percent, unconverted_power,
+             receiver_power_density, baseline_value, lens_value, additional_value: lens_value - baseline_value };
+  }
+
+  // Corrected comparison. H (optional): annual irradiation of a dataset in kWh/m² —
+  // { beam_2axis: Σ DNI·cos(AOI) on a 2-axis tracker, glob_fixed: Σ POA global fixed, glob_2axis: Σ POA global tracked }.
+  function corrected(p, H) {
+    const o = original(p);
+    const f = o.focal_length_m, d = p.diameter_cm / 100, A = o.total_aperture, a1 = o.single_lens_area;
+    const h = (p.h_cm == null ? f * 100 : p.h_cm) / 100;
+    // footprint occupied by N round lenses (they cannot tile a plane without gaps)
+    const footprint = p.packing === "hex" ? p.lens_count * d * d * Math.sqrt(3) / 2 : p.lens_count * d * d;
+    // the diopter only sets where the light goes: spot size on the cell plane at distance h (thin lens + sun disk)
+    const spot_m = d * Math.abs(1 - h / f) + h * SUN_ANG;
+    const spot_area = Math.PI * (spot_m / 2) ** 2;
+    const local_suns = (a1 / spot_area) * p.transmission * p.optical_efficiency;     // intensity in the spot / 1 sun
+    const lit_share = Math.min(1, p.lens_count * spot_area / p.receiver_area);
+    // energy bookkeeping at the original's irradiance (everything after the lens counted once)
+    const G = p.irradiance, eta = p.pv_efficiency;
+    const optical_loss_w = o.incident_power - o.receiver_optical_power;
+    const heat_in_receiver_w = o.receiver_optical_power - o.lens_output_w;
+    const not_converted_w = o.incident_power - o.lens_output_w;
+    // same-area references (plain panels, same cell efficiency, no lens)
+    const plain_same_receiver_w = o.baseline_output_w;
+    const plain_same_aperture_w = G * A * eta;
+    const plain_same_footprint_w = G * footprint * eta;
+    const out = {
+      original: o, h_m: h, footprint_m2: footprint, spot_mm: spot_m * 1000, local_suns, lit_share,
+      optical_loss_w, heat_in_receiver_w, not_converted_w, heat_in_receiver_w_m2: heat_in_receiver_w / p.receiver_area,
+      lens_w: o.lens_output_w, plain_same_receiver_w, plain_same_aperture_w, plain_same_footprint_w,
+      vs_receiver_pct: 100 * (o.lens_output_w / plain_same_receiver_w - 1),
+      vs_aperture_pct: 100 * (o.lens_output_w / plain_same_aperture_w - 1),
+      vs_footprint_pct: 100 * (o.lens_output_w / plain_same_footprint_w - 1),
+      eff_per_aperture: o.lens_output_w / (G * A), eff_plain: eta,
+    };
+    if (H) {
+      // annual energy with real weather: the lens focuses only direct light and must track the sun;
+      // plain panels use all light (simple energy balance for both: no IAM, no temperature model)
+      const k = p.transmission * p.optical_efficiency * eta * (1 - p.thermal_derating);
+      out.annual = {
+        lens_2axis_kwh: H.beam_2axis * A * k,
+        plain_fixed_same_aperture_kwh: H.glob_fixed * A * eta,
+        plain_2axis_same_aperture_kwh: H.glob_2axis * A * eta,
+        original_lens_kwh: o.lens_annual_kwh, original_baseline_kwh: o.baseline_annual_kwh,
+        psh_irradiation_kwh_m2: G * p.sun_hours * 365 / 1000, H,
+      };
+    }
+    return out;
+  }
+
+  function irradiationFromDataset(D) {
+    const h = D.hourly, s = a => a.reduce((x, v) => x + v, 0) * h.step_h / 1000;
+    return { beam_2axis: s(h.t_dnicos), glob_fixed: s(h.f_glob), glob_2axis: s(h.t_glob) };
+  }
+
+  return { DEFAULTS, original, corrected, irradiationFromDataset, SUN_ANG };
+})();
+if (typeof module !== "undefined") module.exports = LensCalc;
+
+</script>
+<script>
+(() => {
+  const C = LensCalc, $ = id => document.getElementById(id), nf = (v, d = 0) => DataStore.fmt(v, d);
+  const pct = (v, d = 1) => `${v >= 0 ? "+" : "−"}${nf(Math.abs(v), d)}%`;
+  const FIELDS = [
+    ["Optika (orijinal)", null],
+    ["diopter", "Linzanın gücü, dioptriya", 0.1, 100, 0.5, 1],
+    ["diameter_cm", "Linzanın diametri, sm", 1, 200, 1, 1],
+    ["lens_count", "Linzaların sayı", 1, 10000, 1, 0],
+    ["transmission", "Linzanın ötürməsi, %", 1, 100, 1, 0, 100],
+    ["optical_efficiency", "Optik birləşmə səmərəliliyi, %", 1, 100, 1, 0, 100],
+    ["Panel (orijinal)", null],
+    ["receiver_area", "PV qəbuledicinin sahəsi, m²", 0.001, 100, 0.1, 3],
+    ["pv_efficiency", "Hüceyrənin səmərəliliyi, %", 1, 50, 1, 0, 100],
+    ["irradiance", "Günəş şüalanması, W/m²", 1, 1500, 10, 0],
+    ["sun_hours", "Ekvivalent pik günəş saatı / gün", 0.1, 12, 0.1, 1],
+    ["thermal_derating", "İstilik/elektrik azalması, %", 0, 50, 1, 0, 100],
+    ["electricity_price", "Elektrikin dəyəri, USD/kWh", 0, 10, 0.01, 2],
+    ["Düzgün müqayisə üçün əlavə girişlər", "added"],
+    ["h_cm", "Linza ilə panel arası məsafə, sm (boş = fokus məsafəsi)", 0, 500, 0.5, 1],
+    ["packing", "Dairəvi linzaların düzülüşü", "select"],
+  ];
+  let P = { ...C.DEFAULTS };
+  try { const s = JSON.parse(localStorage.getItem("solarsim-calc") || "null"); if (s) P = { ...P, ...s }; } catch (e) {}
+  let H = null, dsLabel = "";
+
+  // ---------- inputs ----------
+  function buildInputs() {
+    let html = "", open = false;
+    for (const f of FIELDS) {
+      if (f[1] === null || f[1] === "added") {
+        if (open) html += "</div>";
+        html += `<div class="grp${f[1] === "added" ? " added" : ""}"><h3 style="${f[1] === "added" ? "color:inherit" : ""}">${f[0]}</h3>`;
+        open = true; continue;
+      }
+      const [k, label, mn, mx, st, dec, scale] = f;
+      if (mn === "select") html += `<label class="field">${label}<select id="i-${k}"><option value="square">kvadrat tor</option><option value="hex">altıbucaqlı (sıx)</option></select></label>`;
+      else html += `<label class="field">${label}<input id="i-${k}" type="number" min="${mn}" max="${mx}" step="${st}" data-scale="${scale || 1}"></label>`;
+    }
+    $("inputs").innerHTML = html + "</div>";
+    sync();
+    $("inputs").addEventListener("input", e => {
+      const t = e.target, k = t.id.slice(2);
+      if (t.tagName === "SELECT") P[k] = t.value;
+      else if (k === "h_cm" && t.value === "") P.h_cm = null;
+      else { const v = parseFloat(t.value); if (!isFinite(v)) return; P[k] = v / parseFloat(t.dataset.scale); }
+      render();
+    });
+  }
+  function sync() {
+    for (const f of FIELDS) {
+      if (f[1] === null || f[1] === "added") continue;
+      const el = $("i-" + f[0]), sc = f[6] || 1;
+      if (el.tagName === "SELECT") el.value = P[f[0]];
+      else el.value = P[f[0]] == null ? "" : +(P[f[0]] * sc).toFixed(6);
+    }
+  }
+  $("reset").addEventListener("click", () => { P = { ...C.DEFAULTS }; sync(); render(); });
+
+  // ---------- render ----------
+  function render() {
+    try { localStorage.setItem("solarsim-calc", JSON.stringify(P)); } catch (e) {}
+    if (!(P.diopter > 0) || !(P.receiver_area > 0) || !(P.lens_count >= 1)) return;
+    const r = C.corrected(P, H), o = r.original;
+    $("o-gain").innerHTML = `<span class="${o.gain_percent >= 0 ? "good" : "bad"}">${pct(o.gain_percent)}</span>`;
+    $("o-kv").innerHTML = [
+      ["Fokus məsafəsi", `${nf(o.focal_length_cm, 2)} sm`], ["Linzaların ümumi aperturası", `${nf(o.total_aperture, 3)} m²`],
+      ["Konsentrasiya (apertura / qəbuledici)", `${nf(o.concentration, 2)}×`], ["İdeal fokus ləkəsi", `${nf(o.focal_spot_mm, 2)} mm`],
+      ["Adi panel (qəbuledici sahəsi ilə)", `${nf(o.baseline_output_w, 2)} W`], ["Linza sistemi", `${nf(o.lens_output_w, 2)} W`],
+      ["Gündəlik: adi / linza", `${nf(o.baseline_daily_kwh, 3)} / ${nf(o.lens_daily_kwh, 3)} kWh`],
+      ["İllik: adi / linza", `${nf(o.baseline_annual_kwh, 1)} / ${nf(o.lens_annual_kwh, 1)} kWh`],
+      ["“Çevrilməmiş” güc (kodda)", `${nf(o.unconverted_power, 1)} W`], ["Əlavə illik dəyər", `${nf(o.additional_value, 2)} USD`],
+    ].map(([k, v]) => `<span>${k}</span><b>${v}</b>`).join("");
+    $("c-gain").innerHTML = `<span class="${r.vs_aperture_pct >= 0 ? "good" : "bad"}">${pct(r.vs_aperture_pct)}</span> <span style="font-size:0.9rem;font-family:var(--font)">eyni apertura ilə</span>`;
+    $("c-kv").innerHTML = [
+      ["Linza sistemi", `${nf(r.lens_w, 1)} W`],
+      [`Adi panel, eyni apertura (${nf(o.total_aperture, 3)} m²)`, `${nf(r.plain_same_aperture_w, 1)} W`],
+      [`Adi panel, eyni tutduğu sahə (${nf(r.footprint_m2, 3)} m²)`, `${nf(r.plain_same_footprint_w, 1)} W · ${pct(r.vs_footprint_pct)}`],
+      ["Apertura üzrə səmərəlilik: linza / adi", `${nf(r.eff_per_aperture * 100, 1)}% / ${nf(r.eff_plain * 100, 1)}%`],
+      ["Hüceyrədə istiyə çevrilən güc", `${nf(r.heat_in_receiver_w, 0)} W (${nf(r.heat_in_receiver_w_m2, 0)} W/m²)`],
+      [`Ləkə (h = ${nf(r.h_m * 100, 1)} sm)`, `${nf(r.spot_mm, r.spot_mm < 10 ? 2 : 0)} mm, ~${nf(r.local_suns, r.local_suns < 10 ? 1 : 0)} günəş`],
+      ["Panelin işıqlanan payı", `${nf(r.lit_share * 100, r.lit_share < 0.01 ? 3 : 1)}%`],
+    ].map(([k, v]) => `<span>${k}</span><b>${v}</b>`).join("");
+
+    const e = [];
+    e.push(`<b>Müqayisə fərqli sahələr arasında aparılır.</b> Linzaların ümumi aperturası <b class="num">${nf(o.total_aperture, 3)} m²</b>, adi panel isə <b class="num">${nf(P.receiver_area, 3)} m²</b> sahə ilə hesablanır. ${pct(o.gain_percent)} “qazanc” linzanın təsiri deyil: ${nf((o.total_aperture / P.receiver_area - 1) * 100, 0)}% artıq işıqtoplama sahəsindən gəlir. Eyni aperturada adi panel ${nf(r.plain_same_aperture_w, 1)} W verir, linza sistemi isə ${nf(r.lens_w, 1)} W (<b class="num">${pct(r.vs_aperture_pct)}</b>). Optika itkisiz olsa belə, ən çoxu bərabərlik (0%) alınar.`);
+    e.push(`<b>Dairəvi linzalar səthi tam örtmür.</b> ${nf(P.lens_count)} ədəd ${nf(P.diameter_cm, 1)} sm linza ${P.packing === "hex" ? "sıx (altıbucaqlı)" : "kvadrat"} düzülüşdə <b class="num">${nf(r.footprint_m2, 3)} m²</b> yer tutur. Aperturası isə ${nf(o.total_aperture, 3)} m²-dir. Eyni yerə adi panel qoyulsa, ${nf(r.plain_same_footprint_w, 1)} W alınar (<b class="num">${pct(r.vs_footprint_pct)}</b>).`);
+    e.push(`<b>Dioptriya hesaba daxil deyil.</b> Kodda fokus məsafəsi (${nf(o.focal_length_cm, 1)} sm) və ləkə (${nf(o.focal_spot_mm, 2)} mm) yalnız göstərilir. Enerji yalnız sahədən, ötürmədən və səmərəlilikdən asılıdır, ona görə +1 D və +20 D eyni nəticəni verir. Linza enerji yaratmır, işığın yerini dəyişir.`);
+    e.push(`<b>Fokusda hüceyrə yanar.</b> Panel fokus məsafəsində olsa, hər linza işığı ${nf(r.spot_mm, 2)} mm-lik ləkəyə yığır: təxminən <b class="num">${nf(r.local_suns, 0)}</b> günəş. Panelin yalnız ${nf(r.lit_share * 100, 3)}%-i işıqlanır. Kod isə orta sıxlıq götürür (${nf(o.receiver_power_density, 0)} W/m²), sanki işıq bərabər paylanır. Ardıcıl qoşulmuş hüceyrələrdə qeyri-bərabər işıq gücü azaldır, ləkədə isə qızma silikonu korlayır.`);
+    e.push(`<b>İstilik düzgün göstərilmir.</b> Kod “çevrilməmiş optik/istilik gücü” kimi ${nf(o.unconverted_power, 0)} W göstərir. Bu, yalnız optik itkidir. Hüceyrədə istiyə çevrilən güc <b class="num">${nf(r.heat_in_receiver_w, 0)} W</b>-dır (${nf(r.heat_in_receiver_w_m2, 0)} W/m²). Standart girişlərdə söhbətdəki interaktiv versiya bunu 1 567 W göstərirdi, Python kodu isə 328 W göstərir: iki versiya bir-birinə ziddir. Elektrikə çevrilməyən cəmi güc ${nf(r.not_converted_w, 0)} W-dır.`);
+    e.push(`<b>Temperatur azalması ixtiyaridir və birtərəflidir.</b> Linza sisteminə sabit ${nf(P.thermal_derating * 100, 0)}% azalma tətbiq olunur, adi panelə isə heç bir azalma tətbiq olunmur. Halbuki adi panel də ~1 günəşdə 50–60 °C-yə qızır (−0,3%/°C). Konsentrasiyada isə qızma çoxdur və ölçülməlidir.`);
+    e.push(`<b>Linza yalnız birbaşa işığı yığır və Günəşi izləməlidir.</b> Kod ${nf(P.irradiance)} W/m²-in hamısını fokuslanan işıq sayır. Buludlu və dumanlı havada işığın böyük hissəsi səpələnmiş işıqdır. Bundan əlavə, fokus ləkəsi gün ərzində h·tan(θ) qədər sürüşür: sabit montajda ləkə hüceyrədən çıxır.`);
+    e.push(`<b>İllik enerji pik günəş saatı × 365 ilə hesablanır.</b> ${nf(P.sun_hours, 1)} saat/gün sabit panelin ümumi işığı üçün götürülən göstəricidir. Linza sisteminin aldığı birbaşa işıq üçün uyğun deyil. Real məlumatla hesab aşağıdakı cədvəldədir. İqtisadi hissədə linza, izləmə və soyutma xərcləri yoxdur, əlavə gəlir isə yenə artıq sahədən gəlir.`);
+    $("errors").innerHTML = e.map(x => `<li>${x}</li>`).join("");
+
+    const tot = o.incident_power || 1;
+    const parts = [["optik itki", r.optical_loss_w, "--c-loss"], ["hüceyrədə istilik", r.heat_in_receiver_w, "--c-heat"], ["elektrik", r.lens_w, "--c-elec"]];
+    $("bal").innerHTML = parts.map(([, v, c]) => `<span style="width:${100 * v / tot}%;background:var(${c})"></span>`).join("");
+    $("bal-leg").innerHTML = parts.map(([n, v, c]) => `<span><i style="background:var(${c})"></i>${n}: ${nf(v, 0)} W (${nf(100 * v / tot, 1)}%)</span>`).join("") + `<span>cəm = linzalara düşən ${nf(tot, 0)} W</span>`;
+
+    const rows = [1, 3, 5, 10, 20].map(D => {
+      const q = C.corrected({ ...P, diopter: D, h_cm: P.h_cm });
+      const qf = C.corrected({ ...P, diopter: D, h_cm: null });
+      return `<tr><td>+${D} D</td><td>${nf(100 / D, 1)} sm</td><td>${nf(q.original.lens_output_w, 1)} W</td><td>${nf(qf.spot_mm, 2)} mm · ~${nf(qf.local_suns, 0)} günəş</td><td>${P.h_cm == null ? "—" : `${nf(q.spot_mm, q.spot_mm < 10 ? 2 : 0)} mm · ~${nf(q.local_suns, q.local_suns < 10 ? 1 : 0)} günəş`}</td></tr>`;
+    }).join("");
+    $("diop").innerHTML = `<table><thead><tr><th>Linza</th><th>fokus</th><th>orijinal kodda linza gücü</th><th>panel fokusda: ləkə, intensivlik</th><th>panel h = ${P.h_cm == null ? "—" : nf(P.h_cm, 1) + " sm"} məsafədə</th></tr></thead><tbody>${rows}</tbody></table>`;
+
+    if (r.annual) {
+      const a = r.annual, ap = o.total_aperture;
+      $("annual").innerHTML = `<table><thead><tr><th>Variant (hamısı ${nf(ap, 3)} m² işıqtoplama sahəsi)</th><th>illik, kWh</th><th>kWh/m²</th><th>linzaya nisbət</th></tr></thead><tbody>
+        <tr><td>Linza sistemi: 2 oxlu izləmə, yalnız birbaşa işıq (${nf(a.H.beam_2axis, 0)} kWh/m²)</td><td>${nf(a.lens_2axis_kwh, 0)}</td><td>${nf(a.lens_2axis_kwh / ap, 1)}</td><td>—</td></tr>
+        <tr><td>Adi panel, sabit (${nf(a.H.glob_fixed, 0)} kWh/m² panel müstəvisində)</td><td>${nf(a.plain_fixed_same_aperture_kwh, 0)}</td><td>${nf(a.plain_fixed_same_aperture_kwh / ap, 1)}</td><td>${pct((a.lens_2axis_kwh / a.plain_fixed_same_aperture_kwh - 1) * 100)}</td></tr>
+        <tr><td>Adi panel, eyni 2 oxlu izləmə (${nf(a.H.glob_2axis, 0)} kWh/m²)</td><td>${nf(a.plain_2axis_same_aperture_kwh, 0)}</td><td>${nf(a.plain_2axis_same_aperture_kwh / ap, 1)}</td><td>${pct((a.lens_2axis_kwh / a.plain_2axis_same_aperture_kwh - 1) * 100)}</td></tr>
+        <tr><td>Orijinal kod: linza (${nf(P.sun_hours, 1)} pik saat × 365 = ${nf(a.psh_irradiation_kwh_m2, 0)} kWh/m², hamısı fokuslanır)</td><td>${nf(a.original_lens_kwh, 0)}</td><td>${nf(a.original_lens_kwh / ap, 1)}</td><td></td></tr>
+        <tr><td>Orijinal kod: adi panel (${nf(P.receiver_area, 3)} m²)</td><td>${nf(a.original_baseline_kwh, 0)}</td><td>${nf(a.original_baseline_kwh / P.receiver_area, 1)}</td><td></td></tr></tbody></table>`;
+      $("annual-note").textContent = `Məlumat: ${dsLabel}. Hər üç real variantda eyni sadə balans işlədilir (ötürmə, birləşmə, hüceyrə səmərəliliyi, azalma; IAM və temperatur yoxdur). Ona görə fərq yalnız işıq növündən və montajdan gəlir. Optik itki ölçüləri pasportdan deyil, girişlərdən götürülür.`;
+    }
+  }
+
+  buildInputs(); render();
+  DataStore.mount($("ds"), {
+    onLoading: () => { H = null; $("annual").innerHTML = ""; $("annual-note").textContent = "yüklənir…"; },
+    onLoad: D => { H = C.irradiationFromDataset(D); dsLabel = DataStore.label(D); render(); },
+    onError: msg => { $("annual-note").textContent = `Məlumat yoxdur: ${msg}`; },
+  });
+})();
+</script>
+
+</body>
+</html>

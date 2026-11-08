@@ -1,0 +1,265 @@
+<title>Linza Enerji Kalkulyatoru</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;800&family=Noto+Sans+Mono:wght@500&display=swap">
+<style>
+/* Layout: inputs on the left, the original result and the corrected comparison side by side, then the error list and the year. */
+:root {
+  --bg: #f2f6f9; --surface: #ffffff; --surface-2: #eef3f7; --ink: #142231; --ink-2: #485868; --muted: #778594; --line: #d9e1e8;
+  --accent: #1d5fb8; --accent-ink: #ffffff; --good: #128a5e; --bad: #c2412b; --good-bg: #e2f5ec; --bad-bg: #fbe7e2;
+  --warn-bg: #fff4dc; --warn-ink: #6b4a00; --orig: #8e9aa6; --lens: #6250d6; --plain: #2a78d6;
+  --c-elec: #1baf7a; --c-heat: #eb6834; --c-loss: #eda100;
+  --font: "Noto Sans", system-ui, -apple-system, "Segoe UI", sans-serif; --mono: "Noto Sans Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0e151c; --surface: #16202a; --surface-2: #1c2834; --ink: #e5edf4; --ink-2: #aebccb; --muted: #7f8d9b; --line: #2a3846;
+  --accent: #5b9be8; --accent-ink: #08172a; --good: #4cc795; --bad: #ef7a63; --good-bg: #123327; --bad-bg: #3a1c16;
+  --warn-bg: #3a2d0c; --warn-ink: #f1d48f; --lens: #9085e9; --plain: #3987e5; --c-elec: #199e70; --c-heat: #d95926; --c-loss: #c98500; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0e151c; --surface: #16202a; --surface-2: #1c2834; --ink: #e5edf4; --ink-2: #aebccb; --muted: #7f8d9b; --line: #2a3846;
+  --accent: #5b9be8; --accent-ink: #08172a; --good: #4cc795; --bad: #ef7a63; --good-bg: #123327; --bad-bg: #3a1c16;
+  --warn-bg: #3a2d0c; --warn-ink: #f1d48f; --lens: #9085e9; --plain: #3987e5; --c-elec: #199e70; --c-heat: #d95926; --c-loss: #c98500; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-block: 24px 56px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 18px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(1.8rem, 4vw, 2.5rem); font-weight: 800; line-height: 1.1; }
+h2 { font-size: 1.2rem; font-weight: 800; }
+h3 { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-2); }
+p { margin: 0; } a { color: var(--accent); }
+.nav { display: flex; gap: 14px; flex-wrap: wrap; font-size: 0.9rem; }
+.lead { color: var(--ink-2); max-width: 78ch; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.layout { display: grid; grid-template-columns: 330px minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 900px) { .layout { grid-template-columns: minmax(0, 1fr); } }
+.inputs { display: grid; gap: 10px; }
+.field { display: grid; grid-template-columns: minmax(0, 1fr) 110px; gap: 8px; align-items: center; font-size: 0.88rem; }
+.field input, .field select { font: inherit; font-family: var(--mono); font-size: 0.9rem; padding: 4px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2); color: var(--ink); width: 100%; }
+.field input:focus-visible, .field select:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.grp { border-top: 1px solid var(--line); padding-top: 8px; display: grid; gap: 8px; }
+.added { background: var(--warn-bg); color: var(--warn-ink); border-radius: 8px; padding: 8px; display: grid; gap: 8px; }
+.btn { font: inherit; font-size: 0.85rem; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); border-radius: 6px; padding: 5px 10px; cursor: pointer; }
+.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+@media (max-width: 760px) { .two { grid-template-columns: minmax(0, 1fr); } }
+.box { border-radius: 12px; padding: 14px; display: grid; gap: 8px; }
+.box.orig { background: var(--surface-2); border: 1px dashed var(--orig); }
+.box.corr { background: var(--surface); border: 2px solid var(--accent); }
+.kv { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 12px; font-size: 0.88rem; font-variant-numeric: tabular-nums; }
+.kv b { font-family: var(--mono); font-weight: 500; text-align: right; white-space: nowrap; }
+.big { font-family: var(--mono); font-size: 2rem; font-weight: 500; line-height: 1.05; }
+.good { color: var(--good); } .bad { color: var(--bad); }
+.errors { display: grid; gap: 10px; margin: 0; padding-left: 22px; }
+.errors li { line-height: 1.5; }
+.errors b.num { font-family: var(--mono); font-weight: 500; }
+.bar { display: flex; height: 24px; border-radius: 6px; overflow: hidden; gap: 1px; background: var(--surface-2); }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 0.82rem; color: var(--ink-2); }
+.legend i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; margin-right: 5px; vertical-align: -1px; }
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 0.88rem; font-variant-numeric: tabular-nums; }
+th, td { padding: 7px 9px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; white-space: normal; }
+th { font-size: 0.76rem; color: var(--ink-2); font-weight: 600; }
+.hint { font-size: 0.8rem; color: var(--muted); }
+.ds { display: grid; gap: 6px; }
+.ds-row { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+.ds-lbl { font-size: 0.8rem; font-weight: 600; color: var(--ink-2); }
+.ds-select { font: inherit; padding: 5px 8px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); max-width: 100%; }
+.ds-file { font-size: 0.82rem; color: var(--accent); cursor: pointer; } .ds-file input { display: block; font-size: 0.8rem; max-width: 260px; }
+.ds-msg { font-size: 0.82rem; color: var(--ink-2); }
+footer { font-size: 0.82rem; color: var(--ink-2); display: grid; gap: 6px; max-width: 95ch; }
+</style>
+
+<div class="wrap">
+  <header style="display:grid; gap:10px">
+    <nav class="nav"><a href="index.html">Sadə izah</a><a href="lab.html">Linza laboratoriyası</a><a href="simulator.html">Ətraflı simulyator</a></nav>
+    <h1>Linza enerji kalkulyatoru: orijinal hesab və düzgün müqayisə</h1>
+    <p class="lead">Paylaşılan “Solar Lens Energy Calculator v1.0” (Streamlit kodu) burada dəyişmədən təkrarlanır: solda eyni girişlər, “Orijinal” bölməsində eyni düsturlar. Yanında eyni girişlərlə düzgün müqayisə verilir: eyni işıqtoplama sahəsi, eyni tutduğu sahə, dioptriyanın təsiri, hüceyrəyə düşən istilik və real hava məlumatı ilə illik enerji.</p>
+  </header>
+
+  <div class="layout">
+    <section class="card" aria-label="Girişlər">
+      <div class="inputs" id="inputs"></div>
+      <button class="btn" id="reset" type="button">Orijinal standart dəyərlərə qaytar</button>
+    </section>
+
+    <main style="display:grid; gap:18px; min-width:0">
+      <div class="two">
+        <section class="box orig">
+          <h3>Orijinal kalkulyator (kod olduğu kimi)</h3>
+          <div class="big" id="o-gain"></div>
+          <div class="kv" id="o-kv"></div>
+        </section>
+        <section class="box corr">
+          <h3>Düzgün müqayisə (eyni girişlər)</h3>
+          <div class="big" id="c-gain"></div>
+          <div class="kv" id="c-kv"></div>
+        </section>
+      </div>
+
+      <section class="card">
+        <h2>Səhv harada</h2>
+        <ol class="errors" id="errors"></ol>
+      </section>
+
+      <section class="card">
+        <h2>Eyni anda işığın balansı</h2>
+        <div class="bar" id="bal"></div>
+        <div class="legend" id="bal-leg"></div>
+        <p class="hint">Linzalara düşən işıq üç hissəyə ayrılır: optik itki (əks olunma, udulma, hədəfdən yayınma), hüceyrədə istiyə çevrilən hissə və elektrik. Kod yalnız birinci hissəni “unconverted optical/thermal” adlandırır. Hüceyrədəki istilik orada yoxdur.</p>
+      </section>
+
+      <section class="card">
+        <h2>Dioptriya nəyi dəyişir</h2>
+        <div class="tablewrap" id="diop"></div>
+        <p class="hint">Orijinal kodda fokus məsafəsi və ləkənin ölçüsü yalnız göstərilir, enerji hesabına daxil olmur. Ona görə istənilən dioptriyada nəticə eynidir. Əslində dioptriya işığın hüceyrəyə necə düşdüyünü dəyişir. Cədvəldə ləkə panel müstəvisində, linzadan h məsafədə hesablanır (nazik linza + Günəş diski).</p>
+      </section>
+
+      <section class="card">
+        <h2>Real hava məlumatı ilə illik enerji (eyni işıqtoplama sahəsi)</h2>
+        <div class="ds" id="ds"></div>
+        <div class="tablewrap" id="annual"></div>
+        <p class="hint" id="annual-note"></p>
+      </section>
+
+      <footer>
+        <p>Bu səhifə sadə enerji balansıdır. IAM, hüceyrə temperaturu və ardıcıl qoşulma burada ayrıca modelləşdirilmir. Həndəsi linza modeli (sonlu panel, işıq balansı, I–V) <a href="lab.html">linza laboratoriyasında</a>, tam illik model isə <a href="simulator.html">ətraflı simulyatordadır</a>.</p>
+        <p>Mənbə kodu: <a href="https://github.com/mhmmdkbrov/solarsimulation" target="_blank" rel="noopener">github.com/mhmmdkbrov/solarsimulation</a> (MIT). Hesab: <span style="font-family:var(--mono)">simulator/calculator.js</span> = <span style="font-family:var(--mono)">solarsim/calculator.py</span> (paritet testi).</p>
+      </footer>
+    </main>
+  </div>
+</div>
+
+<script>
+__DATASTORE__
+</script>
+<script>
+__CALCULATOR__
+</script>
+<script>
+(() => {
+  const C = LensCalc, $ = id => document.getElementById(id), nf = (v, d = 0) => DataStore.fmt(v, d);
+  const pct = (v, d = 1) => `${v >= 0 ? "+" : "−"}${nf(Math.abs(v), d)}%`;
+  const FIELDS = [
+    ["Optika (orijinal)", null],
+    ["diopter", "Linzanın gücü, dioptriya", 0.1, 100, 0.5, 1],
+    ["diameter_cm", "Linzanın diametri, sm", 1, 200, 1, 1],
+    ["lens_count", "Linzaların sayı", 1, 10000, 1, 0],
+    ["transmission", "Linzanın ötürməsi, %", 1, 100, 1, 0, 100],
+    ["optical_efficiency", "Optik birləşmə səmərəliliyi, %", 1, 100, 1, 0, 100],
+    ["Panel (orijinal)", null],
+    ["receiver_area", "PV qəbuledicinin sahəsi, m²", 0.001, 100, 0.1, 3],
+    ["pv_efficiency", "Hüceyrənin səmərəliliyi, %", 1, 50, 1, 0, 100],
+    ["irradiance", "Günəş şüalanması, W/m²", 1, 1500, 10, 0],
+    ["sun_hours", "Ekvivalent pik günəş saatı / gün", 0.1, 12, 0.1, 1],
+    ["thermal_derating", "İstilik/elektrik azalması, %", 0, 50, 1, 0, 100],
+    ["electricity_price", "Elektrikin dəyəri, USD/kWh", 0, 10, 0.01, 2],
+    ["Düzgün müqayisə üçün əlavə girişlər", "added"],
+    ["h_cm", "Linza ilə panel arası məsafə, sm (boş = fokus məsafəsi)", 0, 500, 0.5, 1],
+    ["packing", "Dairəvi linzaların düzülüşü", "select"],
+  ];
+  let P = { ...C.DEFAULTS };
+  try { const s = JSON.parse(localStorage.getItem("solarsim-calc") || "null"); if (s) P = { ...P, ...s }; } catch (e) {}
+  let H = null, dsLabel = "";
+
+  // ---------- inputs ----------
+  function buildInputs() {
+    let html = "", open = false;
+    for (const f of FIELDS) {
+      if (f[1] === null || f[1] === "added") {
+        if (open) html += "</div>";
+        html += `<div class="grp${f[1] === "added" ? " added" : ""}"><h3 style="${f[1] === "added" ? "color:inherit" : ""}">${f[0]}</h3>`;
+        open = true; continue;
+      }
+      const [k, label, mn, mx, st, dec, scale] = f;
+      if (mn === "select") html += `<label class="field">${label}<select id="i-${k}"><option value="square">kvadrat tor</option><option value="hex">altıbucaqlı (sıx)</option></select></label>`;
+      else html += `<label class="field">${label}<input id="i-${k}" type="number" min="${mn}" max="${mx}" step="${st}" data-scale="${scale || 1}"></label>`;
+    }
+    $("inputs").innerHTML = html + "</div>";
+    sync();
+    $("inputs").addEventListener("input", e => {
+      const t = e.target, k = t.id.slice(2);
+      if (t.tagName === "SELECT") P[k] = t.value;
+      else if (k === "h_cm" && t.value === "") P.h_cm = null;
+      else { const v = parseFloat(t.value); if (!isFinite(v)) return; P[k] = v / parseFloat(t.dataset.scale); }
+      render();
+    });
+  }
+  function sync() {
+    for (const f of FIELDS) {
+      if (f[1] === null || f[1] === "added") continue;
+      const el = $("i-" + f[0]), sc = f[6] || 1;
+      if (el.tagName === "SELECT") el.value = P[f[0]];
+      else el.value = P[f[0]] == null ? "" : +(P[f[0]] * sc).toFixed(6);
+    }
+  }
+  $("reset").addEventListener("click", () => { P = { ...C.DEFAULTS }; sync(); render(); });
+
+  // ---------- render ----------
+  function render() {
+    try { localStorage.setItem("solarsim-calc", JSON.stringify(P)); } catch (e) {}
+    if (!(P.diopter > 0) || !(P.receiver_area > 0) || !(P.lens_count >= 1)) return;
+    const r = C.corrected(P, H), o = r.original;
+    $("o-gain").innerHTML = `<span class="${o.gain_percent >= 0 ? "good" : "bad"}">${pct(o.gain_percent)}</span>`;
+    $("o-kv").innerHTML = [
+      ["Fokus məsafəsi", `${nf(o.focal_length_cm, 2)} sm`], ["Linzaların ümumi aperturası", `${nf(o.total_aperture, 3)} m²`],
+      ["Konsentrasiya (apertura / qəbuledici)", `${nf(o.concentration, 2)}×`], ["İdeal fokus ləkəsi", `${nf(o.focal_spot_mm, 2)} mm`],
+      ["Adi panel (qəbuledici sahəsi ilə)", `${nf(o.baseline_output_w, 2)} W`], ["Linza sistemi", `${nf(o.lens_output_w, 2)} W`],
+      ["Gündəlik: adi / linza", `${nf(o.baseline_daily_kwh, 3)} / ${nf(o.lens_daily_kwh, 3)} kWh`],
+      ["İllik: adi / linza", `${nf(o.baseline_annual_kwh, 1)} / ${nf(o.lens_annual_kwh, 1)} kWh`],
+      ["“Çevrilməmiş” güc (kodda)", `${nf(o.unconverted_power, 1)} W`], ["Əlavə illik dəyər", `${nf(o.additional_value, 2)} USD`],
+    ].map(([k, v]) => `<span>${k}</span><b>${v}</b>`).join("");
+    $("c-gain").innerHTML = `<span class="${r.vs_aperture_pct >= 0 ? "good" : "bad"}">${pct(r.vs_aperture_pct)}</span> <span style="font-size:0.9rem;font-family:var(--font)">eyni apertura ilə</span>`;
+    $("c-kv").innerHTML = [
+      ["Linza sistemi", `${nf(r.lens_w, 1)} W`],
+      [`Adi panel, eyni apertura (${nf(o.total_aperture, 3)} m²)`, `${nf(r.plain_same_aperture_w, 1)} W`],
+      [`Adi panel, eyni tutduğu sahə (${nf(r.footprint_m2, 3)} m²)`, `${nf(r.plain_same_footprint_w, 1)} W · ${pct(r.vs_footprint_pct)}`],
+      ["Apertura üzrə səmərəlilik: linza / adi", `${nf(r.eff_per_aperture * 100, 1)}% / ${nf(r.eff_plain * 100, 1)}%`],
+      ["Hüceyrədə istiyə çevrilən güc", `${nf(r.heat_in_receiver_w, 0)} W (${nf(r.heat_in_receiver_w_m2, 0)} W/m²)`],
+      [`Ləkə (h = ${nf(r.h_m * 100, 1)} sm)`, `${nf(r.spot_mm, r.spot_mm < 10 ? 2 : 0)} mm, ~${nf(r.local_suns, r.local_suns < 10 ? 1 : 0)} günəş`],
+      ["Panelin işıqlanan payı", `${nf(r.lit_share * 100, r.lit_share < 0.01 ? 3 : 1)}%`],
+    ].map(([k, v]) => `<span>${k}</span><b>${v}</b>`).join("");
+
+    const e = [];
+    e.push(`<b>Müqayisə fərqli sahələr arasında aparılır.</b> Linzaların ümumi aperturası <b class="num">${nf(o.total_aperture, 3)} m²</b>, adi panel isə <b class="num">${nf(P.receiver_area, 3)} m²</b> sahə ilə hesablanır. ${pct(o.gain_percent)} “qazanc” linzanın təsiri deyil: ${nf((o.total_aperture / P.receiver_area - 1) * 100, 0)}% artıq işıqtoplama sahəsindən gəlir. Eyni aperturada adi panel ${nf(r.plain_same_aperture_w, 1)} W verir, linza sistemi isə ${nf(r.lens_w, 1)} W (<b class="num">${pct(r.vs_aperture_pct)}</b>). Optika itkisiz olsa belə, ən çoxu bərabərlik (0%) alınar.`);
+    e.push(`<b>Dairəvi linzalar səthi tam örtmür.</b> ${nf(P.lens_count)} ədəd ${nf(P.diameter_cm, 1)} sm linza ${P.packing === "hex" ? "sıx (altıbucaqlı)" : "kvadrat"} düzülüşdə <b class="num">${nf(r.footprint_m2, 3)} m²</b> yer tutur. Aperturası isə ${nf(o.total_aperture, 3)} m²-dir. Eyni yerə adi panel qoyulsa, ${nf(r.plain_same_footprint_w, 1)} W alınar (<b class="num">${pct(r.vs_footprint_pct)}</b>).`);
+    e.push(`<b>Dioptriya hesaba daxil deyil.</b> Kodda fokus məsafəsi (${nf(o.focal_length_cm, 1)} sm) və ləkə (${nf(o.focal_spot_mm, 2)} mm) yalnız göstərilir. Enerji yalnız sahədən, ötürmədən və səmərəlilikdən asılıdır, ona görə +1 D və +20 D eyni nəticəni verir. Linza enerji yaratmır, işığın yerini dəyişir.`);
+    e.push(`<b>Fokusda hüceyrə yanar.</b> Panel fokus məsafəsində olsa, hər linza işığı ${nf(r.spot_mm, 2)} mm-lik ləkəyə yığır: təxminən <b class="num">${nf(r.local_suns, 0)}</b> günəş. Panelin yalnız ${nf(r.lit_share * 100, 3)}%-i işıqlanır. Kod isə orta sıxlıq götürür (${nf(o.receiver_power_density, 0)} W/m²), sanki işıq bərabər paylanır. Ardıcıl qoşulmuş hüceyrələrdə qeyri-bərabər işıq gücü azaldır, ləkədə isə qızma silikonu korlayır.`);
+    e.push(`<b>İstilik düzgün göstərilmir.</b> Kod “çevrilməmiş optik/istilik gücü” kimi ${nf(o.unconverted_power, 0)} W göstərir. Bu, yalnız optik itkidir. Hüceyrədə istiyə çevrilən güc <b class="num">${nf(r.heat_in_receiver_w, 0)} W</b>-dır (${nf(r.heat_in_receiver_w_m2, 0)} W/m²). Standart girişlərdə söhbətdəki interaktiv versiya bunu 1 567 W göstərirdi, Python kodu isə 328 W göstərir: iki versiya bir-birinə ziddir. Elektrikə çevrilməyən cəmi güc ${nf(r.not_converted_w, 0)} W-dır.`);
+    e.push(`<b>Temperatur azalması ixtiyaridir və birtərəflidir.</b> Linza sisteminə sabit ${nf(P.thermal_derating * 100, 0)}% azalma tətbiq olunur, adi panelə isə heç bir azalma tətbiq olunmur. Halbuki adi panel də ~1 günəşdə 50–60 °C-yə qızır (−0,3%/°C). Konsentrasiyada isə qızma çoxdur və ölçülməlidir.`);
+    e.push(`<b>Linza yalnız birbaşa işığı yığır və Günəşi izləməlidir.</b> Kod ${nf(P.irradiance)} W/m²-in hamısını fokuslanan işıq sayır. Buludlu və dumanlı havada işığın böyük hissəsi səpələnmiş işıqdır. Bundan əlavə, fokus ləkəsi gün ərzində h·tan(θ) qədər sürüşür: sabit montajda ləkə hüceyrədən çıxır.`);
+    e.push(`<b>İllik enerji pik günəş saatı × 365 ilə hesablanır.</b> ${nf(P.sun_hours, 1)} saat/gün sabit panelin ümumi işığı üçün götürülən göstəricidir. Linza sisteminin aldığı birbaşa işıq üçün uyğun deyil. Real məlumatla hesab aşağıdakı cədvəldədir. İqtisadi hissədə linza, izləmə və soyutma xərcləri yoxdur, əlavə gəlir isə yenə artıq sahədən gəlir.`);
+    $("errors").innerHTML = e.map(x => `<li>${x}</li>`).join("");
+
+    const tot = o.incident_power || 1;
+    const parts = [["optik itki", r.optical_loss_w, "--c-loss"], ["hüceyrədə istilik", r.heat_in_receiver_w, "--c-heat"], ["elektrik", r.lens_w, "--c-elec"]];
+    $("bal").innerHTML = parts.map(([, v, c]) => `<span style="width:${100 * v / tot}%;background:var(${c})"></span>`).join("");
+    $("bal-leg").innerHTML = parts.map(([n, v, c]) => `<span><i style="background:var(${c})"></i>${n}: ${nf(v, 0)} W (${nf(100 * v / tot, 1)}%)</span>`).join("") + `<span>cəm = linzalara düşən ${nf(tot, 0)} W</span>`;
+
+    const rows = [1, 3, 5, 10, 20].map(D => {
+      const q = C.corrected({ ...P, diopter: D, h_cm: P.h_cm });
+      const qf = C.corrected({ ...P, diopter: D, h_cm: null });
+      return `<tr><td>+${D} D</td><td>${nf(100 / D, 1)} sm</td><td>${nf(q.original.lens_output_w, 1)} W</td><td>${nf(qf.spot_mm, 2)} mm · ~${nf(qf.local_suns, 0)} günəş</td><td>${P.h_cm == null ? "—" : `${nf(q.spot_mm, q.spot_mm < 10 ? 2 : 0)} mm · ~${nf(q.local_suns, q.local_suns < 10 ? 1 : 0)} günəş`}</td></tr>`;
+    }).join("");
+    $("diop").innerHTML = `<table><thead><tr><th>Linza</th><th>fokus</th><th>orijinal kodda linza gücü</th><th>panel fokusda: ləkə, intensivlik</th><th>panel h = ${P.h_cm == null ? "—" : nf(P.h_cm, 1) + " sm"} məsafədə</th></tr></thead><tbody>${rows}</tbody></table>`;
+
+    if (r.annual) {
+      const a = r.annual, ap = o.total_aperture;
+      $("annual").innerHTML = `<table><thead><tr><th>Variant (hamısı ${nf(ap, 3)} m² işıqtoplama sahəsi)</th><th>illik, kWh</th><th>kWh/m²</th><th>linzaya nisbət</th></tr></thead><tbody>
+        <tr><td>Linza sistemi: 2 oxlu izləmə, yalnız birbaşa işıq (${nf(a.H.beam_2axis, 0)} kWh/m²)</td><td>${nf(a.lens_2axis_kwh, 0)}</td><td>${nf(a.lens_2axis_kwh / ap, 1)}</td><td>—</td></tr>
+        <tr><td>Adi panel, sabit (${nf(a.H.glob_fixed, 0)} kWh/m² panel müstəvisində)</td><td>${nf(a.plain_fixed_same_aperture_kwh, 0)}</td><td>${nf(a.plain_fixed_same_aperture_kwh / ap, 1)}</td><td>${pct((a.lens_2axis_kwh / a.plain_fixed_same_aperture_kwh - 1) * 100)}</td></tr>
+        <tr><td>Adi panel, eyni 2 oxlu izləmə (${nf(a.H.glob_2axis, 0)} kWh/m²)</td><td>${nf(a.plain_2axis_same_aperture_kwh, 0)}</td><td>${nf(a.plain_2axis_same_aperture_kwh / ap, 1)}</td><td>${pct((a.lens_2axis_kwh / a.plain_2axis_same_aperture_kwh - 1) * 100)}</td></tr>
+        <tr><td>Orijinal kod: linza (${nf(P.sun_hours, 1)} pik saat × 365 = ${nf(a.psh_irradiation_kwh_m2, 0)} kWh/m², hamısı fokuslanır)</td><td>${nf(a.original_lens_kwh, 0)}</td><td>${nf(a.original_lens_kwh / ap, 1)}</td><td></td></tr>
+        <tr><td>Orijinal kod: adi panel (${nf(P.receiver_area, 3)} m²)</td><td>${nf(a.original_baseline_kwh, 0)}</td><td>${nf(a.original_baseline_kwh / P.receiver_area, 1)}</td><td></td></tr></tbody></table>`;
+      $("annual-note").textContent = `Məlumat: ${dsLabel}. Hər üç real variantda eyni sadə balans işlədilir (ötürmə, birləşmə, hüceyrə səmərəliliyi, azalma; IAM və temperatur yoxdur). Ona görə fərq yalnız işıq növündən və montajdan gəlir. Optik itki ölçüləri pasportdan deyil, girişlərdən götürülür.`;
+    }
+  }
+
+  buildInputs(); render();
+  DataStore.mount($("ds"), {
+    onLoading: () => { H = null; $("annual").innerHTML = ""; $("annual-note").textContent = "yüklənir…"; },
+    onLoad: D => { H = C.irradiationFromDataset(D); dsLabel = DataStore.label(D); render(); },
+    onError: msg => { $("annual-note").textContent = `Məlumat yoxdur: ${msg}`; },
+  });
+})();
+</script>

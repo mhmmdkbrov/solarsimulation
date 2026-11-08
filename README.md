@@ -20,6 +20,8 @@ Hazır seçimlər: Bakı, Naxçıvan, Almería.
 * Sadə izah: https://mhmmdkbrov.github.io/solarsimulation/
 * Linza laboratoriyası: https://mhmmdkbrov.github.io/solarsimulation/lab.html
 * Ətraflı simulyator: https://mhmmdkbrov.github.io/solarsimulation/simulator.html
+* Linza enerji kalkulyatoru. Paylaşılan Streamlit kalkulyatorunun hesabı olduğu kimi təkrarlanır, yanında düzgün müqayisə və səhvlərin siyahısı verilir:
+  https://mhmmdkbrov.github.io/solarsimulation/calculator.html (`simulator/calculator.js` = `solarsim/calculator.py`, testlər `tests/test_calculator.py`)
 
 Hər səhifədə məkan və məlumat dəstini seçmək, yerli JSON faylını açmaq mümkündür. Hesab versiyası və məlumat dəstinin adı da göstərilir.
 

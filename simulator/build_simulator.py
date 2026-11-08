@@ -27,14 +27,15 @@ def to_site(page: str) -> str:
 
 
 def main():
-    js = {name: (HERE / f"{name}.js").read_text(encoding="utf-8") for name in ("datastore", "model", "lensoptics")}
-    pages = {"index.html": "lens_template.html", "lab.html": "lab_template.html", "simulator.html": "template.html"}
+    js = {name: (HERE / f"{name}.js").read_text(encoding="utf-8") for name in ("datastore", "model", "lensoptics", "calculator")}
+    pages = {"index.html": "lens_template.html", "lab.html": "lab_template.html", "simulator.html": "template.html",
+             "calculator.html": "calc_template.html"}
     SITE.mkdir(exist_ok=True)
     (SITE / ".nojekyll").write_text("", encoding="utf-8")
     for out, tpl in pages.items():
         t = (HERE / tpl).read_text(encoding="utf-8")
-        t = t.replace("__DATASTORE__", js["datastore"]).replace("__MODEL__", js["model"]).replace("__LENSOPTICS__", js["lensoptics"])
-        for leftover in ("__DATASTORE__", "__MODEL__", "__LENSOPTICS__", "__DATA__", "__CASES__", "__LABDATA__"):
+        t = t.replace("__DATASTORE__", js["datastore"]).replace("__MODEL__", js["model"]).replace("__LENSOPTICS__", js["lensoptics"]).replace("__CALCULATOR__", js["calculator"])
+        for leftover in ("__DATASTORE__", "__MODEL__", "__LENSOPTICS__", "__CALCULATOR__", "__DATA__", "__CASES__", "__LABDATA__"):
             assert leftover not in t, f"{tpl}: placeholder {leftover} left"
         (SITE / out).write_text(to_site(t), encoding="utf-8")
         print(f"docs/{out}: {(SITE / out).stat().st_size / 1e3:.0f} kB")
